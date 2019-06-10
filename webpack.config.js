@@ -1,5 +1,9 @@
 module.exports = require('webpack-boiler')({
-  title: 'Fantastic Contraption',
+  pages: [
+    {
+      title: 'Fantastic Contraption',
+    },
+  ],
   env: {
     CANVAS_RENDERER: true,
     WEBGL_RENDERER: true,
@@ -8,6 +12,6 @@ module.exports = require('webpack-boiler')({
 
 module.exports.module.rules.push({
   test: [/\.vert$/, /\.frag$/],
-  use: "raw-loader"
+  use: 'raw-loader',
 });
 // module.exports.devtool = 'eval-source-map';
