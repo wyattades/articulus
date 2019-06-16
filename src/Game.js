@@ -12,7 +12,6 @@ export default class Game extends Phaser.Game {
       physics: {
         default: 'matter',
         matter: {
-          gravity: { y: 0.8 },
           enableSleep: true,
           debug: true,
         },
