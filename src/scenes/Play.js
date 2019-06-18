@@ -5,6 +5,7 @@ import { Matter, stiffConnect } from '../lib/physics';
 class Wheel extends Phaser.GameObjects.Graphics {
   constructor(scene, x, y, radius = 30) {
     super(scene, { x, y });
+    this.type = 'wheel';
     scene.add.existing(this);
 
     this.radius = radius;
@@ -49,6 +50,12 @@ class Wheel extends Phaser.GameObjects.Graphics {
       this.applyTorque,
     );
   }
+
+  getHoverPoint(x, y, dist) {
+    if (Phaser.Math.Distance.Between(x, y, this.x, this.y) < dist)
+      return { x: this.x, y: this.y };
+    return null;
+  }
 }
 
 class Line extends Phaser.GameObjects.Graphics {
@@ -56,7 +63,7 @@ class Line extends Phaser.GameObjects.Graphics {
 
   constructor(scene, x1, y1, x2, y2, lineWidth = 10) {
     super(scene, { x: x1, y: y1 });
-
+    this.type = 'line';
     scene.add.existing(this);
 
     this.size = lineWidth;
@@ -149,9 +156,14 @@ class Line extends Phaser.GameObjects.Graphics {
     return this;
   }
 
-  destroy() {
-    super.destroy();
-    // this.body.phaserObject = null; // cleanup for trash collector
+  getHoverPoint(x, y, dist) {
+    const { x1, y1 } = this;
+    if (Phaser.Math.Distance.Between(x, y, x1, y1) < dist)
+      return { x: x1, y: y1 };
+    const { x2, y2 } = this;
+    if (Phaser.Math.Distance.Between(x, y, x2, y2) < dist)
+      return { x: x2, y: y2 };
+    return null;
   }
 }
 
@@ -176,54 +188,92 @@ export default class Play extends Phaser.Scene {
   }
 
   preload() {
-    const loadingMsg = (value = 0) =>
-      `Loading Assets: ${parseInt(value * 100)}%`;
-    const loadingText = this.add.text(100, 300, loadingMsg(), {
-      fontSize: '40px',
-    });
-    this.load.on('progress', (value) => {
-      loadingText.setText(loadingMsg(value));
-    });
-    this.load.on('complete', () => {
-      loadingText.destroy();
-    });
+    // this.load.image('cookie', 'assets/cookie.png');
 
-    this.load.image('cookie', 'assets/cookie.png');
+    if (this.load.inflight.size > 0) {
+      const loadingMsg = (value = 0) =>
+        `Loading Assets: ${parseInt(value * 100)}%`;
+      const loadingText = this.add.text(100, 300, loadingMsg(), {
+        fontSize: '40px',
+      });
+      this.load.on('progress', (value) => {
+        loadingText.setText(loadingMsg(value));
+      });
+      this.load.on('complete', () => {
+        loadingText.destroy();
+      });
+    }
   }
 
   activateDrawLine() {
-    let exists = false;
+    let line = null;
     if (this.drawLine) {
       if (this.tool === 'line') {
-        this.drawLine.line.enablePhysics();
-        exists = true;
+        line = this.drawLine.line.enablePhysics();
       } else this.drawLine.line.destroy();
       this.drawLine = null;
     }
-    return exists;
+    return line;
   }
 
   createListeners() {
     this.input.on('pointerdown', ({ x, y }) => {
+      if (this.cursor.visible) {
+        x = this.cursor.x;
+        y = this.cursor.y;
+      }
       const lineExisted = this.activateDrawLine();
       if (this.tool === 'line') {
         if (!lineExisted) {
           const line = new Line(this, x, y, x, y);
           this.drawLine = { x, y, line };
+          this.parts.add(line);
         }
       } else if (this.tool === 'wheel') {
         const wheel = new Wheel(this, x, y);
         wheel.enablePhysics();
+        this.parts.add(wheel);
+        if (this.cursor.visible) {
+          stiffConnect(this, this.cursor.getData('connectObj').body, wheel.body);
+        }
       }
     });
+
     this.input.on('pointermove', ({ x, y }) => {
+      let jointPoint = null;
+      for (const child of this.parts.getChildren()) {
+        if (this.drawLine && child === this.drawLine.line) continue;
+        jointPoint = child.getHoverPoint(x, y, 10);
+        if (jointPoint) {
+          if (!this.cursor.visible) this.cursor.setVisible(true);
+          this.cursor.setPosition(jointPoint.x, jointPoint.y);
+          this.cursor.setData('connectObj', child);
+          break;
+        }
+      }
+      if (!jointPoint && this.cursor.visible) this.cursor.setVisible(false);
+
+      if (this.cursor.visible) {
+        x = this.cursor.x;
+        y = this.cursor.y;
+      }
       if (this.drawLine) {
         if (this.tool === 'line') this.drawLine.line.setEnd(x, y);
         else this.activateDrawLine();
       }
     });
+
     this.input.on('pointerup', () => {
-      this.activateDrawLine();
+      const line = this.activateDrawLine();
+
+      if (this.cursor.visible && line) {
+        stiffConnect(this, this.cursor.getData('connectObj').body, line.body, {
+          pointB: {
+            x: this.cursor.x,
+            y: this.cursor.y,
+          }
+        });
+      }
     });
 
     this.input.keyboard.addKey('SPACE').on('down', () => {
@@ -231,7 +281,7 @@ export default class Play extends Phaser.Scene {
     });
 
     this.input.keyboard.addKey('R').on('down', () => {
-      window.location.reload();
+      this.scene.restart();
     });
   }
 
@@ -243,15 +293,28 @@ export default class Play extends Phaser.Scene {
       this.game.config.height,
     );
 
+    this.parts = this.add.group(null, {
+      max: 30,
+    });
+
+    this.uiGroup = this.add.group();
+    this.cursor = this.add
+      .circle(0, 0, 10, 0xff0000, 0.8)
+      .setVisible(false)
+      .setDepth(Infinity);
+    this.uiGroup.add(this.cursor);
+
     this.stateText = this.add
       .text(this.game.scale.width - 10, 10, '', {})
       .setOrigin(1, 0);
+    this.uiGroup.add(this.stateText);
     this.toolButtons = TOOLS.map((tool, i) => {
       const button = this.add
         .dom(10, 10 + i * 30, 'button', {}, tool)
         .setOrigin(0, 0)
         .addListener('click');
       button.on('click', () => this.setTool(tool));
+      this.uiGroup.add(button);
       return button;
     });
 
