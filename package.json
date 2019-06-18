@@ -11,6 +11,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@types/matter-js": "^0.10.2",
     "phaser": "^3.17.0"
   },
   "devDependencies": {

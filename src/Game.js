@@ -3,8 +3,9 @@ import Phaser from 'phaser';
 import PlayScene from './scenes/Play';
 
 export default class Game extends Phaser.Game {
-  constructor(canvas) {
+  constructor(canvas, parent) {
     super({
+      parent,
       canvas,
       type: Phaser.WEBGL,
       width: 1000,
@@ -15,6 +16,9 @@ export default class Game extends Phaser.Game {
           enableSleep: true,
           debug: true,
         },
+      },
+      dom: {
+        createContainer: true,
       },
       scene: PlayScene,
     });

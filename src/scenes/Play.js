@@ -1,44 +1,6 @@
 import Phaser from 'phaser';
 
-const Matter = Phaser.Physics.Matter.Matter;
-
-/**
- * @param {Phaser.Scene} scene
- */
-const stiffConnect = (scene, parent, child, options = {}) => {
-  const {
-    length = 0,
-    stiffness = 1,
-    group = Matter.Body.nextGroup(true),
-    ..._options
-  } = options;
-
-  // TODO this doesn't work if multiple connections are made
-  parent.collisionFilter.group = group;
-  child.collisionFilter.group = group;
-
-  if (!_options.render) _options.render = { visible: true };
-  // if (!_options.pointB && b.phaserObject instanceof Line)
-  //   _options.pointB = {
-  //     x: b.phaserObject.centerX - b.phaserObject.x,
-  //     y: b.phaserObject.centerY - b.phaserObject.y,
-  //   };
-
-  // child.x =
-
-  _options.pointA = {
-    x: child.position.x - parent.position.x,
-    y: child.position.y - parent.position.y,
-  };
-
-  return scene.matter.add.constraint(
-    parent,
-    child,
-    length,
-    stiffness,
-    _options,
-  );
-};
+import { Matter, stiffConnect } from '../lib/physics';
 
 class Wheel extends Phaser.GameObjects.Graphics {
   constructor(scene, x, y, radius = 30) {
@@ -63,7 +25,7 @@ class Wheel extends Phaser.GameObjects.Graphics {
       },
       isStatic,
     });
-    this.body.phaserObject = this;
+    // this.body.phaserObject = this;
 
     this.body.friction = 0.7;
 
@@ -80,7 +42,7 @@ class Wheel extends Phaser.GameObjects.Graphics {
 
   destroy() {
     super.destroy();
-    this.body.phaserObject = null; // cleanup for trash collector
+    // this.body.phaserObject = null; // cleanup for trash collector
     Matter.Events.off(
       this.scene.matter.world.engine,
       'beforeUpdate',
@@ -98,8 +60,8 @@ class Line extends Phaser.GameObjects.Graphics {
     scene.add.existing(this);
 
     this.size = lineWidth;
-    this.x1 = x1;
-    this.y1 = y1;
+    this._x1 = x1;
+    this._y1 = y1;
 
     // this.setOrigin(0, 0.5);
     this.setEnd(x2, y2);
@@ -113,13 +75,13 @@ class Line extends Phaser.GameObjects.Graphics {
     return Math.sin(this.rotation) * this.length;
   }
 
-  // get x1() {
-  //   return this.x - this.cosX / 2;
-  // }
+  get x1() {
+    return this.x - this.cosX / 2;
+  }
 
-  // get x2() {
-  //   return this.y - this.cosY / 2;
-  // }
+  get y1() {
+    return this.y - this.cosY / 2;
+  }
 
   get x2() {
     return this.x + this.cosX / 2;
@@ -129,17 +91,9 @@ class Line extends Phaser.GameObjects.Graphics {
     return this.y + this.cosY / 2;
   }
 
-  // get centerX() {
-  //   return this.x + this.cosX / 2;
-  // }
-
-  // get centerY() {
-  //   return this.y + this.cosY / 2;
-  // }
-
   // this only works before calling enablePhysics
   setEnd(x2, y2) {
-    const { x1, y1 } = this;
+    const { _x1: x1, _y1: y1 } = this;
 
     this.length = Math.max(
       Line.MIN_LENGTH,
@@ -156,15 +110,15 @@ class Line extends Phaser.GameObjects.Graphics {
 
   redraw() {
     this.clear();
-    this.lineStyle(2, 0x0000ff, 1);
+    // this.lineStyle(2, 0x0000ff, 1);
+    // this.strokeRoundedRect(
+    //   -this.length / 2 - this.size / 2,
+    //   -this.size / 2,
+    //   this.length + this.size,
+    //   this.size,
+    //   this.size / 2,
+    // );
     this.fillStyle(0xffffff);
-    this.strokeRoundedRect(
-      -this.length / 2 - this.size / 2,
-      -this.size / 2,
-      this.length + this.size,
-      this.size,
-      this.size / 2,
-    );
     this.fillRoundedRect(
       -this.length / 2 - this.size / 2,
       -this.size / 2,
@@ -172,13 +126,7 @@ class Line extends Phaser.GameObjects.Graphics {
       this.size,
       this.size / 2,
     );
-    // this.fillCircle(-this.length / 2, 0, this.size / 2);
-    // this.fillCircle(this.length / 2, 0, this.size / 2);
   }
-
-  // get length() {
-  //   return this.width;
-  // }
 
   enablePhysics(isStatic = false) {
     // this.setOrigin(0.5, 0.5);
@@ -196,34 +144,37 @@ class Line extends Phaser.GameObjects.Graphics {
       angle: this.rotation,
       isStatic,
     });
-    this.body.phaserObject = this;
-
-    const wheel = new Wheel(this.scene, this.x2, this.y2);
-    wheel.enablePhysics();
-
-    // const wheel2 = new Wheel(this.scene, this.centerX, this.centerY);
-    // wheel2.enablePhysics();
-
-    // this.scene.matter.add.constraint(wheel.body, this.body, 0, 1, {
-    //   render: { visible: false },
-    //   pointB: {
-    //     x: this.cosX / 2,
-    //     y: this.cosY / 2,
-    //   },
-    // });
-    // stiffConnect(this.scene, wheel.body, this.body);
-    console.log(stiffConnect(this.scene, this.body, wheel.body));
+    // this.body.phaserObject = this;
 
     return this;
   }
 
   destroy() {
     super.destroy();
-    this.body.phaserObject = null; // cleanup for trash collector
+    // this.body.phaserObject = null; // cleanup for trash collector
   }
 }
 
+const TOOLS = ['line', 'wheel'];
+
 export default class Play extends Phaser.Scene {
+  running = false;
+
+  setRunning(running) {
+    this.running = running;
+    if (running) this.matter.resume();
+    else this.matter.pause();
+
+    this.stateText.setText(running ? 'Running' : 'Paused');
+  }
+
+  setTool(tool) {
+    this.tool = tool;
+    for (const button of this.toolButtons)
+      button.node.style.backgroundColor =
+        button.node.textContent === tool ? 'green' : 'white';
+  }
+
   preload() {
     const loadingMsg = (value = 0) =>
       `Loading Assets: ${parseInt(value * 100)}%`;
@@ -241,28 +192,46 @@ export default class Play extends Phaser.Scene {
   }
 
   activateDrawLine() {
+    let exists = false;
     if (this.drawLine) {
-      this.drawLine.line.enablePhysics();
+      if (this.tool === 'line') {
+        this.drawLine.line.enablePhysics();
+        exists = true;
+      } else this.drawLine.line.destroy();
       this.drawLine = null;
-      return true;
     }
-    return false;
+    return exists;
   }
 
   createListeners() {
     this.input.on('pointerdown', ({ x, y }) => {
-      if (!this.activateDrawLine()) {
-        const line = new Line(this, x, y, x, y);
-        this.drawLine = { x, y, line };
+      const lineExisted = this.activateDrawLine();
+      if (this.tool === 'line') {
+        if (!lineExisted) {
+          const line = new Line(this, x, y, x, y);
+          this.drawLine = { x, y, line };
+        }
+      } else if (this.tool === 'wheel') {
+        const wheel = new Wheel(this, x, y);
+        wheel.enablePhysics();
       }
     });
     this.input.on('pointermove', ({ x, y }) => {
       if (this.drawLine) {
-        this.drawLine.line.setEnd(x, y);
+        if (this.tool === 'line') this.drawLine.line.setEnd(x, y);
+        else this.activateDrawLine();
       }
     });
     this.input.on('pointerup', () => {
       this.activateDrawLine();
+    });
+
+    this.input.keyboard.addKey('SPACE').on('down', () => {
+      this.setRunning(!this.running);
+    });
+
+    this.input.keyboard.addKey('R').on('down', () => {
+      window.location.reload();
     });
   }
 
@@ -272,18 +241,22 @@ export default class Play extends Phaser.Scene {
       0,
       this.game.config.width,
       this.game.config.height,
-      // 32,
-      // true,
-      // true,
-      // false,
-      // true,
     );
-    // this.addLine(
-    //   30,
-    //   this.game.config.height - 30,
-    //   this.game.config.width - 30,
-    //   this.game.config.height - 30,
-    // ).enablePhysics(true);
+
+    this.stateText = this.add
+      .text(this.game.scale.width - 10, 10, '', {})
+      .setOrigin(1, 0);
+    this.toolButtons = TOOLS.map((tool, i) => {
+      const button = this.add
+        .dom(10, 10 + i * 30, 'button', {}, tool)
+        .setOrigin(0, 0)
+        .addListener('click');
+      button.on('click', () => this.setTool(tool));
+      return button;
+    });
+
+    this.setRunning(false);
+    this.setTool('line');
 
     this.createListeners();
   }
