@@ -6,6 +6,9 @@ import Part from './Part';
 export default class Line extends Part {
   static MIN_LENGTH = 40;
 
+  type = 'line';
+  fillColor = 0xffffff;
+
   constructor(scene, x1, y1, x2, y2, lineWidth = 10) {
     super(scene, x1, y1);
 
@@ -17,8 +20,6 @@ export default class Line extends Part {
     // this.setOrigin(0, 0.5);
     this.setEnd(x2, y2);
   }
-
-  type = 'line';
 
   get cosX() {
     return Math.cos(this.rotation) * this.length;
@@ -75,7 +76,7 @@ export default class Line extends Part {
     //   this.size,
     //   this.size / 2,
     // );
-    this.fillStyle(0xffffff);
+    this.fillStyle(this.fillColor);
     this.fillRoundedRect(
       -this.length / 2 - this.size / 2,
       -this.size / 2,

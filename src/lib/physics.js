@@ -7,6 +7,7 @@ export const Matter = Phaser.Physics.Matter.Matter;
 
 const oldCanCollide = Matter.Detector.canCollide;
 Matter.Detector.canCollide = (filterA, filterB) => {
+  if (filterA.noCollide || filterB.noCollide) return false;
   if (
     (filterA.connections && filterA.connections.includes(filterB.group)) ||
     (filterB.connections && filterB.connections.includes(filterA.group))
@@ -21,6 +22,31 @@ Matter.Detector.canCollide = (filterA, filterB) => {
 //     y: line.y2 - parent.y,
 //   },
 // }
+
+/**
+ * @param {Phaser.Scene} scene
+ * @param {import('@types/matter-js').Body} bodyA
+ * @param {import('@types/matter-js').Body} bodyB
+ * @param {number} x
+ * @param {number} y
+ */
+const getConnectedBodies = (scene, bodyA, bodyB, x, y) => {
+  const bodies = new Set([bodyA, bodyB]); // unique
+
+  for (const group of (bodyA.collisionFilter.connections || []).concat(
+    bodyB.collisionFilter.connections || [],
+  )) {
+    const obj = Matter.Composite.allBodies(scene.matter.world.localWorld).find(
+      (b) => b.collisionFilter.group === group,
+    );
+    if (obj) {
+      const point = obj.gameObject.getHoverPoint(x, y, 0.1); // is 0.1 too small/large?
+      if (point) bodies.add(obj);
+    }
+  }
+
+  return bodies.values();
+};
 
 /**
  * Connects two bodies at position of `child`
@@ -55,6 +81,9 @@ export const stiffConnect = (scene, bodyA, bodyB, options = {}) => {
   if (!_options.render) _options.render = { visible: false };
 
   if (x !== undefined && y !== undefined) {
+    // TODO create one constraint with multiple bodies?
+    // const connections = getConnectedBodies(scene, bodyA, bodyB, x, y);
+
     _options.pointA = {
       x: x - bodyA.position.x,
       y: y - bodyA.position.y,
@@ -65,11 +94,5 @@ export const stiffConnect = (scene, bodyA, bodyB, options = {}) => {
     };
   }
 
-  return scene.matter.add.constraint(
-    bodyA,
-    bodyB,
-    length,
-    stiffness,
-    _options,
-  );
+  return scene.matter.add.constraint(bodyA, bodyB, length, stiffness, _options);
 };

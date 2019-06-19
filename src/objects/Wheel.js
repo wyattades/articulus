@@ -4,18 +4,20 @@ import { Matter } from '../lib/physics';
 import Part from './Part';
 
 export default class Wheel extends Part {
+  type = 'wheel';
+  spinDir = 1;
+  fillColor = 0xfff000;
+
   constructor(scene, x, y, radius = 30) {
     super(scene, x, y);
 
     this.radius = radius;
 
-    this.fillStyle(0xfff000);
+    this.fillStyle(this.fillColor);
     this.fillCircle(0, 0, radius);
     this.lineStyle(1, 0xff0000);
     this.lineBetween(0, 0, radius, 0);
   }
-
-  type = 'wheel';
 
   enablePhysics(isStatic = false) {
     this.scene.matter.add.gameObject(this, {
@@ -38,7 +40,7 @@ export default class Wheel extends Part {
   }
 
   applyTorque = () => {
-    this.body.torque = 0.1;
+    this.body.torque = this.spinDir * 0.1;
   };
 
   destroy() {

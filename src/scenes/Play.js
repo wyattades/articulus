@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 import { stiffConnect } from '../lib/physics';
-import { Line, Wheel, PART_TYPES } from '../objects';
+import { Line, Wheel, PART_TYPES, PART_CLASSES } from '../objects';
 
 export default class Play extends Phaser.Scene {
   running = false;
@@ -42,7 +42,7 @@ export default class Play extends Phaser.Scene {
   activateDrawLine() {
     let line = null;
     if (this.drawLine) {
-      if (this.tool === 'line') {
+      if (this.tool instanceof Line) {
         line = this.drawLine.line.enablePhysics();
       } else this.drawLine.line.destroy();
       this.drawLine = null;
@@ -57,9 +57,11 @@ export default class Play extends Phaser.Scene {
         y = this.cursor.y;
       }
       const lineExisted = this.activateDrawLine();
-      if (this.tool === 'line') {
+      
+      const ToolClass = PART_CLASSES[this.tool];
+      if (ToolClass.prototype instanceof Line) {
         if (!lineExisted) {
-          const line = new Line(this, x, y, x, y);
+          const line = new ToolClass(this, x, y, x, y);
           this.drawLine = { x, y, line };
           this.parts.add(line);
           if (this.cursor.visible) {
@@ -70,12 +72,12 @@ export default class Play extends Phaser.Scene {
             });
           }
         }
-      } else if (this.tool === 'wheel') {
+      } else if (ToolClass.prototype instanceof Wheel) {
         if (
           !this.cursor.visible ||
-          this.cursor.getData('connectObj').type !== 'wheel'
+          !(this.cursor.getData('connectObj') instanceof Wheel)
         ) {
-          const wheel = new Wheel(this, x, y);
+          const wheel = new ToolClass(this, x, y);
           wheel.enablePhysics();
           this.parts.add(wheel);
 
@@ -188,7 +190,7 @@ export default class Play extends Phaser.Scene {
     });
 
     this.setRunning(false);
-    this.setTool('line');
+    this.setTool('wood');
 
     this.createListeners();
   }
