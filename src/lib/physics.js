@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+
 /**
  * @type import('@types/matter-js')
  */
@@ -13,22 +15,36 @@ Matter.Detector.canCollide = (filterA, filterB) => {
   return oldCanCollide(filterA, filterB);
 };
 
+// {
+//   pointA: {
+//     x: line.x2 - parent.x,
+//     y: line.y2 - parent.y,
+//   },
+// }
+
 /**
  * Connects two bodies at position of `child`
  * @param {Phaser.Scene} scene
  * @param {Matter.Body} parent
  * @param {Matter.Body} child
  */
-export const stiffConnect = (scene, parent, child, options = {}) => {
+export const stiffConnect = (scene, bodyA, bodyB, options = {}) => {
+  // const typeA = parent.type;
+  // const typeB = child.type;
+  // parent = parent.body;
+  // child = child.body;
+
   const {
     length = 0,
     stiffness = 1,
+    x,
+    y,
     // group = Matter.Body.nextGroup(true),
     ..._options
   } = options;
 
-  const fA = parent.collisionFilter;
-  const fB = child.collisionFilter;
+  const fA = bodyA.collisionFilter;
+  const fB = bodyB.collisionFilter;
   if (!fA.group) fA.group = Matter.Body.nextGroup(true);
   if (!fB.group) fB.group = Matter.Body.nextGroup(true);
   if (!fA.connections) fA.connections = [];
@@ -38,14 +54,20 @@ export const stiffConnect = (scene, parent, child, options = {}) => {
 
   if (!_options.render) _options.render = { visible: false };
 
-  _options.pointA = {
-    x: child.position.x - parent.position.x,
-    y: child.position.y - parent.position.y,
-  };
+  if (x !== undefined && y !== undefined) {
+    _options.pointA = {
+      x: x - bodyA.position.x,
+      y: y - bodyA.position.y,
+    };
+    _options.pointB = {
+      x: x - bodyB.position.x,
+      y: y - bodyB.position.y,
+    };
+  }
 
   return scene.matter.add.constraint(
-    parent,
-    child,
+    bodyA,
+    bodyB,
     length,
     stiffness,
     _options,
