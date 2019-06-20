@@ -42,9 +42,9 @@ export default class Play extends Phaser.Scene {
   activateDrawLine() {
     let line = null;
     if (this.drawLine) {
-      if (this.tool instanceof Line) {
-        line = this.drawLine.line.enablePhysics();
-      } else this.drawLine.line.destroy();
+      // if (this.tool) {
+      line = this.drawLine.line.enablePhysics();
+      // } else this.drawLine.line.destroy();
       this.drawLine = null;
     }
     return line;
@@ -57,7 +57,7 @@ export default class Play extends Phaser.Scene {
         y = this.cursor.y;
       }
       const lineExisted = this.activateDrawLine();
-      
+
       const ToolClass = PART_CLASSES[this.tool];
       if (ToolClass.prototype instanceof Line) {
         if (!lineExisted) {
@@ -115,8 +115,9 @@ export default class Play extends Phaser.Scene {
         y = this.cursor.y;
       }
       if (this.drawLine) {
-        if (this.tool === 'line') this.drawLine.line.setEnd(x, y);
-        else this.activateDrawLine();
+        // if (this.tool === 'line')
+        this.drawLine.line.setEnd(x, y);
+        // else this.activateDrawLine();
       }
     });
 

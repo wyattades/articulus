@@ -13,10 +13,14 @@ export default class Wheel extends Part {
 
     this.radius = radius;
 
+    setTimeout(() => this.render()); // HACK
+  }
+
+  render() {
     this.fillStyle(this.fillColor);
-    this.fillCircle(0, 0, radius);
+    this.fillCircle(0, 0, this.radius);
     this.lineStyle(1, 0xff0000);
-    this.lineBetween(0, 0, radius, 0);
+    this.lineBetween(0, 0, this.radius, 0);
   }
 
   enablePhysics(isStatic = false) {
@@ -52,9 +56,21 @@ export default class Wheel extends Part {
     super.destroy();
   }
 
-  // getHoverPoint(x, y, dist) {
-  //   if (Phaser.Math.Distance.Between(x, y, this.x, this.y) < dist)
-  //     return { x: this.x, y: this.y };
-  //   return null;
-  // }
+  getHoverPoint(x, y, dist) {
+    if (Phaser.Math.Distance.Between(x, y, this.x, this.y) < dist)
+      return { x: this.x, y: this.y };
+
+    for (
+      let rot = this.rotation;
+      rot < this.rotation + Math.PI * 2;
+      rot += Math.PI / 2
+    ) {
+      const rx = this.x + Math.cos(rot) * this.radius;
+      const ry = this.y + Math.sin(rot) * this.radius;
+      if (Phaser.Math.Distance.Between(x, y, rx, ry) < dist)
+        return { x: rx, y: ry };
+    }
+
+    return null;
+  }
 }

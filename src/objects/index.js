@@ -14,8 +14,9 @@ export class Water extends Line {
   fillColor = 0x328def;
 
   enablePhysics() {
-    super();
+    super.enablePhysics();
     this.body.collisionFilter.noCollide = true;
+    return this;
   }
 }
 

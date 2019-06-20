@@ -7,7 +7,11 @@ export const Matter = Phaser.Physics.Matter.Matter;
 
 const oldCanCollide = Matter.Detector.canCollide;
 Matter.Detector.canCollide = (filterA, filterB) => {
-  if (filterA.noCollide || filterB.noCollide) return false;
+  if (
+    (filterA.noCollide && filterB.group < 0) ||
+    (filterB.noCollide && filterA.group < 0)
+  )
+    return false;
   if (
     (filterA.connections && filterA.connections.includes(filterB.group)) ||
     (filterB.connections && filterB.connections.includes(filterA.group))
@@ -62,7 +66,7 @@ export const stiffConnect = (scene, bodyA, bodyB, options = {}) => {
 
   const {
     length = 0,
-    stiffness = 1,
+    stiffness = 0.8,
     x,
     y,
     // group = Matter.Body.nextGroup(true),
@@ -94,5 +98,12 @@ export const stiffConnect = (scene, bodyA, bodyB, options = {}) => {
     };
   }
 
-  return scene.matter.add.constraint(bodyA, bodyB, length, stiffness, _options);
+  const b = scene.matter.add.constraint(
+    bodyA,
+    bodyB,
+    length,
+    stiffness,
+    _options,
+  );
+  return b;
 };

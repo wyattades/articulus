@@ -18,7 +18,7 @@ export default class Line extends Part {
 
     // this.enablePhysics();
     // this.setOrigin(0, 0.5);
-    this.setEnd(x2, y2);
+    setTimeout(() => this.setEnd(x2, y2));
   }
 
   get cosX() {
