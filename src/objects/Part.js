@@ -6,14 +6,35 @@ export default class Part extends Phaser.GameObjects.Graphics {
     scene.add.existing(this);
   }
 
+  /**
+   * @type Matter.Body
+   */
+  body;
+
   type = 'base_part';
 
   render() {}
 
-  enablePhysics(isStatic = false) {}
+  get physicsShape() {
+    return {};
+  }
+
+  enablePhysics() {
+    this.scene.matter.add.gameObject(this, {
+      shape: this.physicsShape,
+      angle: this.rotation,
+    });
+    const cf = this.body.collisionFilter;
+    cf.connections = {};
+    cf.id = this.body.id;
+    
+    return this;
+  }
 
   getHoverPoint(x, y, dist) {
-    if (Phaser.Math.Distance.Between(x, y, this.x, this.y) < dist)
+    dist *= dist;
+
+    if (Phaser.Math.Distance.Squared(x, y, this.x, this.y) < dist)
       return { x: this.x, y: this.y };
     return null;
   }

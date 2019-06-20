@@ -1,55 +1,66 @@
 import Phaser from 'phaser';
 
 /**
- * @type import('@types/matter-js')
+ * @type {import('@types/matter-js')}
  */
 export const Matter = Phaser.Physics.Matter.Matter;
 
 const oldCanCollide = Matter.Detector.canCollide;
 Matter.Detector.canCollide = (filterA, filterB) => {
-  if (
-    (filterA.noCollide && filterB.group < 0) ||
-    (filterB.noCollide && filterA.group < 0)
-  )
+  if ((filterA.noCollide && filterB.id) || (filterB.noCollide && filterA.id))
     return false;
   if (
-    (filterA.connections && filterA.connections.includes(filterB.group)) ||
-    (filterB.connections && filterB.connections.includes(filterA.group))
+    (filterA.connections && filterB.id in filterA.connections) ||
+    (filterB.connections && filterA.id in filterB.connections)
   )
     return false;
   return oldCanCollide(filterA, filterB);
 };
 
-// {
-//   pointA: {
-//     x: line.x2 - parent.x,
-//     y: line.y2 - parent.y,
-//   },
-// }
-
 /**
  * @param {Phaser.Scene} scene
- * @param {import('@types/matter-js').Body} bodyA
- * @param {import('@types/matter-js').Body} bodyB
+ * @param {Matter.Body} bodyA
+ * @param {Matter.Body} bodyB
  * @param {number} x
  * @param {number} y
  */
-const getConnectedBodies = (scene, bodyA, bodyB, x, y) => {
+const reconnectedBodies = (scene, bodyA, bodyB, x, y) => {
+  const world = scene.matter.world.localWorld;
+  
+  const ids = {};
   const bodies = new Set([bodyA, bodyB]); // unique
+  for (const c of Matter.Composite.allConstraints(world)) {
+    for (const [L, body] of [['A', c.bodyA], ['B', c.bodyB]]) {
+      const { x: cx, y: cy } = body.position;
+      const { x: dx, y: dy } = c[`point${L}`];
+      if (Phaser.Math.Distance.Squared(x, y, cx + dx, cy + dy) <= 1.0) {
+        bodies.add(body);
+        ids[body.id] = true;
 
-  for (const group of (bodyA.collisionFilter.connections || []).concat(
-    bodyB.collisionFilter.connections || [],
-  )) {
-    const obj = Matter.Composite.allBodies(scene.matter.world.localWorld).find(
-      (b) => b.collisionFilter.group === group,
-    );
-    if (obj) {
-      const point = obj.gameObject.getHoverPoint(x, y, 0.1); // is 0.1 too small/large?
-      if (point) bodies.add(obj);
+        Matter.Composite.remove(world, c);
+      }
     }
   }
 
-  return bodies.values();
+  bodies.delete(bodyA);
+
+  for (const body of bodies) {
+    Object.assign(body.collisionFilter.connections, ids);
+
+    scene.matter.add.constraint(bodyA, body, 0, 0.8, {
+      render: {
+        visible: false,
+      },
+      pointA: {
+        x: x - bodyA.position.x,
+        y: y - bodyA.position.y,
+      },
+      pointB: {
+        x: x - body.position.x,
+        y: y - body.position.y,
+      },
+    });
+  }
 };
 
 /**
@@ -73,37 +84,38 @@ export const stiffConnect = (scene, bodyA, bodyB, options = {}) => {
     ..._options
   } = options;
 
-  const fA = bodyA.collisionFilter;
-  const fB = bodyB.collisionFilter;
-  if (!fA.group) fA.group = Matter.Body.nextGroup(true);
-  if (!fB.group) fB.group = Matter.Body.nextGroup(true);
-  if (!fA.connections) fA.connections = [];
-  if (!fA.connections.includes(fB.group)) fA.connections.push(fB.group);
+  // const fA = bodyA.collisionFilter;
+  // const fB = bodyB.collisionFilter;
+  // if (!fA.group) fA.group = Matter.Body.nextGroup(true);
+  // if (!fB.group) fB.group = Matter.Body.nextGroup(true);
+  // if (!fA.connections) fA.connections = {};
+  // fA.connections[fB.id] = true;
   // parent.collisionFilter.group = group;
   // child.collisionFilter.group = group;
 
   if (!_options.render) _options.render = { visible: false };
 
   if (x !== undefined && y !== undefined) {
-    // TODO create one constraint with multiple bodies?
-    // const connections = getConnectedBodies(scene, bodyA, bodyB, x, y);
+    reconnectedBodies(scene, bodyA, bodyB, x, y);
 
-    _options.pointA = {
-      x: x - bodyA.position.x,
-      y: y - bodyA.position.y,
-    };
-    _options.pointB = {
-      x: x - bodyB.position.x,
-      y: y - bodyB.position.y,
-    };
+    // _options.pointA = {
+    //   x: x - bodyA.position.x,
+    //   y: y - bodyA.position.y,
+    // };
+    // _options.pointB = {
+    //   x: x - bodyB.position.x,
+    //   y: y - bodyB.position.y,
+    // };
+  } else {
+    throw new Error('Not supported :(');
   }
 
-  const b = scene.matter.add.constraint(
-    bodyA,
-    bodyB,
-    length,
-    stiffness,
-    _options,
-  );
-  return b;
+  // const b = scene.matter.add.constraint(
+  //   bodyA,
+  //   bodyB,
+  //   length,
+  //   stiffness,
+  //   _options,
+  // );
+  // return b;
 };

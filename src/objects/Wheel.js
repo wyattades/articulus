@@ -23,16 +23,17 @@ export default class Wheel extends Part {
     this.lineBetween(0, 0, this.radius, 0);
   }
 
-  enablePhysics(isStatic = false) {
-    this.scene.matter.add.gameObject(this, {
-      shape: {
-        type: 'circle',
-        x: this.x,
-        y: this.y,
-        radius: this.radius,
-      },
-      isStatic,
-    });
+  get physicsShape() {
+    return {
+      type: 'circle',
+      x: this.x,
+      y: this.y,
+      radius: this.radius,
+    };
+  }
+
+  enablePhysics() {
+    super.enablePhysics();
 
     this.body.friction = 0.7;
 
@@ -41,6 +42,8 @@ export default class Wheel extends Part {
       'beforeUpdate',
       this.applyTorque,
     );
+
+    return this;
   }
 
   applyTorque = () => {
@@ -57,7 +60,9 @@ export default class Wheel extends Part {
   }
 
   getHoverPoint(x, y, dist) {
-    if (Phaser.Math.Distance.Between(x, y, this.x, this.y) < dist)
+    dist *= dist;
+
+    if (Phaser.Math.Distance.Squared(x, y, this.x, this.y) < dist)
       return { x: this.x, y: this.y };
 
     for (
@@ -67,7 +72,7 @@ export default class Wheel extends Part {
     ) {
       const rx = this.x + Math.cos(rot) * this.radius;
       const ry = this.y + Math.sin(rot) * this.radius;
-      if (Phaser.Math.Distance.Between(x, y, rx, ry) < dist)
+      if (Phaser.Math.Distance.Squared(x, y, rx, ry) < dist)
         return { x: rx, y: ry };
     }
 

@@ -129,7 +129,10 @@ export default class Play extends Phaser.Scene {
         const start = startData && startData.obj;
         const end = this.cursor.visible && this.cursor.getData('connectObj');
 
-        if (start === end) return;
+        if (start === end) {
+          line.destroy();
+          return;
+        }
 
         if (start)
           stiffConnect(this, start.body, line.body, {

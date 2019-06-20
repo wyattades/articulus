@@ -86,32 +86,24 @@ export default class Line extends Part {
     );
   }
 
-  enablePhysics(isStatic = false) {
-    // this.setOrigin(0.5, 0.5);
-    // this.x += this.cosX / 2;
-    // this.y += this.cosY / 2;
-
-    this.scene.matter.add.gameObject(this, {
-      shape: {
-        type: 'rectangle',
-        x: this.x,
-        y: this.y,
-        width: this.length,
-        height: this.size,
-      },
-      angle: this.rotation,
-      isStatic,
-    });
-
-    return this;
+  get physicsShape() {
+    return {
+      type: 'rectangle',
+      x: this.x,
+      y: this.y,
+      width: this.length,
+      height: this.size,
+    };
   }
 
   getHoverPoint(x, y, dist) {
+    dist *= dist;
+
     const { x1, y1 } = this;
-    if (Phaser.Math.Distance.Between(x, y, x1, y1) < dist)
+    if (Phaser.Math.Distance.Squared(x, y, x1, y1) < dist)
       return { x: x1, y: y1 };
     const { x2, y2 } = this;
-    if (Phaser.Math.Distance.Between(x, y, x2, y2) < dist)
+    if (Phaser.Math.Distance.Squared(x, y, x2, y2) < dist)
       return { x: x2, y: y2 };
     return null;
   }
