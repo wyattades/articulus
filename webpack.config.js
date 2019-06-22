@@ -8,6 +8,7 @@ module.exports = require('webpack-boiler')({
     CANVAS_RENDERER: true,
     WEBGL_RENDERER: true,
   },
+  basename: 'fantastic_contraption',
 });
 
 module.exports.module.rules.push({
