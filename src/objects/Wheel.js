@@ -6,21 +6,26 @@ import Part from './Part';
 export default class Wheel extends Part {
   type = 'wheel';
   spinDir = 1;
-  fillColor = 0xfff000;
+  appliedTorque = 0.1;
 
   constructor(scene, x, y, radius = 30) {
     super(scene, x, y);
 
     this.radius = radius;
-
-    setTimeout(() => this.render()); // HACK
   }
 
   render() {
+    this.lineStyle(2, this.strokeColor);
     this.fillStyle(this.fillColor);
     this.fillCircle(0, 0, this.radius);
-    this.lineStyle(1, 0xff0000);
-    this.lineBetween(0, 0, this.radius, 0);
+    this.strokeCircle(0, 0, this.radius);
+
+    this.connector(0, 0);
+    for (let rot = 0; rot < Math.PI * 2; rot += Math.PI / 2) {
+      const rx = Math.cos(rot) * this.radius;
+      const ry = Math.sin(rot) * this.radius;
+      this.connector(rx, ry);
+    }
   }
 
   get physicsShape() {
@@ -30,6 +35,11 @@ export default class Wheel extends Part {
       y: this.y,
       radius: this.radius,
     };
+  }
+
+  collides(rect) {
+    const circleGeom = new Phaser.Geom.Circle(this.x, this.y, this.radius);
+    return Phaser.Geom.Intersects.CircleToRectangle(circleGeom, rect);
   }
 
   enablePhysics() {
@@ -47,7 +57,7 @@ export default class Wheel extends Part {
   }
 
   applyTorque = () => {
-    this.body.torque = this.spinDir * 0.1;
+    this.body.torque = this.spinDir * this.appliedTorque;
   };
 
   destroy() {

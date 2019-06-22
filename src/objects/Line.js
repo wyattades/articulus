@@ -1,13 +1,11 @@
 import Phaser from 'phaser';
 
-// import { Matter } from '../lib/physics';
 import Part from './Part';
 
 export default class Line extends Part {
   static MIN_LENGTH = 20;
 
   type = 'line';
-  fillColor = 0xffffff;
 
   constructor(scene, x1, y1, x2, y2, lineWidth = 10) {
     super(scene, x1, y1);
@@ -16,7 +14,7 @@ export default class Line extends Part {
     this._x1 = x1;
     this._y1 = y1;
 
-    setTimeout(() => this.setEnd(x2, y2)); // HACK
+    this.setEnd(x2, y2);
   }
 
   get cosX() {
@@ -53,32 +51,40 @@ export default class Line extends Part {
 
     this.x = x1 + this.cosX / 2;
     this.y = y1 + this.cosY / 2;
-    this.redraw();
 
-    // this.body.position.x = this.x;
-    // this.body.position.y = this.y;
-    // this.body.angle = this.rotation;
-    // this.setSize(this.length, this.size);
+    this.clear();
+    this.render();
   }
 
-  redraw() {
-    this.clear();
-    // this.lineStyle(2, 0x0000ff, 1);
-    // this.strokeRoundedRect(
-    //   -this.length / 2 - this.size / 2,
-    //   -this.size / 2,
-    //   this.length + this.size,
-    //   this.size,
-    //   this.size / 2,
-    // );
+  render() {
     this.fillStyle(this.fillColor);
-    this.fillRoundedRect(
+    this.lineStyle(2, this.strokeColor, 1);
+    this.fillRect(
       -this.length / 2 - this.size / 2,
       -this.size / 2,
       this.length + this.size,
       this.size,
-      this.size / 2,
+      // this.size / 2,
     );
+    this.strokeRect(
+      -this.length / 2 - this.size / 2,
+      -this.size / 2,
+      this.length + this.size,
+      this.size,
+      // this.size / 2,
+    );
+
+    this.connector(-this.length / 2, 0);
+    this.connector(this.length / 2, 0);
+  }
+
+  collides(obj) {
+    const lineGeom = new Phaser.Geom.Line(this.x1, this.y1, this.x2, this.y2);
+    if (obj instanceof Phaser.Geom.Line) {
+      return Phaser.Geom.Intersects.LineToLine(obj, lineGeom);
+    } else if (obj.width + obj.height < 4)
+      return Phaser.Geom.Intersects.PointToLine(obj, lineGeom, this.size);
+    else return Phaser.Geom.Intersects.LineToRectangle(lineGeom, obj);
   }
 
   get physicsShape() {

@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 
-import { stiffConnect } from '../lib/physics';
-import { Line, Wheel, PART_TYPES, PART_CLASSES } from '../objects';
+import { TOOL_TYPES, TOOLS } from '../tools';
 
 export default class Play extends Phaser.Scene {
   running = false;
@@ -14,11 +13,14 @@ export default class Play extends Phaser.Scene {
     this.stateText.setText(running ? 'Running' : 'Paused');
   }
 
-  setTool(tool) {
-    this.tool = tool;
+  setTool(toolType) {
+    // this.tool = tool;
+    const { ToolClass, PartClass } = TOOLS[toolType];
+    this.tool = new ToolClass(this, PartClass);
+
     for (const button of this.toolButtons)
       button.node.style.backgroundColor =
-        button.getData('tool') === tool ? 'green' : 'white';
+        button.getData('tool') === toolType ? 'green' : 'white';
   }
 
   preload() {
@@ -39,17 +41,6 @@ export default class Play extends Phaser.Scene {
     }
   }
 
-  activateDrawLine() {
-    let line = null;
-    if (this.drawLine) {
-      // if (this.tool) {
-      line = this.drawLine.line.enablePhysics();
-      // } else this.drawLine.line.destroy();
-      this.drawLine = null;
-    }
-    return line;
-  }
-
   refreshCursor(x, y) {
     let jointPoint = null;
     for (const child of this.parts.getChildren()) {
@@ -67,90 +58,30 @@ export default class Play extends Phaser.Scene {
 
   createListeners() {
     this.input.on('pointerdown', ({ x, y }) => {
-      if (this.cursor.visible) {
-        x = this.cursor.x;
-        y = this.cursor.y;
-      }
-      const lineExisted = this.activateDrawLine();
-
-      const ToolClass = PART_CLASSES[this.tool];
-      if (ToolClass.prototype instanceof Line) {
-        if (!lineExisted) {
-          const line = new ToolClass(this, x, y, x, y);
-          this.drawLine = { x, y, line };
-          this.parts.add(line);
-          if (this.cursor.visible) {
-            line.setData('connectStartData', {
-              x: this.cursor.x,
-              y: this.cursor.y,
-              obj: this.cursor.getData('connectObj'),
-            });
-          }
+      if (this.tool) {
+        if (this.cursor.visible) {
+          x = this.cursor.x;
+          y = this.cursor.y;
         }
-      } else if (ToolClass.prototype instanceof Wheel) {
-        if (
-          !this.cursor.visible ||
-          !(this.cursor.getData('connectObj') instanceof Wheel)
-        ) {
-          const wheel = new ToolClass(this, x, y);
-          wheel.enablePhysics();
-          this.parts.add(wheel);
-
-          if (this.cursor.visible) {
-            stiffConnect(
-              this,
-              this.cursor.getData('connectObj').body,
-              wheel.body,
-              {
-                x: wheel.x,
-                y: wheel.y,
-              },
-            );
-          }
-        }
+        this.tool.handlePointerDown(x, y);
       }
     });
 
     this.input.on('pointermove', ({ x, y }) => {
       this.refreshCursor(x, y);
 
-      if (this.cursor.visible) {
-        x = this.cursor.x;
-        y = this.cursor.y;
-      }
-
-      if (this.drawLine) {
-        // if (this.tool === 'line')
-        this.drawLine.line.setEnd(x, y);
-        // else this.activateDrawLine();
+      if (this.tool) {
+        if (this.cursor.visible) {
+          x = this.cursor.x;
+          y = this.cursor.y;
+        }
+        this.tool.handleMove(x, y);
       }
     });
 
     this.input.on('pointerup', ({ x, y }) => {
-      const line = this.activateDrawLine();
-
-      if (line) {
-        const startData = line.getData('connectStartData');
-        const start = startData && startData.obj;
-        const end = this.cursor.visible && this.cursor.getData('connectObj');
-
-        if (start === end || line.length < Line.MIN_LENGTH) {
-          line.destroy();
-          return;
-        }
-
-        if (start)
-          stiffConnect(this, start.body, line.body, {
-            x: startData.x,
-            y: startData.y,
-          });
-        if (end)
-          stiffConnect(this, end.body, line.body, {
-            x: this.cursor.x,
-            y: this.cursor.y,
-          });
-
-        this.refreshCursor(x, y);
+      if (this.tool) {
+        this.tool.handlePointerUp(x, y);
       }
     });
 
@@ -189,19 +120,20 @@ export default class Play extends Phaser.Scene {
       .text(this.game.scale.width - 10, 10, '', {})
       .setOrigin(1, 0);
     this.uiGroup.add(this.stateText);
-    this.toolButtons = PART_TYPES.map((tool, i) => {
+    this.toolButtons = TOOL_TYPES.map((toolType, i) => {
+      const { label } = TOOLS[toolType];
       const button = this.add
-        .dom(10, 10 + i * 30, 'button', {}, tool)
+        .dom(10, 10 + i * 30, 'button', null, label)
         .setOrigin(0, 0)
-        .setData('tool', tool)
+        .setData('tool', toolType)
         .addListener('click');
-      button.on('click', () => this.setTool(tool));
+      button.on('click', () => this.setTool(toolType));
       this.uiGroup.add(button);
       return button;
     });
 
     this.setRunning(false);
-    this.setTool('wood');
+    this.setTool(TOOL_TYPES[0]);
 
     this.createListeners();
   }

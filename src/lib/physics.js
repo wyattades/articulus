@@ -18,13 +18,12 @@ Matter.Detector.canCollide = (filterA, filterB) => {
 };
 
 /**
+ * Connects two bodies at position of `child`
  * @param {Phaser.Scene} scene
- * @param {Matter.Body} bodyA
- * @param {Matter.Body} bodyB
- * @param {number} x
- * @param {number} y
+ * @param {Matter.Body} parent
+ * @param {Matter.Body} child
  */
-const reconnectedBodies = (scene, bodyA, bodyB, x, y) => {
+export const stiffConnect = (scene, bodyA, bodyB, { x, y }) => {
   const world = scene.matter.world.localWorld;
 
   const ids = {
@@ -40,7 +39,7 @@ const reconnectedBodies = (scene, bodyA, bodyB, x, y) => {
         bodies.add(body);
         ids[body.id] = true;
 
-        Matter.Composite.remove(world, c);
+        scene.matter.world.removeConstraint(c);
       }
     }
   }
@@ -67,58 +66,22 @@ const reconnectedBodies = (scene, bodyA, bodyB, x, y) => {
 };
 
 /**
- * Connects two bodies at position of `child`
  * @param {Phaser.Scene} scene
- * @param {Matter.Body} parent
- * @param {Matter.Body} child
+ * @param {Matter.Body} body
  */
-export const stiffConnect = (scene, bodyA, bodyB, options = {}) => {
-  // const typeA = parent.type;
-  // const typeB = child.type;
-  // parent = parent.body;
-  // child = child.body;
+export const deleteConnections = (scene, body) => {
+  const world = scene.matter.world.localWorld;
 
-  const {
-    length = 0,
-    stiffness = 0.8,
-    x,
-    y,
-    // group = Matter.Body.nextGroup(true),
-    ..._options
-  } = options;
-
-  // const fA = bodyA.collisionFilter;
-  // const fB = bodyB.collisionFilter;
-  // if (!fA.group) fA.group = Matter.Body.nextGroup(true);
-  // if (!fB.group) fB.group = Matter.Body.nextGroup(true);
-  // if (!fA.connections) fA.connections = {};
-  // fA.connections[fB.id] = true;
-  // parent.collisionFilter.group = group;
-  // child.collisionFilter.group = group;
-
-  if (!_options.render) _options.render = { visible: false };
-
-  if (x !== undefined && y !== undefined) {
-    reconnectedBodies(scene, bodyA, bodyB, x, y);
-
-    // _options.pointA = {
-    //   x: x - bodyA.position.x,
-    //   y: y - bodyA.position.y,
-    // };
-    // _options.pointB = {
-    //   x: x - bodyB.position.x,
-    //   y: y - bodyB.position.y,
-    // };
-  } else {
-    throw new Error('Not supported :(');
+  for (const b of Matter.Composite.allBodies(world)) {
+    if (b.collisionFilter.connections)
+      delete b.collisionFilter.connections[body.id];
   }
 
-  // const b = scene.matter.add.constraint(
-  //   bodyA,
-  //   bodyB,
-  //   length,
-  //   stiffness,
-  //   _options,
-  // );
-  // return b;
+  // FIXME: deletes ALL constraints
+  for (const c of Matter.Composite.allConstraints(world)) {
+    if (c.bodyA === body || c.bodyB === body)
+      scene.matter.world.removeConstraint(c);
+  }
+
+  scene.matter.world.remove(body);
 };

@@ -7,12 +7,17 @@
     "node": true
   },
   "rules": {
+    "class-methods-use-this": 0,
+    "no-multi-assign": 0,
     "no-unused-prop-types": 0,
-    "react/jsx-no-bind": [1, {
-      "ignoreRefs": false,
-      "allowArrowFunctions": false,
-      "allowBind": false
-    }],
+    "react/jsx-no-bind": [
+      1,
+      {
+        "ignoreRefs": false,
+        "allowArrowFunctions": false,
+        "allowBind": false
+      }
+    ],
     "nonblock-statement-body-position": 0,
     "lines-between-class-members": 0,
     "react/button-has-type": 0,
@@ -43,14 +48,12 @@
     "react/jsx-tag-spacing": 0,
     "react/forbid-prop-types": 0,
     "no-underscore-dangle": 0,
-    "react/sort-comp": [1, {
-      "order": [
-        "lifecycle",
-        "everything-else",
-        "static-methods",
-        "render"
-      ]
-    }],
+    "react/sort-comp": [
+      1,
+      {
+        "order": ["lifecycle", "everything-else", "static-methods", "render"]
+      }
+    ],
     "indent": 0,
     "implicit-arrow-linebreak": 0,
     "array-bracket-spacing": 0,
@@ -60,10 +63,13 @@
     "react/jsx-closing-bracket-location": 0,
     "one-var": 0,
     "no-param-reassign": 0,
-    "max-len": [ 2, { "code": 120 }],
+    "max-len": [2, { "code": 120 }],
     "no-console": 0,
     "no-continue": 0,
-    "no-trailing-spaces": [2, { "skipBlankLines": true, "ignoreComments": false }],
+    "no-trailing-spaces": [
+      2,
+      { "skipBlankLines": true, "ignoreComments": false }
+    ],
     "import/no-mutable-exports": 0,
     "no-restricted-syntax": 0,
     "no-case-declarations": 0,
@@ -80,10 +86,13 @@
     "no-prototype-builtins": 0,
     "linebreak-style": 0,
     "jsx-a11y/anchor-is-valid": 0,
-    "jsx-a11y/label-has-for": [ 2, {
-      "required": {
-        "every": [ "id" ]
+    "jsx-a11y/label-has-for": [
+      2,
+      {
+        "required": {
+          "every": ["id"]
+        }
       }
-    }]
+    ]
   }
 }

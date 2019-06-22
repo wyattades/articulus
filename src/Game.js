@@ -14,7 +14,7 @@ export default class Game extends Phaser.Game {
         default: 'matter',
         matter: {
           enableSleep: true,
-          debug: true,
+          // debug: true,
         },
       },
       dom: {
