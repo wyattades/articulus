@@ -50,6 +50,21 @@ export default class Play extends Phaser.Scene {
     return line;
   }
 
+  refreshCursor(x, y) {
+    let jointPoint = null;
+    for (const child of this.parts.getChildren()) {
+      if (this.drawLine && child === this.drawLine.line) continue;
+      jointPoint = child.getHoverPoint(x, y, 10);
+      if (jointPoint) {
+        if (!this.cursor.visible) this.cursor.setVisible(true);
+        this.cursor.setPosition(jointPoint.x, jointPoint.y);
+        this.cursor.setData('connectObj', child);
+        break;
+      }
+    }
+    if (!jointPoint && this.cursor.visible) this.cursor.setVisible(false);
+  }
+
   createListeners() {
     this.input.on('pointerdown', ({ x, y }) => {
       if (this.cursor.visible) {
@@ -97,23 +112,13 @@ export default class Play extends Phaser.Scene {
     });
 
     this.input.on('pointermove', ({ x, y }) => {
-      let jointPoint = null;
-      for (const child of this.parts.getChildren()) {
-        if (this.drawLine && child === this.drawLine.line) continue;
-        jointPoint = child.getHoverPoint(x, y, 10);
-        if (jointPoint) {
-          if (!this.cursor.visible) this.cursor.setVisible(true);
-          this.cursor.setPosition(jointPoint.x, jointPoint.y);
-          this.cursor.setData('connectObj', child);
-          break;
-        }
-      }
-      if (!jointPoint && this.cursor.visible) this.cursor.setVisible(false);
+      this.refreshCursor(x, y);
 
       if (this.cursor.visible) {
         x = this.cursor.x;
         y = this.cursor.y;
       }
+
       if (this.drawLine) {
         // if (this.tool === 'line')
         this.drawLine.line.setEnd(x, y);
@@ -121,7 +126,7 @@ export default class Play extends Phaser.Scene {
       }
     });
 
-    this.input.on('pointerup', () => {
+    this.input.on('pointerup', ({ x, y }) => {
       const line = this.activateDrawLine();
 
       if (line) {
@@ -129,7 +134,7 @@ export default class Play extends Phaser.Scene {
         const start = startData && startData.obj;
         const end = this.cursor.visible && this.cursor.getData('connectObj');
 
-        if (start === end) {
+        if (start === end || line.length < Line.MIN_LENGTH) {
           line.destroy();
           return;
         }
@@ -144,6 +149,8 @@ export default class Play extends Phaser.Scene {
             x: this.cursor.x,
             y: this.cursor.y,
           });
+
+        this.refreshCursor(x, y);
       }
     });
 

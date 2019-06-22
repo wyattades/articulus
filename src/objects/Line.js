@@ -4,7 +4,7 @@ import Phaser from 'phaser';
 import Part from './Part';
 
 export default class Line extends Part {
-  static MIN_LENGTH = 40;
+  static MIN_LENGTH = 20;
 
   type = 'line';
   fillColor = 0xffffff;
@@ -16,9 +16,7 @@ export default class Line extends Part {
     this._x1 = x1;
     this._y1 = y1;
 
-    // this.enablePhysics();
-    // this.setOrigin(0, 0.5);
-    setTimeout(() => this.setEnd(x2, y2));
+    setTimeout(() => this.setEnd(x2, y2)); // HACK
   }
 
   get cosX() {
@@ -49,10 +47,7 @@ export default class Line extends Part {
   setEnd(x2, y2) {
     const { _x1: x1, _y1: y1 } = this;
 
-    this.length = Math.max(
-      Line.MIN_LENGTH,
-      Phaser.Math.Distance.Between(x1, y1, x2, y2),
-    );
+    this.length = Math.max(1, Phaser.Math.Distance.Between(x1, y1, x2, y2));
 
     this.setRotation(Phaser.Math.Angle.Between(x1, y1, x2, y2));
 

@@ -26,8 +26,11 @@ Matter.Detector.canCollide = (filterA, filterB) => {
  */
 const reconnectedBodies = (scene, bodyA, bodyB, x, y) => {
   const world = scene.matter.world.localWorld;
-  
-  const ids = {};
+
+  const ids = {
+    [bodyA.id]: true,
+    [bodyB.id]: true,
+  };
   const bodies = new Set([bodyA, bodyB]); // unique
   for (const c of Matter.Composite.allConstraints(world)) {
     for (const [L, body] of [['A', c.bodyA], ['B', c.bodyB]]) {

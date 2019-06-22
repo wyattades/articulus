@@ -4,11 +4,6 @@ import Wheel from './Wheel';
 
 export { Part, Line, Wheel };
 
-export class Wood extends Line {
-  type = 'wood';
-  fillColor = 0xb28325;
-}
-
 export class Water extends Line {
   type = 'water';
   fillColor = 0x328def;
@@ -18,6 +13,11 @@ export class Water extends Line {
     this.body.collisionFilter.noCollide = true;
     return this;
   }
+}
+
+export class Wood extends Line {
+  type = 'wood';
+  fillColor = 0xb28325;
 }
 
 export class BackWheel extends Wheel {
