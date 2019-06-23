@@ -56,7 +56,7 @@ export default class SelectTool extends Tool {
     if (this.box) {
       const selected = this.scene.parts
         .getChildren()
-        .filter((child) => child.collides(this.box.geom));
+        .filter((child) => child.intersects(this.box.geom));
 
       this.setSelected(selected);
 

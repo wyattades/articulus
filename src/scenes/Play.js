@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 
 import { TOOL_TYPES, TOOLS } from '../tools';
 import { constrain } from '../lib/utils';
+import * as terrain from '../lib/terrain';
 
 export default class Play extends Phaser.Scene {
   running = false;
@@ -15,8 +16,27 @@ export default class Play extends Phaser.Scene {
 
   setRunning(running) {
     this.running = running;
-    if (running) this.matter.resume();
-    else this.matter.pause();
+    if (running) {
+      const follow = this.parts.getLast(true);
+      if (follow) {
+        this.cameras.main.pan(
+          follow.x,
+          follow.y,
+          600,
+          Phaser.Math.Easing.Quadratic.InOut,
+          false,
+          (_, progress) => {
+            if (progress === 1) {
+              this.matter.resume();
+              this.cameras.main.startFollow(follow, false, 0.08, 0.08);
+            }
+          },
+        );
+      }
+    } else {
+      this.matter.pause();
+      this.cameras.main.stopFollow();
+    }
 
     this.scene.get('UI').stateText.setText(running ? 'Running' : 'Paused');
   }
@@ -28,8 +48,10 @@ export default class Play extends Phaser.Scene {
     this.tool = new ToolClass(this, PartClass);
 
     for (const button of this.scene.get('UI').toolButtons)
-      button.node.style.backgroundColor =
-        button.getData('tool') === toolType ? 'green' : 'white';
+      button.node.classList.toggle(
+        'is-active',
+        button.getData('tool') === toolType,
+      );
   }
 
   preload() {
@@ -98,12 +120,12 @@ export default class Play extends Phaser.Scene {
   create() {
     // PHYSICS
 
-    this.matter.world.setBounds(
-      0,
-      0,
-      this.game.config.width,
-      this.game.config.height,
-    );
+    // this.matter.world.setBounds(
+    //   0,
+    //   0,
+    //   this.game.config.width,
+    //   this.game.config.height,
+    // );
 
     // GROUPS
 
@@ -112,6 +134,8 @@ export default class Play extends Phaser.Scene {
     });
 
     // CAMERA
+
+    this.cameras.main.setBackgroundColor(0x82ceed);
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -128,10 +152,12 @@ export default class Play extends Phaser.Scene {
     this.setTool(TOOL_TYPES[0]);
 
     this.createListeners();
+
+    terrain.init(this);
   }
 
   update(_, delta) {
-    const CAMERA_SPEED = 0.4 * delta / this.cameras.main.zoom;
+    const CAMERA_SPEED = (0.4 * delta) / this.cameras.main.zoom;
     const { left, right, up, down } = this.cursors;
     if (left.isDown && !right.isDown) {
       this.cameras.main.scrollX -= CAMERA_SPEED;
