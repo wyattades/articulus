@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import PlayScene from './scenes/Play';
+import UIScene from './scenes/UI';
 
 export default class Game extends Phaser.Game {
   constructor(canvas, parent) {
@@ -20,7 +21,7 @@ export default class Game extends Phaser.Game {
       dom: {
         createContainer: true,
       },
-      scene: PlayScene,
+      scene: [UIScene, PlayScene],
     });
   }
 }

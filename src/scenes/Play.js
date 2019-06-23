@@ -1,16 +1,24 @@
 import Phaser from 'phaser';
 
 import { TOOL_TYPES, TOOLS } from '../tools';
+import { constrain } from '../lib/utils';
 
 export default class Play extends Phaser.Scene {
   running = false;
+
+  constructor() {
+    super({
+      key: 'Play',
+      active: true,
+    });
+  }
 
   setRunning(running) {
     this.running = running;
     if (running) this.matter.resume();
     else this.matter.pause();
 
-    this.stateText.setText(running ? 'Running' : 'Paused');
+    this.scene.get('UI').stateText.setText(running ? 'Running' : 'Paused');
   }
 
   setTool(toolType) {
@@ -19,7 +27,7 @@ export default class Play extends Phaser.Scene {
     const { ToolClass, PartClass } = TOOLS[toolType];
     this.tool = new ToolClass(this, PartClass);
 
-    for (const button of this.toolButtons)
+    for (const button of this.scene.get('UI').toolButtons)
       button.node.style.backgroundColor =
         button.getData('tool') === toolType ? 'green' : 'white';
   }
@@ -71,6 +79,20 @@ export default class Play extends Phaser.Scene {
         if (ee) ee.removeAllListeners();
       this.scene.restart();
     });
+
+    this.game.canvas.addEventListener(
+      'wheel',
+      (e) => {
+        e.preventDefault();
+        this.cameras.main.setZoom(
+          constrain(this.cameras.main.zoom + e.deltaY * 0.01, 0.2, 10),
+        );
+      },
+      false,
+    );
+    // this.input.on('wheel', (x) => {
+    //   console.log(x);
+    // });
   }
 
   create() {
@@ -92,39 +114,13 @@ export default class Play extends Phaser.Scene {
     // CAMERA
 
     this.cursors = this.input.keyboard.createCursorKeys();
-    // this.input.
-
-    // this.cameras.main.startFollow(ship, true, 0.09, 0.09);
-    // this.cameras.main.roundPixels = true;
-
-    // this.cameras.main.setZoom(4);
 
     // CURSOR
 
-    this.uiGroup = this.add.container().setScrollFactor(0, 0, true);
     this.cursor = this.add
       .circle(0, 0, 10, 0xff0000, 0.8)
       .setVisible(false)
-      .setDepth(Infinity);
-    // this.uiGroup.add(this.cursor);
-
-    // UI
-
-    this.stateText = this.add
-      .text(this.game.scale.width - 10, 10, '', {})
-      .setOrigin(1, 0);
-    this.uiGroup.add(this.stateText);
-    this.toolButtons = TOOL_TYPES.map((toolType, i) => {
-      const { label } = TOOLS[toolType];
-      const button = this.add
-        .dom(10, 10 + i * 30, 'button', null, label)
-        .setOrigin(0, 0)
-        .setData('tool', toolType)
-        .addListener('click');
-      button.on('click', () => this.setTool(toolType));
-      this.uiGroup.add(button);
-      return button;
-    });
+      .setDepth(1000);
 
     // SETUP
 
@@ -135,12 +131,12 @@ export default class Play extends Phaser.Scene {
   }
 
   update(_, delta) {
-    const CAMERA_SPEED = 0.4 * delta;
+    const CAMERA_SPEED = 0.4 * delta / this.cameras.main.zoom;
     const { left, right, up, down } = this.cursors;
     if (left.isDown && !right.isDown) {
-      this.cameras.main.scrollX += CAMERA_SPEED;
-    } else if (right.isDown && !left.isDown) {
       this.cameras.main.scrollX -= CAMERA_SPEED;
+    } else if (right.isDown && !left.isDown) {
+      this.cameras.main.scrollX += CAMERA_SPEED;
     }
     if (up.isDown && !down.isDown) {
       this.cameras.main.scrollY -= CAMERA_SPEED;

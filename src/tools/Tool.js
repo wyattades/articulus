@@ -1,4 +1,5 @@
 import Part from '../objects/Part';
+import { constrain } from '../lib/utils';
 
 export default class Tool {
   /**
@@ -19,11 +20,12 @@ export default class Tool {
   destroy() {}
 
   getHovered(x, y, ignore = null) {
+    const hoverDist = constrain(10 / this.scene.cameras.main.zoom, 6, 24);
+
     for (const child of this.scene.parts.getChildren()) {
-      // if (ignore.includes(child)) continue;
       if (ignore && ignore(child)) continue;
 
-      const jointPoint = child.getHoverPoint(x, y, 10);
+      const jointPoint = child.getHoverPoint(x, y, hoverDist);
       if (jointPoint) {
         return { x: jointPoint.x, y: jointPoint.y, obj: child };
       }
