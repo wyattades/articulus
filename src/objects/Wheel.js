@@ -3,6 +3,16 @@ import Phaser from 'phaser';
 import { Matter } from '../lib/physics';
 import Part from './Part';
 
+function* circle4Points(radius, startRotation = 0) {
+  const cos = Math.cos(startRotation) * radius;
+  const sin = Math.sin(startRotation) * radius;
+
+  yield [cos, sin];
+  yield [sin, -cos];
+  yield [-cos, -sin];
+  yield [-sin, cos];
+}
+
 export default class Wheel extends Part {
   type = 'wheel';
   spinDir = 1;
@@ -20,11 +30,9 @@ export default class Wheel extends Part {
     this.fillCircle(0, 0, this.radius);
     this.strokeCircle(0, 0, this.radius);
 
-    this.connector(0, 0);
-    for (let rot = 0; rot < Math.PI * 2; rot += Math.PI / 2) {
-      const rx = Math.cos(rot) * this.radius;
-      const ry = Math.sin(rot) * this.radius;
-      this.connector(rx, ry);
+    this.renderConnector(0, 0);
+    for (const [dx, dy] of circle4Points(this.radius)) {
+      this.renderConnector(dx, dy);
     }
   }
 
@@ -37,7 +45,7 @@ export default class Wheel extends Part {
     };
   }
 
-  collides(rect) {
+  intersects(rect) {
     const circleGeom = new Phaser.Geom.Circle(this.x, this.y, this.radius);
     return Phaser.Geom.Intersects.CircleToRectangle(circleGeom, rect);
   }
@@ -75,13 +83,9 @@ export default class Wheel extends Part {
     if (Phaser.Math.Distance.Squared(x, y, this.x, this.y) < dist)
       return { x: this.x, y: this.y };
 
-    for (
-      let rot = this.rotation;
-      rot < this.rotation + Math.PI * 2;
-      rot += Math.PI / 2
-    ) {
-      const rx = this.x + Math.cos(rot) * this.radius;
-      const ry = this.y + Math.sin(rot) * this.radius;
+    for (const [dx, dy] of circle4Points(this.radius, this.rotation)) {
+      const rx = this.x + dx;
+      const ry = this.y + dy;
       if (Phaser.Math.Distance.Squared(x, y, rx, ry) < dist)
         return { x: rx, y: ry };
     }

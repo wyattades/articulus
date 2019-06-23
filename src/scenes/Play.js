@@ -14,7 +14,8 @@ export default class Play extends Phaser.Scene {
   }
 
   setTool(toolType) {
-    // this.tool = tool;
+    if (this.tool) this.tool.destroy();
+
     const { ToolClass, PartClass } = TOOLS[toolType];
     this.tool = new ToolClass(this, PartClass);
 
@@ -41,47 +42,22 @@ export default class Play extends Phaser.Scene {
     }
   }
 
-  refreshCursor(x, y) {
-    let jointPoint = null;
-    for (const child of this.parts.getChildren()) {
-      if (this.drawLine && child === this.drawLine.line) continue;
-      jointPoint = child.getHoverPoint(x, y, 10);
-      if (jointPoint) {
-        if (!this.cursor.visible) this.cursor.setVisible(true);
-        this.cursor.setPosition(jointPoint.x, jointPoint.y);
-        this.cursor.setData('connectObj', child);
-        break;
-      }
-    }
-    if (!jointPoint && this.cursor.visible) this.cursor.setVisible(false);
-  }
-
   createListeners() {
-    this.input.on('pointerdown', ({ x, y }) => {
+    this.input.on('pointerdown', ({ worldX, worldY }) => {
       if (this.tool) {
-        if (this.cursor.visible) {
-          x = this.cursor.x;
-          y = this.cursor.y;
-        }
-        this.tool.handlePointerDown(x, y);
+        this.tool.handlePointerDown(worldX, worldY);
       }
     });
 
-    this.input.on('pointermove', ({ x, y }) => {
-      this.refreshCursor(x, y);
-
+    this.input.on('pointermove', ({ worldX, worldY }) => {
       if (this.tool) {
-        if (this.cursor.visible) {
-          x = this.cursor.x;
-          y = this.cursor.y;
-        }
-        this.tool.handleMove(x, y);
+        this.tool.handleMove(worldX, worldY);
       }
     });
 
-    this.input.on('pointerup', ({ x, y }) => {
+    this.input.on('pointerup', ({ worldX, worldY }) => {
       if (this.tool) {
-        this.tool.handlePointerUp(x, y);
+        this.tool.handlePointerUp(worldX, worldY);
       }
     });
 
@@ -98,6 +74,8 @@ export default class Play extends Phaser.Scene {
   }
 
   create() {
+    // PHYSICS
+
     this.matter.world.setBounds(
       0,
       0,
@@ -105,16 +83,32 @@ export default class Play extends Phaser.Scene {
       this.game.config.height,
     );
 
+    // GROUPS
+
     this.parts = this.add.group(null, {
       max: 30,
     });
 
-    this.uiGroup = this.add.group();
+    // CAMERA
+
+    this.cursors = this.input.keyboard.createCursorKeys();
+    // this.input.
+
+    // this.cameras.main.startFollow(ship, true, 0.09, 0.09);
+    // this.cameras.main.roundPixels = true;
+
+    // this.cameras.main.setZoom(4);
+
+    // CURSOR
+
+    this.uiGroup = this.add.container().setScrollFactor(0, 0, true);
     this.cursor = this.add
       .circle(0, 0, 10, 0xff0000, 0.8)
       .setVisible(false)
       .setDepth(Infinity);
-    this.uiGroup.add(this.cursor);
+    // this.uiGroup.add(this.cursor);
+
+    // UI
 
     this.stateText = this.add
       .text(this.game.scale.width - 10, 10, '', {})
@@ -132,9 +126,26 @@ export default class Play extends Phaser.Scene {
       return button;
     });
 
+    // SETUP
+
     this.setRunning(false);
     this.setTool(TOOL_TYPES[0]);
 
     this.createListeners();
+  }
+
+  update(_, delta) {
+    const CAMERA_SPEED = 0.4 * delta;
+    const { left, right, up, down } = this.cursors;
+    if (left.isDown && !right.isDown) {
+      this.cameras.main.scrollX += CAMERA_SPEED;
+    } else if (right.isDown && !left.isDown) {
+      this.cameras.main.scrollX -= CAMERA_SPEED;
+    }
+    if (up.isDown && !down.isDown) {
+      this.cameras.main.scrollY -= CAMERA_SPEED;
+    } else if (down.isDown && !up.isDown) {
+      this.cameras.main.scrollY += CAMERA_SPEED;
+    }
   }
 }

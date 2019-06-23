@@ -60,25 +60,23 @@ export default class Line extends Part {
     this.fillStyle(this.fillColor);
     this.lineStyle(2, this.strokeColor, 1);
     this.fillRect(
-      -this.length / 2 - this.size / 2,
+      -this.length / 2,
       -this.size / 2,
-      this.length + this.size,
+      this.length,
       this.size,
-      // this.size / 2,
     );
     this.strokeRect(
-      -this.length / 2 - this.size / 2,
+      -this.length / 2  ,
       -this.size / 2,
-      this.length + this.size,
+      this.length,
       this.size,
-      // this.size / 2,
     );
 
-    this.connector(-this.length / 2, 0);
-    this.connector(this.length / 2, 0);
+    this.renderConnector(-this.length / 2, 0);
+    this.renderConnector(this.length / 2, 0);
   }
 
-  collides(obj) {
+  intersects(obj) {
     const lineGeom = new Phaser.Geom.Line(this.x1, this.y1, this.x2, this.y2);
     if (obj instanceof Phaser.Geom.Line) {
       return Phaser.Geom.Intersects.LineToLine(obj, lineGeom);

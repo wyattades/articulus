@@ -25,7 +25,7 @@ export default class Part extends Phaser.GameObjects.Graphics {
     this.strokeColor = this.iStrokeColor = adjustBrightness(color, -70);
   }
 
-  connector(x, y) {
+  renderConnector(x, y) {
     this.lineStyle(1, 0xffffff);
     this.fillStyle(0xcccccc, 1);
     this.fillCircle(x, y, Part.CONNECTOR_RADIUS);
@@ -37,7 +37,7 @@ export default class Part extends Phaser.GameObjects.Graphics {
   /**
    * @param {Phaser.Geom.Rectangle} rect
    */
-  collides(rect) {
+  intersects(rect) {
     return false;
   }
 
