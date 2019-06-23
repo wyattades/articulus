@@ -1,12 +1,10 @@
-// import './styles/style.scss';
+import './styles/index.scss';
 import Game from './Game';
 
 require.context('./static', true);
 
-const $container = document.createElement('div');
-document.body.appendChild($container);
-const $canvas = document.createElement('canvas');
-$container.appendChild($canvas);
+const $container = document.getElementById('game_container');
+const $canvas = document.getElementById('game');
 
 let game = new Game($canvas, $container);
 

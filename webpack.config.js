@@ -2,6 +2,7 @@ module.exports = require('webpack-boiler')({
   pages: [
     {
       title: 'Fantastic Contraption',
+      template: './src/template.pug',
     },
   ],
   env: {
