@@ -18,7 +18,7 @@ export default class Part extends Phaser.GameObjects.Graphics {
    */
   body;
 
-  type = 'base_part';
+  static type = 'base_part';
 
   set color(color) {
     this.fillColor = color;
@@ -51,8 +51,11 @@ export default class Part extends Phaser.GameObjects.Graphics {
       shape: this.physicsShape,
       angle: this.rotation,
     });
+
+    // this.body.joints = {};
+
     const cf = this.body.collisionFilter;
-    cf.connections = {};
+    cf.joints = {};
     cf.id = this.body.id;
 
     return this;
@@ -65,6 +68,10 @@ export default class Part extends Phaser.GameObjects.Graphics {
       return { x: this.x, y: this.y };
     return null;
   }
+
+  onConnect() {}
+
+  onDisconnect() {}
 
   // destroy() {
   //   if (this.body) this.body.destroy();

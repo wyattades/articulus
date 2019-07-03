@@ -6,3 +6,6 @@ export const adjustBrightness = (color, n) =>
     (r, i) => r + (constrain(((color & (255 << i)) >> i) + n, 0, 255) << i),
     0,
   );
+
+let _id = 1;
+export const nextId = () => _id++;

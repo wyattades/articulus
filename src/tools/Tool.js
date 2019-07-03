@@ -1,14 +1,11 @@
-import Part from '../objects/Part';
 import { constrain } from '../lib/utils';
 
 export default class Tool {
   /**
    * @param {Phaser.Scene} scene
-   * @param {typeof Part} PartClass
    */
-  constructor(scene, PartClass) {
+  constructor(scene) {
     this.scene = scene;
-    this.PartClass = PartClass;
   }
 
   handleMove(x, y) {}

@@ -9,6 +9,7 @@ export const TOOL_TYPES = [
   'water',
   'forward_wheel',
   'back_wheel',
+  'neutral_wheel',
   'delete',
 ];
 /**
@@ -17,32 +18,32 @@ export const TOOL_TYPES = [
 export const TOOLS = {
   wood: {
     label: 'Wood Stick',
-    className: 'button',
-    PartClass: Wood,
+    className: 'button is-link',
     ToolClass: LineTool,
   },
   water: {
     label: 'Water Stick',
-    className: 'button',
-    PartClass: Water,
+    className: 'button is-info',
     ToolClass: LineTool,
   },
   forward_wheel: {
     label: 'Forward Wheel',
-    className: 'button',
-    PartClass: ForwardWheel,
+    className: 'button is-warning',
     ToolClass: PlaceTool,
   },
   back_wheel: {
     label: 'Back Wheel',
-    className: 'button',
-    PartClass: BackWheel,
+    className: 'button is-pink',
+    ToolClass: PlaceTool,
+  },
+  neutral_wheel: {
+    label: 'Neutral Wheel',
+    className: 'button is-primary',
     ToolClass: PlaceTool,
   },
   delete: {
     label: 'Delete',
     className: 'button is-danger',
-    PartClass: null,
     ToolClass: DeleteTool,
   },
 };

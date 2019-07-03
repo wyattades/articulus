@@ -19,10 +19,16 @@ export default class Play extends Phaser.Scene {
     if (running) {
       const follow = this.parts.getLast(true);
       if (follow) {
+        const dist = Phaser.Math.Distance.Between(
+          this.cameras.main.scrollX,
+          this.cameras.main.scrollY,
+          follow.x,
+          follow.y,
+        );
         this.cameras.main.pan(
           follow.x,
           follow.y,
-          600,
+          dist * 0.6,
           Phaser.Math.Easing.Quadratic.InOut,
           false,
           (_, progress) => {
@@ -44,8 +50,12 @@ export default class Play extends Phaser.Scene {
   setTool(toolType) {
     if (this.tool) this.tool.destroy();
 
-    const { ToolClass, PartClass } = TOOLS[toolType];
-    this.tool = new ToolClass(this, PartClass);
+    const { ToolClass } = TOOLS[toolType];
+
+    // Same tool
+    if (this.tool && this.tool.prototype === ToolClass) return;
+
+    this.tool = new ToolClass(this, toolType);
 
     for (const button of this.scene.get('UI').toolButtons)
       button.node.classList.toggle(
@@ -99,6 +109,7 @@ export default class Play extends Phaser.Scene {
       // key event listeners aren't cleared automatically :(
       for (const ee of this.input.keyboard.keys)
         if (ee) ee.removeAllListeners();
+      this.matter.world.destroy();
       this.scene.restart();
     });
 
@@ -132,6 +143,8 @@ export default class Play extends Phaser.Scene {
     this.parts = this.add.group(null, {
       max: 30,
     });
+
+    // this.joints = this.add.group(null);
 
     // CAMERA
 

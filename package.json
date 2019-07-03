@@ -6,12 +6,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=development webpack-dev-server",
-    "build": "NODE_ENV=production webpack"
+    "build": "NODE_ENV=production webpack",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "@types/matter-js": "^0.10.2",
+    "bulma": "^0.7.5",
     "phaser": "^3.17.0"
   },
   "devDependencies": {
@@ -24,7 +26,7 @@
     "gh-pages": "^2.0.1",
     "webpack-boiler": "^0.3.4"
   },
-  "browserslist": [
-    "last 5 Chrome versions"
+  "browserList": [
+    "last 2 chrome versions"
   ]
 }

@@ -1,11 +1,17 @@
 import Phaser from 'phaser';
 
 import { stiffConnect } from '../lib/physics';
-import { Line } from '../objects';
+import Line from '../objects/Line';
+import { OBJECTS } from '../objects';
 import Tool from './Tool';
 
 export default class LineTool extends Tool {
   drawLine = null;
+
+  constructor(scene, partType) {
+    super(scene);
+    this.partType = partType;
+  }
 
   ignoreSelf = (obj) => this.drawLine && obj === this.drawLine.line;
 
@@ -72,7 +78,7 @@ export default class LineTool extends Tool {
         y = this.scene.cursor.y;
       }
 
-      const line = new this.PartClass(this.scene, x, y, x, y);
+      const line = new OBJECTS[this.partType](this.scene, x, y, x, y);
       line.render();
       this.drawLine = { x, y, line };
       this.scene.parts.add(line);
@@ -98,10 +104,10 @@ export default class LineTool extends Tool {
   }
 
   intersectsOtherWood(line) {
-    if (line.type !== 'wood') return null;
+    if (line.constructor.type !== 'wood') return null;
     const lineGeom = new Phaser.Geom.Line(line.x1, line.y1, line.x2, line.y2);
     for (const obj of this.scene.parts.getChildren())
-      if (obj.type === 'wood' && obj.intersects(lineGeom)) return obj;
+      if (obj.constructor.type === 'wood' && obj.intersects(lineGeom)) return obj;
     return null;
   }
 

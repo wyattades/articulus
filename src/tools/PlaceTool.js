@@ -1,42 +1,46 @@
 import { stiffConnect } from '../lib/physics';
-import { Wheel } from '../objects';
+import { Wheel, OBJECTS } from '../objects';
 import Tool from './Tool';
 
-const ignoreWheels = (obj) => obj instanceof Wheel;
-
 export default class PlaceTool extends Tool {
+  constructor(scene, partType) {
+    super(scene);
+    this.partType = partType;
+  }
+
   refreshCursor(x, y) {
-    const hovered = this.getHovered(x, y, ignoreWheels);
+    const cursor = this.scene.cursor;
+
+    const hovered = this.getHovered(x, y);
     if (hovered) {
-      this.scene.cursor.setPosition(hovered.x, hovered.y);
-      this.scene.cursor.setData('connectObj', hovered.obj);
+      cursor.setPosition(hovered.x, hovered.y);
+      cursor.setData('connectObj', hovered.obj);
     }
-    if (!!hovered !== this.scene.cursor.visible)
-      this.scene.cursor.setVisible(!!hovered);
+    if (!!hovered !== cursor.visible) cursor.setVisible(!!hovered);
   }
 
   handlePointerDown(x, y) {
-    if (this.scene.cursor.visible) {
-      x = this.scene.cursor.x;
-      y = this.scene.cursor.y;
+    const cursor = this.scene.cursor;
+
+    if (cursor.visible) {
+      if (cursor.getData('connectObj') instanceof Wheel) return;
+
+      x = cursor.x;
+      y = cursor.y;
     }
 
-    const wheel = new this.PartClass(this.scene, x, y);
+    const wheel = new OBJECTS[this.partType](this.scene, x, y);
     wheel.render();
     wheel.enablePhysics();
     this.scene.parts.add(wheel);
 
-    if (this.scene.cursor.visible) {
-      stiffConnect(
-        this.scene,
-        this.scene.cursor.getData('connectObj').body,
-        wheel.body,
-        {
-          x: wheel.x,
-          y: wheel.y,
-        },
-      );
+    if (cursor.visible) {
+      stiffConnect(this.scene, cursor.getData('connectObj').body, wheel.body, {
+        x: wheel.x,
+        y: wheel.y,
+      });
     }
+    this.refreshCursor(x, y);
   }
 
   handleMove(x, y) {

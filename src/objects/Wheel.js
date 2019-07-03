@@ -14,8 +14,9 @@ function* circle4Points(radius, startRotation = 0) {
 }
 
 export default class Wheel extends Part {
-  type = 'wheel';
-  spinDir = 1;
+  static type = 'wheel';
+
+  spinDir = 0;
   appliedTorque = 0.1;
 
   constructor(scene, x, y, radius = 30) {
@@ -55,12 +56,6 @@ export default class Wheel extends Part {
 
     this.body.friction = 0.7;
 
-    Matter.Events.on(
-      this.scene.matter.world.engine,
-      'beforeUpdate',
-      this.applyTorque,
-    );
-
     return this;
   }
 
@@ -68,12 +63,33 @@ export default class Wheel extends Part {
     this.body.torque = this.spinDir * this.appliedTorque;
   };
 
-  destroy() {
+  onConnect({ x, y }) {
+    if (
+      this.spinDir !== 0 &&
+      Phaser.Math.Distance.Power(x, y, this.x, this.y) <= 1
+    ) {
+      Matter.Events.on(
+        this.scene.matter.world.engine,
+        'beforeUpdate',
+        this.applyTorque,
+      );
+    }
+  }
+
+  onDisconnect() {
+    this.stopSpinning();
+  }
+
+  stopSpinning() {
     Matter.Events.off(
       this.scene.matter.world.engine,
       'beforeUpdate',
       this.applyTorque,
     );
+  }
+
+  destroy() {
+    this.stopSpinning();
     super.destroy();
   }
 
