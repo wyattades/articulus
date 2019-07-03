@@ -64,7 +64,6 @@ const randMap = (width, height, size = 10) => {
   const midY = points[Math.floor(points.length / 2)].y;
 
   points.unshift(
-    // { x: 0, y: points[0].y },
     {
       x: 0,
       y: pointsH + height,
@@ -87,34 +86,33 @@ const randMap = (width, height, size = 10) => {
  * @param {Phaser.Scene} scene
  */
 export const init = (scene) => {
+  const { points, width, midY } = randMap(100, 1000, 40);
 
-    const { points, width, midY } = randMap(100, 1000, 40);
+  const x = -width / 2 + scene.scale.width / 2,
+    y = scene.scale.height - midY - 100;
 
-    const x = -width / 2 + scene.scale.width / 2,
-      y = scene.scale.height - midY - 100;
+  const body = scene.matter.add.fromVertices(0, 0, points, {
+    isStatic: true,
+  });
 
-    const body = scene.matter.add.fromVertices(0, 0, points, {
-      isStatic: true,
-    });
+  // Get offset of center of mass and set the terrain to its correct position
+  // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
+  const centerOfMass = Matter.Vector.sub(body.bounds.min, body.position);
+  Matter.Body.setPosition(body, {
+    x: Math.abs(centerOfMass.x) + x,
+    y: Math.abs(centerOfMass.y) + y,
+  });
 
-    // Get offset of center of mass and set the terrain to its correct position
-    // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
-    const centerOfMass = Matter.Vector.sub(body.bounds.min, body.position);
-    Matter.Body.setPosition(body, {
-      x: Math.abs(centerOfMass.x) + x,
-      y: Math.abs(centerOfMass.y) + y,
-    });
+  const g = scene.add.graphics({ x, y: 0 });
 
-    const g = scene.add.graphics({ x, y: 0 });
+  g.fillStyle(0x876846);
+  g.lineStyle(16, 0x5bad4a);
 
-    g.fillStyle(0x876846);
-    g.lineStyle(16, 0x5bad4a);
+  g.beginPath();
+  g.moveTo(points[0].x, points[0].y + y);
+  for (const p of points) g.lineTo(p.x, p.y + y);
+  g.closePath();
 
-    g.beginPath();
-    g.moveTo(points[0].x, points[0].y + y);
-    for (const p of points) g.lineTo(p.x, p.y + y);
-    g.closePath();
-
-    g.fillPath();
-    g.strokePath();
+  g.fillPath();
+  g.strokePath();
 };

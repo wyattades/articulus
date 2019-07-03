@@ -2,7 +2,7 @@ import DeleteTool from './DeleteTool';
 import LineTool from './LineTool';
 import PlaceTool from './PlaceTool';
 import Tool from './Tool';
-import { Part, BackWheel, ForwardWheel, Water, Wood } from '../objects';
+import { Part } from '../objects';
 
 export const TOOL_TYPES = [
   'wood',
@@ -13,7 +13,7 @@ export const TOOL_TYPES = [
   'delete',
 ];
 /**
- * @type {Object.<string, { label: string, PartClass: typeof Part, ToolClass: typeof Tool }>}
+ * @type {Object.<string, { label: string, className: string, ToolClass: typeof Tool }>}
  */
 export const TOOLS = {
   wood: {

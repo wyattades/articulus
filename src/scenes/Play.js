@@ -7,6 +7,9 @@ import * as terrain from '../lib/terrain';
 export default class Play extends Phaser.Scene {
   running = false;
 
+  /** @type import('./UI').default */
+  ui;
+
   constructor() {
     super({
       key: 'Play',
@@ -44,7 +47,7 @@ export default class Play extends Phaser.Scene {
       this.cameras.main.stopFollow();
     }
 
-    this.scene.get('UI').stateText.setText(running ? 'Running' : 'Paused');
+    this.ui.stateText.setText(running ? 'Running' : 'Paused');
   }
 
   setTool(toolType) {
@@ -57,7 +60,7 @@ export default class Play extends Phaser.Scene {
 
     this.tool = new ToolClass(this, toolType);
 
-    for (const button of this.scene.get('UI').toolButtons)
+    for (const button of this.ui.toolButtons)
       button.node.classList.toggle(
         'is-active',
         button.getData('tool') === toolType,
@@ -118,17 +121,16 @@ export default class Play extends Phaser.Scene {
       (e) => {
         e.preventDefault();
         this.cameras.main.setZoom(
+          // TODO: normalize zoom speed
           constrain(this.cameras.main.zoom + e.deltaY * 0.01, 0.2, 10),
         );
       },
       false,
     );
-    // this.input.on('wheel', (x) => {
-    //   console.log(x);
-    // });
   }
 
   create() {
+    this.ui = this.scene.get('UI');
     // PHYSICS
 
     // this.matter.world.setBounds(
@@ -140,9 +142,13 @@ export default class Play extends Phaser.Scene {
 
     // GROUPS
 
-    this.parts = this.add.group(null, {
-      max: 30,
-    });
+    this.parts = this.add.group();
+    this.parts.createCallback = (item) => {
+      if (this.parts.children.size > 64) {
+        this.ui.flash('MAX ITEM LIMIT EXCEEDED');
+        setTimeout(() => item.destroy(), 0);
+      }
+    };
 
     // this.joints = this.add.group(null);
 
@@ -155,7 +161,8 @@ export default class Play extends Phaser.Scene {
     // CURSOR
 
     this.cursor = this.add
-      .circle(0, 0, 10, 0xff0000, 0.8)
+      .circle(0, 0, 6, 0xeeeeee)
+      .setStrokeStyle(1, 0xbbbbbb)
       .setVisible(false)
       .setDepth(1000);
 
