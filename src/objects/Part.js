@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 import { adjustBrightness } from '../lib/utils';
 
-import { Matter } from '../lib/physics';
+import { Matter, deleteConnections } from '../lib/physics';
 
 export default class Part extends Phaser.GameObjects.Graphics {
   static CONNECTOR_RADIUS = 6;
@@ -76,4 +76,9 @@ export default class Part extends Phaser.GameObjects.Graphics {
   onConnect() {}
 
   onDisconnect() {}
+
+  destroy() {
+    if (this.body) deleteConnections(this.scene, this.body);
+    super.destroy();
+  }
 }

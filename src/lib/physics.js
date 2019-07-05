@@ -1,14 +1,14 @@
 import Phaser from 'phaser';
-import * as R from 'ramda';
 
-import { nextId } from './utils';
+import { nextId, anySame, getFirstValue } from './utils';
 
 const joints = {};
 
 const getJoint = (a, b, x, y) => {
+  const bodies = [a, b];
   for (const id in joints) {
     const joint = joints[id];
-    for (const body of [a, b]) {
+    for (const body of bodies) {
       if (body.id in joint.bodies) {
         for (const c of joint.constraints) {
           for (const [L, cBody] of [['A', c.bodyA], ['B', c.bodyB]]) {
@@ -27,23 +27,11 @@ const getJoint = (a, b, x, y) => {
   return null;
 };
 
-const anySame = (objA, objB) => {
-  for (const key in objA) if (key in objB) return true;
-  for (const key in objB) if (key in objA) return true;
-  return false;
-};
-
-const getFirstValue = (obj) => {
-  for (const id in obj) return obj[id];
-  return null;
-};
-
 export const getJointPos = (joint, body = getFirstValue(joint.bodies)) => {
-  // const bodyA = getFirstValue(joint.bodies);
-  if (!body) return console.warn('No bodies!', joint) || null; // NOTE: when does this happen?
+  if (!body) return console.warn('No bodies!', joint) || null;
 
   const con = joint.constraints[0];
-  if (!con) return console.warn('No constraints!', joint) || null; // NOTE: when does this happen?
+  if (!con) return console.warn('No constraints!', joint) || null;
 
   return {
     x: con.pointA.x + con.bodyA.position.x,

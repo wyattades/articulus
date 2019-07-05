@@ -3,6 +3,9 @@ import Phaser from 'phaser';
 import { TOOL_TYPES, TOOLS } from '../tools';
 import { constrain } from '../lib/utils';
 import * as terrain from '../lib/terrain';
+import { Matter } from '../lib/physics';
+
+const MAX_PARTS = 32;
 
 export default class Play extends Phaser.Scene {
   running = false;
@@ -95,7 +98,7 @@ export default class Play extends Phaser.Scene {
 
     this.input.on('pointermove', ({ worldX, worldY }) => {
       if (this.tool) {
-        this.tool.handleMove(worldX, worldY);
+        this.tool.handlePointerMove(worldX, worldY);
       }
     });
 
@@ -128,10 +131,18 @@ export default class Play extends Phaser.Scene {
       },
       false,
     );
+
+    Matter.Events.on(this.matter.world.localWorld, 'afterAdd', ({ object }) => {
+      if (object.type === 'body' && this.parts.getLength() > MAX_PARTS) {
+        this.ui.flash('MAX ITEM LIMIT EXCEEDED');
+        setTimeout(() => object.gameObject.destroy());
+      }
+    });
   }
 
   create() {
     this.ui = this.scene.get('UI');
+
     // PHYSICS
 
     // this.matter.world.setBounds(
@@ -144,14 +155,6 @@ export default class Play extends Phaser.Scene {
     // GROUPS
 
     this.parts = this.add.group();
-    this.parts.createCallback = (item) => {
-      if (this.parts.children.size > 64) {
-        this.ui.flash('MAX ITEM LIMIT EXCEEDED');
-        setTimeout(() => item.destroy(), 0);
-      }
-    };
-
-    // this.joints = this.add.group(null);
 
     // CAMERA
 

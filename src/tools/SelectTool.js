@@ -40,7 +40,7 @@ export default class SelectTool extends Tool {
     this.updateGeom();
   }
 
-  handleMove(x, y) {
+  handlePointerMove(x, y) {
     if (this.box) {
       const { ix, iy } = this.box;
       if (x < ix) {
@@ -60,7 +60,7 @@ export default class SelectTool extends Tool {
       const boxGeom =
         this.box.width + this.box.height < 4
           ? new Phaser.Geom.Point(this.box.x, this.box.y)
-          : this.box;
+          : this.box.geom;
       const selected = this.scene.parts
         .getChildren()
         .filter((child) => intersectsGeoms(boxGeom, child.geom));
