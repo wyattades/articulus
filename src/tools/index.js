@@ -18,12 +18,12 @@ export const TOOL_TYPES = [
 export const TOOLS = {
   wood: {
     label: 'Wood Stick',
-    className: 'button is-link',
+    className: 'button is-brown',
     ToolClass: LineTool,
   },
   water: {
     label: 'Water Stick',
-    className: 'button is-info',
+    className: 'button is-link',
     ToolClass: LineTool,
   },
   forward_wheel: {
