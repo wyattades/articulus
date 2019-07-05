@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 
 import { adjustBrightness } from '../lib/utils';
 
+import { Matter } from '../lib/physics';
+
 export default class Part extends Phaser.GameObjects.Graphics {
   static CONNECTOR_RADIUS = 6;
 
@@ -34,16 +36,16 @@ export default class Part extends Phaser.GameObjects.Graphics {
 
   render() {}
 
-  /**
-   * @param {Phaser.Geom.Rectangle} rect
-   */
-  intersects(rect) {
-    return false;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
   get physicsShape() {
     return {};
+  }
+
+  get physicsOptions() {
+    return null;
+  }
+
+  get geom() {
+    return new Phaser.Geom.Point(this.x, this.y);
   }
 
   enablePhysics() {
@@ -52,11 +54,13 @@ export default class Part extends Phaser.GameObjects.Graphics {
       angle: this.rotation,
     });
 
-    // this.body.joints = {};
+    const opt = this.physicsOptions;
+    if (opt) Matter.Body.set(this.body, opt);
 
     const cf = this.body.collisionFilter;
     cf.joints = {};
     cf.id = this.body.id;
+    if (this.noCollide) cf.noCollide = true;
 
     return this;
   }

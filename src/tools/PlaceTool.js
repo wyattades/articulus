@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { stiffConnect, getJointPos } from '../lib/physics';
 import { Wheel, OBJECTS } from '../objects';
 import Tool from './Tool';
+import { intersectsOtherSolid } from '../lib/utils';
 
 export default class PlaceTool extends Tool {
   constructor(scene, partType) {
@@ -47,6 +48,11 @@ export default class PlaceTool extends Tool {
     }
 
     const wheel = new OBJECTS[this.partType](this.scene, x, y);
+    if (!cursor.visible && intersectsOtherSolid(this.scene, wheel)) {
+      wheel.destroy();
+      return;
+    }
+
     wheel.render();
     wheel.enablePhysics();
     this.scene.parts.add(wheel);

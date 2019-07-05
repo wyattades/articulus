@@ -4,6 +4,7 @@ import { stiffConnect } from '../lib/physics';
 import Line from '../objects/Line';
 import { OBJECTS } from '../objects';
 import Tool from './Tool';
+import { intersectsGeoms, intersectsOtherSolid } from '../lib/utils';
 
 export default class LineTool extends Tool {
   drawLine = null;
@@ -45,7 +46,7 @@ export default class LineTool extends Tool {
           return drawLine;
         }
 
-        const intersected = this.intersectsOtherWood(line);
+        const intersected = intersectsOtherSolid(this.scene, line);
         if (intersected && intersected !== start && intersected !== end) {
           line.destroy();
           return drawLine;
@@ -101,14 +102,6 @@ export default class LineTool extends Tool {
       }
       this.drawLine.line.setEnd(x, y);
     }
-  }
-
-  intersectsOtherWood(line) {
-    if (line.constructor.type !== 'wood') return null;
-    const lineGeom = new Phaser.Geom.Line(line.x1, line.y1, line.x2, line.y2);
-    for (const obj of this.scene.parts.getChildren())
-      if (obj.constructor.type === 'wood' && obj.intersects(lineGeom)) return obj;
-    return null;
   }
 
   handlePointerUp(x, y) {

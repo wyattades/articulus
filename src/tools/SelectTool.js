@@ -1,6 +1,7 @@
-// import Phaser from 'phaser';
+import Phaser from 'phaser';
 
 import Tool from './Tool';
+import { intersectsGeoms } from '../lib/utils';
 
 export default class SelectTool extends Tool {
   fillColor = 0xffffff;
@@ -56,9 +57,13 @@ export default class SelectTool extends Tool {
 
   handlePointerUp() {
     if (this.box) {
+      const boxGeom =
+        this.box.width + this.box.height < 4
+          ? new Phaser.Geom.Point(this.box.x, this.box.y)
+          : this.box;
       const selected = this.scene.parts
         .getChildren()
-        .filter((child) => child.intersects(this.box.geom));
+        .filter((child) => intersectsGeoms(boxGeom, child.geom));
 
       this.setSelected(selected);
 

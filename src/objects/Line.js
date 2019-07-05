@@ -66,15 +66,6 @@ export default class Line extends Part {
     this.renderConnector(this.length / 2, 0);
   }
 
-  intersects(obj) {
-    const lineGeom = new Phaser.Geom.Line(this.x1, this.y1, this.x2, this.y2);
-    if (obj instanceof Phaser.Geom.Line) {
-      return Phaser.Geom.Intersects.LineToLine(obj, lineGeom);
-    } else if (obj.width + obj.height < 4)
-      return Phaser.Geom.Intersects.PointToLine(obj, lineGeom, this.size);
-    else return Phaser.Geom.Intersects.LineToRectangle(lineGeom, obj);
-  }
-
   get physicsShape() {
     return {
       type: 'rectangle',
@@ -83,6 +74,10 @@ export default class Line extends Part {
       width: this.length,
       height: this.size,
     };
+  }
+
+  get geom() {
+    return new Phaser.Geom.Line(this.x1, this.y1, this.x2, this.y2);
   }
 
   updateTPos = () => {

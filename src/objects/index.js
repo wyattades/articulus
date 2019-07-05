@@ -7,12 +7,7 @@ export { Part, Line, Wheel };
 export class Water extends Line {
   static type = 'water';
   color = 0x328def;
-
-  enablePhysics() {
-    super.enablePhysics();
-    this.body.collisionFilter.noCollide = true;
-    return this;
-  }
+  noCollide = true;
 }
 
 export class Wood extends Line {

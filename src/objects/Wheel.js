@@ -47,17 +47,14 @@ export default class Wheel extends Part {
     };
   }
 
-  intersects(rect) {
-    const circleGeom = new Phaser.Geom.Circle(this.x, this.y, this.radius);
-    return Phaser.Geom.Intersects.CircleToRectangle(circleGeom, rect);
+  get physicsOptions() {
+    return {
+      friction: 0.8,
+    };
   }
 
-  enablePhysics() {
-    super.enablePhysics();
-
-    this.body.friction = 0.8;
-
-    return this;
+  get geom() {
+    return new Phaser.Geom.Circle(this.x, this.y, this.radius);
   }
 
   applyTorque = () => {
