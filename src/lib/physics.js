@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import * as R from 'ramda';
 
 import { nextId } from './utils';
 
@@ -28,6 +29,7 @@ const getJoint = (a, b, x, y) => {
 
 const anySame = (objA, objB) => {
   for (const key in objA) if (key in objB) return true;
+  for (const key in objB) if (key in objA) return true;
   return false;
 };
 
@@ -36,20 +38,24 @@ const getFirstValue = (obj) => {
   return null;
 };
 
+export const getJointPos = (joint, body = getFirstValue(joint.bodies)) => {
+  // const bodyA = getFirstValue(joint.bodies);
+  if (!body) return console.warn('No bodies!', joint) || null; // NOTE: when does this happen?
+
+  const con = joint.constraints[0];
+  if (!con) return console.warn('No constraints!', joint) || null; // NOTE: when does this happen?
+
+  return {
+    x: con.pointA.x + con.bodyA.position.x,
+    y: con.pointA.y + con.bodyA.position.y,
+  };
+};
+
 const reconnect = (scene, joint, point) => {
-  // const bodies = Object.values(joint.bodies);
   const bodyA = getFirstValue(joint.bodies);
-  if (!bodyA) return;
 
-  if (!point) {
-    const con = joint.constraints[0];
-    if (!con) return; // NOTE: when does this happen?
-
-    point = {
-      x: con.pointA.x + con.bodyA.position.x,
-      y: con.pointA.y + con.bodyA.position.y,
-    };
-  }
+  if (!point) point = getJointPos(joint, bodyA);
+  if (!point) return;
 
   const { x, y } = point;
 
@@ -138,13 +144,18 @@ export const deleteConnections = (scene, body) => {
     const joint = body.collisionFilter.joints[jId];
     delete joint.bodies[body.id];
 
-    const prevBodies = Object.values(joint.bodies);
-
     reconnect(scene, joint);
 
-    if (Object.values(joint.bodies).length <= 1) {
+    const bodies = Object.values(joint.bodies);
+
+    const jointPos = getJointPos(joint) || {};
+
+    if (bodies.length <= 1) {
       delete joints[jId]; // is this safe?
-      for (const b of prevBodies) delete b.collisionFilter.joints[jId];
+      for (const b of bodies) {
+        b.gameObject.onDisconnect(jointPos);
+        delete b.collisionFilter.joints[jId];
+      }
     }
   }
 

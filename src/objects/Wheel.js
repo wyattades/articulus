@@ -15,6 +15,7 @@ function* circle4Points(radius, startRotation = 0) {
 
 export default class Wheel extends Part {
   static type = 'wheel';
+  static MAX_SPEED = 0.15;
 
   spinDir = 0;
   appliedTorque = 0.1;
@@ -54,7 +55,7 @@ export default class Wheel extends Part {
   enablePhysics() {
     super.enablePhysics();
 
-    this.body.friction = 0.7;
+    this.body.friction = 0.8;
 
     return this;
   }
@@ -63,9 +64,19 @@ export default class Wheel extends Part {
     this.body.torque = this.spinDir * this.appliedTorque;
   };
 
+  capSpeed = () => {
+    const vel = this.body.angularVelocity;
+    if (Math.abs(vel) > Wheel.MAX_SPEED)
+      Matter.Body.setAngularVelocity(
+        this.body,
+        Math.sign(vel) * Wheel.MAX_SPEED,
+      );
+  };
+
   onConnect({ x, y }) {
     if (
       this.spinDir !== 0 &&
+      // this.x === x && this.y === y <-- this works too
       Phaser.Math.Distance.Power(x, y, this.x, this.y) <= 1
     ) {
       Matter.Events.on(
@@ -73,14 +84,25 @@ export default class Wheel extends Part {
         'beforeUpdate',
         this.applyTorque,
       );
+      Matter.Events.on(
+        this.scene.matter.world.engine,
+        'afterUpdate',
+        this.capSpeed,
+      );
     }
   }
 
-  onDisconnect() {
-    this.stopSpinning();
+  onDisconnect({ x, y }) {
+    if (Phaser.Math.Distance.Power(x, y, this.x, this.y) <= 1)
+      this.stopSpinning();
   }
 
   stopSpinning() {
+    Matter.Events.off(
+      this.scene.matter.world.engine,
+      'afterUpdate',
+      this.capSpeed,
+    );
     Matter.Events.off(
       this.scene.matter.world.engine,
       'beforeUpdate',
