@@ -7,6 +7,7 @@
     "node": true
   },
   "rules": {
+    "operator-linebreak": 0,
     "class-methods-use-this": 0,
     "no-multi-assign": 0,
     "no-unused-prop-types": 0,
