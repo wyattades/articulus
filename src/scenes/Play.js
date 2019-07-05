@@ -47,6 +47,7 @@ export default class Play extends Phaser.Scene {
       this.cameras.main.stopFollow();
     }
 
+    if (this.tool && this.tool.refreshCursor) this.tool.refreshCursor();
     this.ui.stateText.setText(running ? 'Running' : 'Paused');
   }
 

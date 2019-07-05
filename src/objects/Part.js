@@ -72,9 +72,4 @@ export default class Part extends Phaser.GameObjects.Graphics {
   onConnect() {}
 
   onDisconnect() {}
-
-  // destroy() {
-  //   if (this.body) this.body.destroy();
-  //   super.destroy();
-  // }
 }

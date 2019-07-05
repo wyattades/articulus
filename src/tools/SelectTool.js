@@ -24,6 +24,8 @@ export default class SelectTool extends Tool {
   }
 
   handlePointerDown(x, y) {
+    if (this.box) return;
+
     this.box = this.scene.add.rectangle(
       x,
       y,

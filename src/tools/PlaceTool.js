@@ -1,4 +1,6 @@
-import { stiffConnect } from '../lib/physics';
+import Phaser from 'phaser';
+
+import { stiffConnect, getJointPos } from '../lib/physics';
 import { Wheel, OBJECTS } from '../objects';
 import Tool from './Tool';
 
@@ -24,6 +26,21 @@ export default class PlaceTool extends Tool {
 
     if (cursor.visible) {
       if (cursor.getData('connectObj') instanceof Wheel) return;
+
+      const joint = Object.values(
+        cursor.getData('connectObj').body.collisionFilter.joints,
+      ).find((j) => {
+        const jPos = getJointPos(j);
+        return (
+          Phaser.Math.Distance.Squared(jPos.x, jPos.y, cursor.x, cursor.y) <= 1
+        );
+      });
+
+      if (
+        joint &&
+        Object.values(joint.bodies).find((b) => b.gameObject instanceof Wheel)
+      )
+        return;
 
       x = cursor.x;
       y = cursor.y;

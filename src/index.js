@@ -8,6 +8,8 @@ const $canvas = document.getElementById('game');
 
 let game = new Game($canvas, $container);
 
+if (process.env.NODE_ENV === 'development') window.GAME = game;
+
 if (module.hot) {
   module.hot.accept('./Game.js', () => {
     game.destroy();
