@@ -13,8 +13,10 @@
   "license": "MIT",
   "dependencies": {
     "@types/matter-js": "^0.10.2",
+    "babel-plugin-ramda": "^2.0.0",
     "bulma": "^0.7.5",
-    "phaser": "^3.17.0"
+    "phaser": "^3.17.0",
+    "ramda": "^0.26.1"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
