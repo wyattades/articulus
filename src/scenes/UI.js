@@ -13,33 +13,11 @@ export default class UI extends Phaser.Scene {
   /** @type import('./Play').default */
   play;
 
-  flash(msg, type = 'error') {
-    this.flashText.setText(msg).node.classList.add('has-text-danger');
-
-    // TODO clear flashTween and restart
-    if (this.flashTween) return;
-
-    this.flashTween = this.add.tween({
-      targets: this.flashText,
-      y: 30,
-      alpha: 1,
-      duration: 400,
-      ease: Phaser.Math.Easing.Elastic.InOut,
-      onComplete: () => {
-        this.flashTween = setTimeout(() => {
-          this.flashTween = this.add.tween({
-            targets: this.flashText,
-            y: -30,
-            alpha: 0,
-            duration: 400,
-            ease: Phaser.Math.Easing.Elastic.InOut,
-            onComplete: () => {
-              this.flashTween = null;
-            },
-          });
-        }, 2000);
-      },
-    });
+  flash(msg, type = 'danger') {
+    const cl = this.flashText.setText(msg).node.classList;
+    cl.add(`has-text-${type}`);
+    cl.remove('animate');
+    setTimeout(() => cl.add('animate'), 60);
   }
 
   create() {
@@ -63,8 +41,9 @@ export default class UI extends Phaser.Scene {
     });
 
     this.flashText = this.add
-      .dom(this.scale.width / 2, -30, 'div')
-      .setClassName('has-text-centered has-text-weight-bold')
+      .dom(this.scale.width / 2, 0, 'div')
+      .setClassName('has-text-centered has-text-weight-bold is-size-2')
       .setOrigin(0.5, 0);
+    this.flashText.node.id = 'flash';
   }
 }
