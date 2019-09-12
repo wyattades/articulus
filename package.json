@@ -2,31 +2,31 @@
   "name": "fantastic_contraption",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "author": "",
+  "license": "MIT",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=development webpack-dev-server",
     "build": "NODE_ENV=production webpack",
     "deploy": "npm run build && gh-pages -d dist"
   },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "@types/matter-js": "^0.10.2",
-    "babel-plugin-ramda": "^2.0.0",
     "bulma": "^0.7.5",
     "phaser": "^3.17.0",
     "ramda": "^0.26.1"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
+    "babel-plugin-ramda": "^2.0.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.13.0",
     "gh-pages": "^2.0.1",
-    "webpack-boiler": "^0.3.4"
+    "webpack-boiler": "^0.3.5"
   },
   "browserList": [
     "last 2 chrome versions"

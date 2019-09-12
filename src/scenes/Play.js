@@ -16,7 +16,7 @@ export default class Play extends Phaser.Scene {
   constructor() {
     super({
       key: 'Play',
-      active: true,
+      // active: true,
     });
   }
 
@@ -143,15 +143,6 @@ export default class Play extends Phaser.Scene {
   create() {
     this.ui = this.scene.get('UI');
 
-    // PHYSICS
-
-    // this.matter.world.setBounds(
-    //   0,
-    //   0,
-    //   this.game.config.width,
-    //   this.game.config.height,
-    // );
-
     // GROUPS
 
     this.parts = this.add.group();
@@ -177,7 +168,11 @@ export default class Play extends Phaser.Scene {
 
     this.createListeners();
 
-    terrain.init(this);
+    const { width, height } = terrain.init(this);
+
+    // PHYSICS
+
+    this.matter.world.setBounds(0, 0, width, height);
   }
 
   update(_, delta) {

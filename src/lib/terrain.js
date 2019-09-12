@@ -86,7 +86,7 @@ const randMap = (width, height, size = 10) => {
  * @param {Phaser.Scene} scene
  */
 export const init = (scene) => {
-  const { points, width, midY } = randMap(100, 1000, 40);
+  const { points, width, height, midY } = randMap(100, 1000, 40);
 
   const x = -width / 2 + scene.scale.width / 2,
     y = scene.scale.height - midY - 100;
@@ -115,4 +115,6 @@ export const init = (scene) => {
 
   g.fillPath();
   g.strokePath();
+
+  return { width, height };
 };

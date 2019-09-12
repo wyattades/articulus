@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import * as R from 'ramda';
 
 import Tool from './Tool';
 import { intersectsGeoms } from '../lib/utils';
@@ -7,37 +8,52 @@ export default class SelectTool extends Tool {
   fillColor = 0xffffff;
   fillOpacity = 0.3;
 
+  shiftKey = this.scene.input.keyboard.addKey('SHIFT');
+
+  /** @type Phaser.Geom.Rectangle */
+  box;
+
+  /**
+   * @param {Phaser.GameObjects.GameObject[]} selected
+   */
   setSelected(selected) {
-    this.scene.selected = selected;
-    for (const child of selected) {
-      child.strokeColor = 0xffffff;
-      child.render();
+    const currentSelected = this.scene.selected || [];
+    this.scene.selected = this.shiftKey.isDown
+      ? R.union(currentSelected, selected)
+      : selected;
+
+    for (const child of R.difference(currentSelected, this.scene.selected)) {
+      child.strokeOpacity = 0;
+      if (child.render) child.render();
+    }
+
+    for (const child of R.difference(this.scene.selected, currentSelected)) {
+      child.strokeOpacity = 1;
+      if (child.render) child.render();
     }
   }
 
-  updateGeom() {
-    this.box.geom.setTo(
-      this.box.x,
-      this.box.y,
-      Math.max(1, this.box.width),
-      Math.max(1, this.box.height),
-    );
+  updateShape() {
+    const { x, y, width, height } = this.box;
+    this.shape.setPosition(x, y);
+    this.shape.setSize(width, height);
+    if (this.shape.render) this.shape.render();
+  }
+
+  createShape() {
+    return this.scene.add
+      .rectangle(0, 0, 1, 1, this.fillColor, this.fillOpacity)
+      .setOrigin(0, 0);
   }
 
   handlePointerDown(x, y) {
-    if (this.box) return;
+    this.clearBox();
 
-    this.box = this.scene.add.rectangle(
-      x,
-      y,
-      1,
-      1,
-      this.fillColor,
-      this.fillOpacity,
-    );
+    this.shape = this.createShape();
+    this.box = new Phaser.Geom.Rectangle(x, y, 1, 1);
     this.box.ix = x;
     this.box.iy = y;
-    this.updateGeom();
+    this.updateShape();
   }
 
   handlePointerMove(x, y) {
@@ -51,7 +67,7 @@ export default class SelectTool extends Tool {
         this.box.height = iy - y;
         this.box.y = y;
       } else this.box.height = y - iy;
-      this.updateGeom();
+      this.updateShape();
     }
   }
 
@@ -60,14 +76,22 @@ export default class SelectTool extends Tool {
       const boxGeom =
         this.box.width + this.box.height < 4
           ? new Phaser.Geom.Point(this.box.x, this.box.y)
-          : this.box.geom;
+          : this.box;
+
       const selected = this.scene.parts
         .getChildren()
         .filter((child) => intersectsGeoms(boxGeom, child.geom));
 
       this.setSelected(selected);
+      this.clearBox();
+    }
+  }
 
-      this.box.destroy();
+  clearBox() {
+    if (this.box) {
+      this.shape.destroy();
+      this.shape = null;
+      // this.box.destroy();
       this.box = null;
     }
   }

@@ -1,8 +1,8 @@
 import DeleteTool from './DeleteTool';
 import LineTool from './LineTool';
 import PlaceTool from './PlaceTool';
-import Tool from './Tool';
-import { Part } from '../objects';
+import ShapeTool, { EllipseTool } from './ShapeTool';
+import SelectTool from './SelectTool';
 
 export const TOOL_TYPES = [
   'wood',
@@ -13,7 +13,7 @@ export const TOOL_TYPES = [
   'delete',
 ];
 /**
- * @type {Object.<string, { label: string, className: string, ToolClass: typeof Tool }>}
+ * @type {Object.<string, { label: string, className: string, ToolClass: typeof import('./Tool').default }>}
  */
 export const TOOLS = {
   wood: {
@@ -41,9 +41,24 @@ export const TOOLS = {
     className: 'button is-primary',
     ToolClass: PlaceTool,
   },
+  select: {
+    label: 'Select',
+    className: 'button',
+    ToolClass: SelectTool,
+  },
   delete: {
     label: 'Delete',
     className: 'button is-danger',
     ToolClass: DeleteTool,
+  },
+  rectangle_shape: {
+    label: 'Rectangle',
+    className: 'button',
+    ToolClass: ShapeTool,
+  },
+  ellipse_shape: {
+    label: 'Ellipse',
+    className: 'button',
+    ToolClass: EllipseTool,
   },
 };

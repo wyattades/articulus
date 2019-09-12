@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import * as R from 'ramda';
+import * as MoreIntersects from './intersects';
 
 export const constrain = (v, min, max) => (v < min ? min : v > max ? max : v);
 
@@ -13,7 +14,7 @@ export const adjustBrightness = (color, n) =>
 let _id = 1;
 export const nextId = () => _id++;
 
-const Intersects = Phaser.Geom.Intersects;
+const Intersects = { ...Phaser.Geom.Intersects, ...MoreIntersects };
 const geomName = (g) => g.constructor.name;
 export const intersectsGeoms = (g1, g2) => {
   const geoms = [g1, g2];

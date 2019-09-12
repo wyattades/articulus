@@ -6,7 +6,7 @@ export default class UI extends Phaser.Scene {
   constructor() {
     super({
       key: 'UI',
-      active: true,
+      // active: true,
     });
   }
 

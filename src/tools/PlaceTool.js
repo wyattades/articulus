@@ -33,12 +33,10 @@ export default class PlaceTool extends Tool {
   }
 
   getJointAt(obj, x, y) {
-    return Object.values(obj.body.collisionFilter.joints).find(
-      (j) => {
-        const pos = getJointPos(j);
-        return Phaser.Math.Distance.Squared(pos.x, pos.y, x, y) <= 1;
-      },
-    );
+    return Object.values(obj.body.collisionFilter.joints).find((j) => {
+      const pos = getJointPos(j);
+      return Phaser.Math.Distance.Squared(pos.x, pos.y, x, y) <= 1;
+    });
   }
 
   canPlaceObject(drawObj) {
@@ -141,100 +139,3 @@ export default class PlaceTool extends Tool {
     if (this.activateObject()) this.refreshCursor(x, y);
   }
 }
-/*
-ignoreSelf = (obj) => this.drawLine && obj === this.drawLine.line;
-
-refreshCursor(x, y) {
-  const cursor = this.scene.cursor;
-  const hovered = this.getHovered(x, y, this.ignoreSelf);
-  if (hovered) {
-    cursor.setPosition(hovered.x, hovered.y);
-    cursor.setData('connectObj', hovered.obj);
-  }
-  if (!!hovered !== cursor.visible) cursor.setVisible(!!hovered);
-  return hovered;
-}
-
-activateDrawLine(destroy = false) {
-  let drawLine = null;
-  if (this.drawLine) {
-    drawLine = this.drawLine;
-    this.drawLine = null;
-
-    if (destroy) drawLine.line.destroy();
-    else {
-      const { line, startData } = drawLine;
-
-      const start = startData && startData.obj;
-      const end =
-        this.scene.cursor.visible && this.scene.cursor.getData('connectObj');
-
-      if (start === end || line.length < Line.MIN_LENGTH) {
-        line.destroy();
-        return drawLine;
-      }
-
-      const intersected = intersectsOtherSolid(this.scene, line);
-      if (intersected && intersected !== start && intersected !== end) {
-        line.destroy();
-        return drawLine;
-      }
-
-      line.enablePhysics();
-
-      if (start)
-        stiffConnect(this.scene, start.body, line.body, {
-          x: startData.x,
-          y: startData.y,
-        });
-      if (end)
-        stiffConnect(this.scene, end.body, line.body, {
-          x: this.scene.cursor.x,
-          y: this.scene.cursor.y,
-        });
-    }
-  }
-
-  return drawLine;
-}
-
-handlePointerDown(x, y) {
-  const lineExisted = this.activateDrawLine(true);
-
-  if (!lineExisted) {
-    if (this.scene.cursor.visible) {
-      x = this.scene.cursor.x;
-      y = this.scene.cursor.y;
-    }
-
-    const line = new OBJECTS[this.partType](this.scene, x, y, x, y);
-    line.render();
-    this.drawLine = { x, y, line };
-    this.scene.parts.add(line);
-    if (this.scene.cursor.visible) {
-      this.drawLine.startData = {
-        x,
-        y,
-        obj: this.scene.cursor.getData('connectObj'),
-      };
-    }
-  }
-}
-
-handleMove(x, y) {
-  const jointPoint = this.refreshCursor(x, y);
-  if (this.drawLine) {
-    if (jointPoint) {
-      x = jointPoint.x;
-      y = jointPoint.y;
-    }
-    this.drawLine.line.setEnd(x, y);
-  }
-}
-
-handlePointerUp(x, y) {
-  if (this.activateDrawLine()) {
-    this.refreshCursor(x, y);
-  }
-}
-*/
