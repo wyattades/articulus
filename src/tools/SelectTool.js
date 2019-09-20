@@ -33,6 +33,21 @@ export default class SelectTool extends Tool {
     }
   }
 
+  setSelectedFromBox() {
+    if (!this.box) return;
+
+    const boxGeom =
+      this.box.width + this.box.height < 4
+        ? new Phaser.Geom.Point(this.box.x, this.box.y)
+        : this.box;
+
+    const selected = this.scene.parts
+      .getChildren()
+      .filter((child) => intersectsGeoms(boxGeom, child.geom));
+
+    this.setSelected(selected);
+  }
+
   updateShape() {
     const { x, y, width, height } = this.box;
     this.shape.setPosition(x, y);
@@ -54,6 +69,8 @@ export default class SelectTool extends Tool {
     this.box.ix = x;
     this.box.iy = y;
     this.updateShape();
+
+    this.setSelectedFromBox();
   }
 
   handlePointerMove(x, y) {
@@ -73,16 +90,7 @@ export default class SelectTool extends Tool {
 
   handlePointerUp() {
     if (this.box) {
-      const boxGeom =
-        this.box.width + this.box.height < 4
-          ? new Phaser.Geom.Point(this.box.x, this.box.y)
-          : this.box;
-
-      const selected = this.scene.parts
-        .getChildren()
-        .filter((child) => intersectsGeoms(boxGeom, child.geom));
-
-      this.setSelected(selected);
+      this.setSelectedFromBox();
       this.clearBox();
     }
   }

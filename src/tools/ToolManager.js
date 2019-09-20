@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+
 import { TOOLS } from '.';
 
 export default class ToolManager {
@@ -38,7 +40,8 @@ export default class ToolManager {
 
   createListeners() {
     const inp = this.scene.input;
-    inp.on('pointerdown', (pointer) => {
+
+    inp.on(Phaser.Input.Events.POINTER_DOWN, (pointer) => {
       if (this.dragging) {
         this.dragging = null;
         pointer.dragObj = null;

@@ -35,7 +35,7 @@ class Rectangle extends Part {
       return geom.contains(obj.x + dx, obj.y + dy);
     });
 
-    this.on('pointerdown', (pointer) => {
+    this.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, (pointer) => {
       pointer.dragObj = this;
     });
   }
