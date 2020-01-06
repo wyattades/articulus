@@ -33,7 +33,7 @@ export default class ToolManager {
     // this.scene.events.emit('setTool', toolType);
     for (const button of this.scene.ui.toolButtons)
       button.node.classList.toggle(
-        'is-active',
+        'ui-tool-button--active',
         button.getData('tool') === toolType,
       );
   }

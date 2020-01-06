@@ -1,4 +1,9 @@
-@import 'theme';
+@mixin monospace {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+// @import 'theme';
+@import 'ui';
 
 html,
 body {
@@ -6,38 +11,58 @@ body {
   margin: 0;
 }
 
-#game_container {
+body {
+  background: #82ceed;
   padding: 2rem;
 }
 
-#flash {
-  top: -100px;
-  line-height: 1;
-  &.animate {
-    animation: slideInOut 3s;
+.stack {
+  display: flex;
+  & > *:not(:first-child) {
+    padding-left: 2rem;
+  }
+  @media screen and (max-width: 1400px) {
+    display: block;
+    & > *:not(:first-child) {
+      padding-top: 2rem;
+    }
   }
 }
 
-@keyframes slideInOut {
-  0% {
-    opacity: 0;
-    top: -1.1em;
-    text-shadow: none;
+#game {
+  border: 2px solid black;
+}
+
+#title {
+  @include monospace;
+  color: white;
+
+  padding: 0;
+  margin: 0;
+  padding-bottom: 2rem;
+}
+
+#directions {
+  @include monospace;
+  font-size: 1rem;
+  color: white;
+
+  header {
+    padding-bottom: 0.25rem;
+    font-size: 1.25rem;
   }
-  10%,
-  90% {
-    opacity: 1;
-    top: 20px;
+
+  ul li {
+    padding: 0.25rem;
   }
-  10% {
-    text-shadow: -2px 0 #e9cdcd, 0 2px #e9cdcd, 2px 0 #e9cdcd,
-      0 -2px #e9cdcd;
+  code {
+    margin-right: 0.5rem;
   }
-  30% {
-    text-shadow: none;
-  }
-  100% {
-    opacity: 0;
-    top: -1.1em;
-  }
+}
+
+code {
+  background: #e9e9e9;
+  border-radius: 4px;
+  padding: 2px;
+  color: #dd3232;
 }

@@ -26,7 +26,8 @@ export default class Game extends Phaser.Game {
       scene: [EditorUIScene, EditorScene, UIScene, PlayScene],
     });
 
-    this.scene.start('Editor');
+    this.scene.start('UI');
+    this.scene.start('Play');
 
     window.addEventListener('keypress', (e) => {
       if (e.key === 't') this.toggleEditor();

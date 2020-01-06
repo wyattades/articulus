@@ -3,6 +3,7 @@ import LineTool from './LineTool';
 import PlaceTool from './PlaceTool';
 import ShapeTool, { EllipseTool } from './ShapeTool';
 import SelectTool from './SelectTool';
+import theme from '../styles/theme';
 
 export const TOOL_TYPES = [
   'wood',
@@ -12,53 +13,54 @@ export const TOOL_TYPES = [
   'neutral_wheel',
   'delete',
 ];
+
 /**
  * @type {Object.<string, { label: string, className: string, ToolClass: typeof import('./Tool').default }>}
  */
 export const TOOLS = {
   wood: {
     label: 'Wood Stick',
-    className: 'button is-brown',
+    color: theme.brown,
     ToolClass: LineTool,
   },
   water: {
     label: 'Water Stick',
-    className: 'button is-link',
+    color: theme.blue,
     ToolClass: LineTool,
   },
   forward_wheel: {
     label: 'Forward Wheel',
-    className: 'button is-warning',
+    color: theme.yellow,
     ToolClass: PlaceTool,
   },
   back_wheel: {
     label: 'Back Wheel',
-    className: 'button is-pink',
+    color: theme.pink,
     ToolClass: PlaceTool,
   },
   neutral_wheel: {
     label: 'Neutral Wheel',
-    className: 'button is-primary',
+    color: theme.blueLight,
     ToolClass: PlaceTool,
   },
   select: {
     label: 'Select',
-    className: 'button',
+    color: theme.white,
     ToolClass: SelectTool,
   },
   delete: {
     label: 'Delete',
-    className: 'button is-danger',
+    color: theme.red,
     ToolClass: DeleteTool,
   },
   rectangle_shape: {
     label: 'Rectangle',
-    className: 'button',
+    color: theme.white,
     ToolClass: ShapeTool,
   },
   ellipse_shape: {
     label: 'Ellipse',
-    className: 'button',
+    color: theme.white,
     ToolClass: EllipseTool,
   },
 };

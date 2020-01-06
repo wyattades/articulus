@@ -2,6 +2,19 @@ import Phaser from 'phaser';
 import * as R from 'ramda';
 import * as MoreIntersects from './intersects';
 
+/**
+ * @param {Number} num
+ */
+export const colorIntToHex = (num) =>
+  `#${`00000${num.toString(16)}`.substr(-6)}`;
+
+export const colorInverse = (num) => {
+  const { red, green, blue } = Phaser.Display.Color.IntegerToColor(num);
+  return red * 0.299 + green * 0.587 + blue * 0.114 > 186
+    ? '#000000'
+    : '#ffffff';
+};
+
 export const constrain = (v, min, max) => (v < min ? min : v > max ? max : v);
 
 const shifts = [0, 8, 16];

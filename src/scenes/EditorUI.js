@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import { TOOLS } from '../tools';
+import { colorIntToHex, colorInverse } from '../lib/utils';
 
 const TOOL_TYPES = ['rectangle_shape', 'ellipse_shape', 'select', 'delete'];
 
@@ -16,7 +17,7 @@ export default class EditorUI extends Phaser.Scene {
   editor;
 
   updatePointer(x, y) {
-    this.pointerPosText.setText(`x: ${x}, y: ${y}`);
+    this.pointerPosText.setText(`x: ${Math.round(x)}, y: ${Math.round(y)}`);
   }
 
   createListeners() {
@@ -33,19 +34,26 @@ export default class EditorUI extends Phaser.Scene {
 
     this.pointerPosText = this.add
       .dom(this.scale.width - 10, this.scale.height - 10, 'div')
-      .setClassName(
-        'has-text-white has-text-weight-bold has-text-right is-family-monospace',
-      )
+      .setClassName('ui-text')
       .setOrigin(1, 1);
 
     this.toolButtons = TOOL_TYPES.map((toolType, i) => {
-      const { label, className } = TOOLS[toolType];
+      const { label, color } = TOOLS[toolType];
       const button = this.add
-        .dom(10, 10 + i * 50, 'button', null, label)
-        .setClassName(className)
+        .dom(
+          10,
+          10 + i * 50,
+          'button',
+          `background-color: ${colorIntToHex(color)}; color: ${colorInverse(
+            color,
+          )}`,
+          label,
+        )
+        .setClassName('ui-tool-button')
         .setOrigin(0, 0)
         .setData('tool', toolType)
         .addListener('click');
+
       button.on('click', () => this.editor.tm.setTool(toolType));
       return button;
     });

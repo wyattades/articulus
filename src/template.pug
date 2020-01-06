@@ -1,8 +1,24 @@
 extends ../node_modules/webpack-boiler/template.pug
  
 block page_content
-  //- <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-app.js"></script>
-  //- <script src="https://www.gstatic.com/firebasejs/6.2.4/firebase-firestore.js"></script>
-
-  div#game_container
-    canvas#game
+  h1#title Fantastic Contraption
+  .stack
+    #game_container
+      canvas#game
+    #directions
+      header
+        strong Legend:
+      ui
+        li
+          code [SPACE]
+          span Pause/Resume
+        li
+          code R
+          span Restart
+        li
+          code T
+          span Switch between Editor/Play
+        li
+          span Scroll to zoom in and out
+        li
+          span Hold right click and drag OR use the arrow keys to pan

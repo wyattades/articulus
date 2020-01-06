@@ -4,6 +4,7 @@ import { TOOL_TYPES, TOOLS } from '../tools';
 import { constrain } from '../lib/utils';
 import * as terrain from '../lib/terrain';
 import { Matter } from '../lib/physics';
+import theme from '../styles/theme';
 
 const MAX_PARTS = 32;
 
@@ -66,7 +67,7 @@ export default class Play extends Phaser.Scene {
 
     for (const button of this.ui.toolButtons)
       button.node.classList.toggle(
-        'is-active',
+        'ui-tool-button--active',
         button.getData('tool') === toolType,
       );
   }
@@ -90,20 +91,40 @@ export default class Play extends Phaser.Scene {
   }
 
   createListeners() {
-    this.input.on('pointerdown', ({ worldX, worldY }) => {
-      if (this.tool) {
-        this.tool.handlePointerDown(worldX, worldY);
-      }
-    });
+    this.input.on(
+      'pointerdown',
+      ({ worldX, worldY, button, position, event }) => {
+        // event.stopPropagation();
+        // event.preventDefault();
 
-    this.input.on('pointermove', ({ worldX, worldY }) => {
-      if (this.tool) {
+        if (button === 2) {
+          this.dragView = {
+            x: this.cameras.main.scrollX + position.x,
+            y: this.cameras.main.scrollY + position.y,
+          };
+          this.dragView.dx = worldX - this.cameras.main.scrollX;
+          this.dragView.dy = worldY - this.cameras.main.scrollY;
+        } else if (this.tool) {
+          this.tool.handlePointerDown(worldX, worldY);
+        }
+      },
+    );
+
+    this.input.on('pointermove', ({ worldX, worldY, position }) => {
+      if (this.dragView) {
+        this.cameras.main.setScroll(
+          this.dragView.x - position.x,
+          this.dragView.y - position.y,
+        );
+      } else if (this.tool) {
         this.tool.handlePointerMove(worldX, worldY);
       }
     });
 
-    this.input.on('pointerup', ({ worldX, worldY }) => {
-      if (this.tool) {
+    this.input.on('pointerup', ({ worldX, worldY, button }) => {
+      if (button === 2) {
+        this.dragView = null;
+      } else if (this.tool) {
         this.tool.handlePointerUp(worldX, worldY);
       }
     });
@@ -119,6 +140,8 @@ export default class Play extends Phaser.Scene {
       this.matter.world.destroy();
       this.scene.restart();
     });
+
+    this.game.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
     this.game.canvas.addEventListener(
       'wheel',
@@ -149,7 +172,7 @@ export default class Play extends Phaser.Scene {
 
     // CAMERA
 
-    this.cameras.main.setBackgroundColor(0x82ceed);
+    this.cameras.main.setBackgroundColor(theme.blueSky);
 
     this.cursors = this.input.keyboard.createCursorKeys();
 

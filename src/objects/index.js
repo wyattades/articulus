@@ -1,36 +1,37 @@
 import Part from './Part';
 import Line from './Line';
 import Wheel from './Wheel';
+import theme from '../styles/theme';
 
 export { Part, Line, Wheel };
 
 export class Water extends Line {
   static type = 'water';
-  color = 0x328def;
+  color = theme.blue;
   noCollide = true;
 }
 
 export class Wood extends Line {
   static type = 'wood';
-  color = 0xb28325;
+  color = theme.brown;
 }
 
 export class BackWheel extends Wheel {
   static type = 'back_wheel';
   spinDir = -1;
-  color = 0xe5498d;
+  color = theme.pink;
 }
 
 export class ForwardWheel extends Wheel {
   static type = 'forward_wheel';
   spinDir = 1;
-  color = 0xfff000;
+  color = theme.yellow;
 }
 
 export class NeutralWheel extends Wheel {
   static type = 'neutral_wheel';
   spinDir = 0;
-  color = 0x3dd0f5;
+  color = theme.blueLight;
 }
 
 export const OBJECTS = {

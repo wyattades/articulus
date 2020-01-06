@@ -1,0 +1,60 @@
+@keyframes slideInOut {
+  0% {
+    opacity: 0;
+    top: -1.1em;
+    text-shadow: none;
+  }
+  10%,
+  90% {
+    opacity: 1;
+    top: 20px;
+  }
+  10% {
+    text-shadow: -2px 0 #e9cdcd, 0 2px #e9cdcd, 2px 0 #e9cdcd, 0 -2px #e9cdcd;
+  }
+  30% {
+    text-shadow: none;
+  }
+  100% {
+    opacity: 0;
+    top: -1.1em;
+  }
+}
+
+.ui-flash {
+  top: -100px;
+  line-height: 1;
+  &.animate {
+    animation: slideInOut 3s;
+  }
+}
+
+.ui-text {
+  @include monospace;
+  color: white;
+  font-weight: bold;
+  pointer-events: none !important;
+
+  &--black {
+    color: black;
+  }
+}
+
+.ui-tool-button {
+  @include monospace;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+
+  &:hover {
+    // TODO: hover isn't detected
+    opacity: 0.8;
+  }
+
+  &--active {
+    border: 2px solid black;
+  }
+}

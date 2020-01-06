@@ -95,6 +95,10 @@ export default class Wheel extends Part {
   }
 
   stopSpinning() {
+    // TODO: this shouldn't be necessary,
+    // but destroy() is being called when this.scene is undefined :/
+    if (!this.scene) return;
+
     Matter.Events.off(
       this.scene.matter.world.engine,
       'afterUpdate',
