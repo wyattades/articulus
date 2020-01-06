@@ -1,8 +1,6 @@
 {
   "name": "fantastic_contraption",
-  "version": "1.0.0",
-  "description": "",
-  "author": "",
+  "version": "0.1.0",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -12,9 +10,9 @@
     "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
-    "@types/matter-js": "^0.10.2",
+    "@types/matter-js": "^0.10.7",
     "bulma": "^0.7.5",
-    "phaser": "^3.17.0",
+    "phaser": "^3.21.0",
     "ramda": "^0.26.1"
   },
   "devDependencies": {
@@ -25,10 +23,7 @@
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.13.0",
-    "gh-pages": "^2.0.1",
-    "webpack-boiler": "^0.3.5"
-  },
-  "browserList": [
-    "last 2 chrome versions"
-  ]
+    "gh-pages": "^2.1.1",
+    "webpack-boiler": "^0.4.2"
+  }
 }
