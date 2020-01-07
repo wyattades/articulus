@@ -39,6 +39,7 @@ export default class PlaceTool extends Tool {
     });
   }
 
+  // Overwritten by LineTool
   canPlaceObject(drawObj) {
     const cursor = this.scene.cursor;
 

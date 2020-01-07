@@ -45,14 +45,12 @@ export const intersectsGeoms = (g1, g2) => {
   return false;
 };
 
-export const intersectsOtherSolid = (scene, obj, ignore) => {
+export const intersectsOtherSolid = (scene, obj, ignore = []) => {
   if (obj.noCollide) return null;
 
-  let parts = scene.parts.getChildren();
-  if (ignore) {
-    ignore.push(obj);
-    parts = R.difference(parts, ignore);
-  }
+  ignore.push(obj);
+
+  const parts = R.difference(scene.parts.getChildren(), ignore);
 
   const geom = obj.geom;
   for (const part of parts)
