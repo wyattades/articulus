@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import { constrain } from '../lib/utils';
+import { constrain, EventManager } from '../lib/utils';
 import ToolManager from '../tools/ToolManager';
 import { MapSaver } from '../lib/saver';
 
@@ -33,7 +33,8 @@ export default class Editor extends Phaser.Scene {
         this.selected = null;
       });
 
-    this.game.canvas.addEventListener(
+    this.eventManager = new EventManager().on(
+      this.game.canvas,
       'wheel',
       (e) => {
         e.preventDefault();
@@ -44,6 +45,10 @@ export default class Editor extends Phaser.Scene {
       },
       false,
     );
+
+    this.events.on('shutdown', () => {
+      this.eventManager.off();
+    });
   }
 
   saveLevel(force = false) {
