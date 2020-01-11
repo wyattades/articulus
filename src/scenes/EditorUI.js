@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 import { TOOLS } from '../tools';
 import theme from '../styles/theme';
-import { colorIntToHex, colorInverse } from '../lib/utils';
+import { colorIntToHex, colorInverse, createUIButtons } from '../lib/utils';
 
 const TOOL_TYPES = ['rectangle_shape', 'ellipse_shape', 'select', 'delete'];
 
@@ -41,26 +41,21 @@ export default class EditorUI extends Phaser.Scene {
       .setClassName('ui-text')
       .setOrigin(1, 1);
 
-    this.toolButtons = TOOL_TYPES.map((toolType, i) => {
-      const { label, color } = TOOLS[toolType];
-      const button = this.add
-        .dom(
-          10,
-          10 + i * 50,
-          'button',
-          `background-color: ${colorIntToHex(color)}; color: ${colorInverse(
-            color,
-          )}`,
-          label,
-        )
-        .setClassName('ui-tool-button')
-        .setOrigin(0, 0)
-        .setData('tool', toolType)
-        .addListener('click');
-
-      button.on('click', () => this.editor.tm.setTool(toolType));
-      return button;
-    });
+    this.toolButtons = createUIButtons(
+      this,
+      TOOL_TYPES.map((toolType) => {
+        const { label: title, color: bgColor } = TOOLS[toolType];
+        return {
+          title,
+          bgColor,
+          color: colorInverse(bgColor),
+          data: {
+            tool: toolType,
+          },
+          onClick: () => this.editor.tm.setTool(toolType),
+        };
+      }),
+    );
 
     const save = () => {
       let mapKey = this.mapKey;
@@ -72,52 +67,33 @@ export default class EditorUI extends Phaser.Scene {
       this.editor.saveLevel(true);
     };
 
-    const uiButtonConfig = [
+    createUIButtons(
+      this,
       [
-        'Menu',
-        () => {
-          save();
+        {
+          title: 'Menu',
+          onClick: () => {
+            save();
 
-          this.game.setScene('Menu');
+            this.game.setScene('Menu');
+          },
+        },
+        {
+          title: 'Play',
+          onClick: () => {
+            save();
+
+            this.game.setScene('Play', {
+              mapKey: this.mapKey,
+            });
+          },
         },
       ],
-      [
-        'Play',
-        () => {
-          save();
-
-          this.game.setScene('Play', {
-            mapKey: this.mapKey,
-          });
-        },
-      ],
-    ];
-
-    uiButtonConfig.forEach(([name, onClick], i) => {
-      this.add
-        .dom(
-          this.scale.width - 10,
-          10 + i * 50,
-          'button',
-          `background-color: ${colorIntToHex(
-            theme.white,
-          )}; color: ${colorIntToHex(theme.black)}`,
-          name,
-        )
-        .setClassName('ui-tool-button')
-        .setOrigin(1, 0)
-        .addListener('click')
-        .on('click', onClick);
-    });
+      true,
+    );
 
     this.uiSaveStatus = this.add
-      .dom(
-        this.scale.width - 10,
-        10 + uiButtonConfig.length * 50,
-        'div',
-        '',
-        '',
-      )
+      .dom(this.scale.width - 10, 10 + 2 * 50, 'div', '', '')
       .setClassName('ui-text')
       .setOrigin(1, 0);
 

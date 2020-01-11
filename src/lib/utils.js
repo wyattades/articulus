@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import * as R from 'ramda';
+
 import * as MoreIntersects from './intersects';
+import theme from '../styles/theme';
 
 /**
  * @param {Number} num
@@ -10,9 +12,7 @@ export const colorIntToHex = (num) =>
 
 export const colorInverse = (num) => {
   const { red, green, blue } = Phaser.Display.Color.IntegerToColor(num);
-  return red * 0.299 + green * 0.587 + blue * 0.114 > 186
-    ? '#000000'
-    : '#ffffff';
+  return red * 0.299 + green * 0.587 + blue * 0.114 > 186 ? 0x000000 : 0xffffff;
 };
 
 export const constrain = (v, min, max) => (v < min ? min : v > max ? max : v);
@@ -124,3 +124,32 @@ export class EventManager {
     return this;
   }
 }
+
+/**
+ * @param {Phaser.Scene} scene
+ * @param {object[]} configs
+ */
+export const createUIButtons = (scene, configs, right = false) => {
+  const padding = 10;
+  const buttons = configs.map((c, i) => {
+    const button = scene.add
+      .dom(
+        right ? scene.scale.width - padding : padding,
+        10 + i * 50,
+        'button',
+        `background-color: ${colorIntToHex(
+          c.bgColor || theme.white,
+        )}; color: ${colorIntToHex(c.color || theme.black)}`,
+        c.title,
+      )
+      .setData(c.data || {})
+      .setClassName('ui-tool-button')
+      .setOrigin(right ? 1 : 0, 0)
+      .addListener('click');
+    button.on('click', c.onClick);
+
+    return button;
+  });
+
+  return buttons;
+};

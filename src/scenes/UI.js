@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 import { TOOL_TYPES, TOOLS } from '../tools';
-import { colorIntToHex, colorInverse } from '../lib/utils';
+import { colorIntToHex, colorInverse, createUIButtons } from '../lib/utils';
 import theme from '../styles/theme';
 
 export default class UI extends Phaser.Scene {
@@ -33,58 +33,42 @@ export default class UI extends Phaser.Scene {
       .setClassName('ui-text')
       .setOrigin(1, 0);
 
-    this.toolButtons = TOOL_TYPES.map((toolType, i) => {
-      const { label, color } = TOOLS[toolType];
-      const button = this.add
-        .dom(
-          10,
-          10 + i * 50,
-          'button',
-          `background-color: ${colorIntToHex(color)}; color: ${colorInverse(
-            color,
-          )}`,
-          label,
-        )
-        .setOrigin(0, 0)
-        .setClassName('ui-tool-button')
-        .setData('tool', toolType)
-        .addListener('click');
+    this.toolButtons = createUIButtons(
+      this,
+      TOOL_TYPES.map((toolType) => {
+        const { label: title, color: bgColor } = TOOLS[toolType];
+        return {
+          title,
+          bgColor,
+          color: colorInverse(bgColor),
+          data: {
+            tool: toolType,
+          },
+          onClick: () => this.play.setTool(toolType),
+        };
+      }),
+    );
 
-      button.on('click', () => this.play.setTool(toolType));
-      return button;
-    });
-
-    [
+    createUIButtons(
+      this,
       [
-        'Menu',
-        () => {
-          this.game.setScene('Menu');
+        {
+          title: 'Menu',
+          onClick: () => {
+            this.game.setScene('Menu');
+          },
+        },
+        {
+          title: 'Edit',
+          onClick: () => {
+            this.game.setScene('Editor', {
+              mapKey: this.mapKey,
+            });
+          },
         },
       ],
-      [
-        'Edit',
-        () => {
-          this.game.setScene('Editor', {
-            mapKey: this.mapKey,
-          });
-        },
-      ],
-    ].forEach(([name, onClick], i) => {
-      this.add
-        .dom(
-          this.scale.width - 10,
-          10 + i * 50,
-          'button',
-          `background-color: ${colorIntToHex(
-            theme.white,
-          )}; color: ${colorIntToHex(theme.black)}`,
-          name,
-        )
-        .setClassName('ui-tool-button')
-        .setOrigin(1, 0)
-        .addListener('click')
-        .on('click', onClick);
-    });
+      true,
+    );
 
     this.flashText = this.add
       .dom(this.scale.width / 2, 0, 'div')
