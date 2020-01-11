@@ -3,13 +3,14 @@ import Phaser from 'phaser';
 import SelectTool from './SelectTool';
 import Part from '../objects/Part';
 
-class Rectangle extends Part {
+export class Rectangle extends Part {
   fillColor = 0x00ff00;
   fillOpacity = 1;
   strokeColor = 0xffffff;
   strokeOpacity = 0;
   width = 1;
   height = 1;
+  type = 'rect';
 
   setSize(width, height) {
     this.width = width;
@@ -20,18 +21,34 @@ class Rectangle extends Part {
     this.clear();
     this.fillStyle(this.fillColor, this.fillOpacity);
     this.lineStyle(2, this.strokeColor, this.strokeOpacity);
-    this.fillRect(0, 0, this.width, this.height);
-    this.strokeRect(0, 0, this.width, this.height);
+    this.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    this.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
   }
 
   get geom() {
-    return new Phaser.Geom.Rectangle(this.x, this.y, this.width, this.height);
+    return new Phaser.Geom.Rectangle(
+      this.x - this.width / 2,
+      this.y - this.height / 2,
+      this.width,
+      this.height,
+    );
+  }
+
+  get physicsShape() {
+    return 'rectangle';
+    // {
+    //   type: 'rectangle',
+    //   // x: this.x,
+    //   // y: this.y,
+    //   width: this.width,
+    //   height: this.height,
+    // };
   }
 
   initListeners() {
     this.setInteractive(this.geom, (geom, dx, dy, obj) => {
-      geom.x = obj.x;
-      geom.y = obj.y;
+      geom.x = obj.x - geom.width / 2;
+      geom.y = obj.y - geom.height / 2;
       return geom.contains(obj.x + dx, obj.y + dy);
     });
 
@@ -41,7 +58,9 @@ class Rectangle extends Part {
   }
 }
 
-class Ellipse extends Rectangle {
+export class Ellipse extends Rectangle {
+  type = 'ellipse';
+
   render() {
     this.clear();
     this.fillStyle(this.fillColor, this.fillOpacity);
@@ -53,7 +72,24 @@ class Ellipse extends Rectangle {
   get geom() {
     return new Phaser.Geom.Ellipse(this.x, this.y, this.width, this.height);
   }
+
+  get physicsShape() {
+    return {
+      type: 'circle',
+      // x: this.x,
+      // y: this.y,
+      radius: this.width / 2,
+      // type: 'ellipse',
+      // width: this.width,
+      // height: this.height,
+    };
+  }
 }
+
+export const SHAPE_TYPE_CLASSES = {
+  rect: Rectangle,
+  ellipse: Ellipse,
+};
 
 export default class ShapeTool extends SelectTool {
   fillColor = 0x00ff00;
@@ -72,6 +108,13 @@ export default class ShapeTool extends SelectTool {
       this.shape = null;
       this.box = null;
     }
+  }
+
+  updateShape() {
+    const { x, y, width, height } = this.box;
+    this.shape.setPosition(x + width / 2, y + height / 2);
+    this.shape.setSize(width, height);
+    this.shape.render();
   }
 }
 

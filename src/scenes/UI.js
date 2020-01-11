@@ -8,8 +8,13 @@ export default class UI extends Phaser.Scene {
   constructor() {
     super({
       key: 'UI',
-      // active: true,
     });
+  }
+
+  init(data) {
+    this.mapKey = data.mapKey;
+
+    this.play = this.scene.get('Play');
   }
 
   /** @type import('./Play').default */
@@ -23,8 +28,6 @@ export default class UI extends Phaser.Scene {
   }
 
   create() {
-    this.play = this.scene.get('Play');
-
     this.stateText = this.add
       .dom(this.scale.width - 10, 10, 'div')
       .setClassName('ui-text')
@@ -49,6 +52,38 @@ export default class UI extends Phaser.Scene {
 
       button.on('click', () => this.play.setTool(toolType));
       return button;
+    });
+
+    [
+      [
+        'Menu',
+        () => {
+          this.game.setScene('Menu');
+        },
+      ],
+      [
+        'Edit',
+        () => {
+          this.game.setScene('Editor', {
+            mapKey: this.mapKey,
+          });
+        },
+      ],
+    ].forEach(([name, onClick], i) => {
+      this.add
+        .dom(
+          this.scale.width - 10,
+          10 + i * 50,
+          'button',
+          `background-color: ${colorIntToHex(
+            theme.white,
+          )}; color: ${colorIntToHex(theme.black)}`,
+          name,
+        )
+        .setClassName('ui-tool-button')
+        .setOrigin(1, 0)
+        .addListener('click')
+        .on('click', onClick);
     });
 
     this.flashText = this.add

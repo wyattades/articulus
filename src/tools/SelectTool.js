@@ -8,7 +8,9 @@ export default class SelectTool extends Tool {
   fillColor = 0xffffff;
   fillOpacity = 0.3;
 
-  shiftKey = this.scene.input.keyboard.addKey('SHIFT');
+  shiftKey = this.scene.input.keyboard.addKey(
+    Phaser.Input.Keyboard.KeyCodes.SHIFT,
+  );
 
   /** @type Phaser.Geom.Rectangle */
   box;

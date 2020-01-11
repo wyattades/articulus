@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 
-import { Matter } from '../lib/physics';
 import Part from './Part';
 
 export default class Line extends Part {

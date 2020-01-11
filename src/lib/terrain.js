@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { Matter } from './physics';
 
 // const retry = (fn, maxAttempts = 16) => {
@@ -82,39 +83,50 @@ const randMap = (width, height, size = 10) => {
   };
 };
 
-/**
- * @param {Phaser.Scene} scene
- */
-export const init = (scene) => {
-  const { points, width, height, midY } = randMap(100, 1000, 40);
+export class Terrain extends Phaser.GameObjects.Graphics {
+  /**
+   * @param {Phaser.Scene} scene
+   */
+  constructor(scene) {
+    const { points, width, height, midY } = randMap(100, 1000, 40);
 
-  const x = -width / 2 + scene.scale.width / 2,
-    y = scene.scale.height - midY - 100;
+    const x = -width / 2 + scene.scale.width / 2,
+      y = scene.scale.height - midY - 100;
 
-  const body = scene.matter.add.fromVertices(0, 0, points, {
-    isStatic: true,
-  });
+    super(scene, { x, y: 0 });
+    scene.add.existing(this);
 
-  // Get offset of center of mass and set the terrain to its correct position
-  // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
-  const centerOfMass = Matter.Vector.sub(body.bounds.min, body.position);
-  Matter.Body.setPosition(body, {
-    x: Math.abs(centerOfMass.x) + x,
-    y: Math.abs(centerOfMass.y) + y,
-  });
+    this.width = width;
+    this.height = height;
 
-  const g = scene.add.graphics({ x, y: 0 });
+    this.fillStyle(0x876846);
+    this.lineStyle(16, 0x5bad4a);
 
-  g.fillStyle(0x876846);
-  g.lineStyle(16, 0x5bad4a);
+    this.beginPath();
+    this.moveTo(points[0].x, points[0].y + y);
+    for (const p of points) this.lineTo(p.x, p.y + y);
+    this.closePath();
 
-  g.beginPath();
-  g.moveTo(points[0].x, points[0].y + y);
-  for (const p of points) g.lineTo(p.x, p.y + y);
-  g.closePath();
+    this.fillPath();
+    this.strokePath();
 
-  g.fillPath();
-  g.strokePath();
+    this.enablePhysics(x, y, points);
+  }
 
-  return { width, height };
-};
+  enablePhysics(x, y, points) {
+    const body = this.scene.matter.add.fromVertices(0, 0, points, {
+      isStatic: true,
+    });
+
+    // Get offset of center of mass and set the terrain to its correct position
+    // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
+    const centerOfMass = Matter.Vector.sub(body.bounds.min, body.position);
+    Matter.Body.setPosition(body, {
+      x: Math.abs(centerOfMass.x) + x,
+      y: Math.abs(centerOfMass.y) + y,
+    });
+
+    // TODO: inject body correctly with matter.add.gameObject ?
+    this._body = body;
+  }
+}

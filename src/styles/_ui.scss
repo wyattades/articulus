@@ -21,6 +21,17 @@
   }
 }
 
+@mixin button-base {
+  @include monospace;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0;
+  color: white;
+  background-color: #373737;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
 .ui-flash {
   top: -100px;
   line-height: 1;
@@ -41,13 +52,7 @@
 }
 
 .ui-tool-button {
-  @include monospace;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 0;
-  color: white;
-  font-weight: bold;
-  font-size: 0.9rem;
+  @include button-base;
 
   &:hover {
     // TODO: hover isn't detected
@@ -56,5 +61,34 @@
 
   &--active {
     border: 2px solid black;
+  }
+}
+
+.ui-level-select {
+  @include monospace;
+  font-size: 1rem;
+  font-weight: bold;
+
+  // width: 8rem;
+  // height: 6rem;
+  text-align: center;
+  padding: 0.5rem;
+
+  border: 2px solid white;
+  color: white;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    margin-top: 1rem;
+  }
+
+  button {
+    @include button-base;
+    &:first-child {
+      margin-right: 0.5rem;
+    }
   }
 }

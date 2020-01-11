@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 
 import { constrain } from '../lib/utils';
 import ToolManager from '../tools/ToolManager';
+import { MapSaver } from '../lib/saver';
 
 const TOOL_TYPES = ['rectangle_shape', 'ellipse_shape', 'select', 'delete'];
 
@@ -9,8 +10,13 @@ export default class Editor extends Phaser.Scene {
   constructor() {
     super({
       key: 'Editor',
-      // active: true,
     });
+  }
+
+  init(data) {
+    this.mapKey = data.mapKey;
+
+    this.ui = this.scene.get('EditorUI');
   }
 
   /** @type import('./EditorUI').default */
@@ -18,6 +24,14 @@ export default class Editor extends Phaser.Scene {
 
   createListeners() {
     this.cursors = this.input.keyboard.createCursorKeys();
+
+    this.input.keyboard
+      .addKey(Phaser.Input.Keyboard.KeyCodes.BACKSPACE)
+      .on('down', () => {
+        for (const obj of this.selected || [])
+          this.parts.remove(obj, true, true);
+        this.selected = null;
+      });
 
     this.game.canvas.addEventListener(
       'wheel',
@@ -32,15 +46,25 @@ export default class Editor extends Phaser.Scene {
     );
   }
 
+  saveLevel(force = false) {
+    if (force) this.mapSaver.save(this.parts);
+    else this.mapSaver.queueSave(this.parts);
+  }
+
   create() {
-    this.ui = this.scene.get('EditorUI');
     this.tm = new ToolManager(this, TOOL_TYPES);
 
     this.createListeners();
 
     this.parts = this.add.group();
+    this.mapSaver = new MapSaver(this.mapKey);
+    MapSaver.loadEditorParts(this.mapSaver.load(), this.parts);
 
-    // this.parts.
+    // this.time.addEvent({
+    //   loop: true,
+    //   delay: 400,
+    //   callback: () => this.saveLevel(),
+    // });
   }
 
   update(_, delta) {

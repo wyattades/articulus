@@ -11,6 +11,10 @@ body {
   margin: 0;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   background: #82ceed;
   padding: 2rem;

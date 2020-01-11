@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 
 import { TOOL_TYPES, TOOLS } from '../tools';
-import { constrain } from '../lib/utils';
-import * as terrain from '../lib/terrain';
+import { constrain, EventManager } from '../lib/utils';
+import { Terrain } from '../lib/terrain';
 import { Matter } from '../lib/physics';
+import { MapSaver } from '../lib/saver';
 import theme from '../styles/theme';
 
 const MAX_PARTS = 32;
@@ -17,11 +18,18 @@ export default class Play extends Phaser.Scene {
   constructor() {
     super({
       key: 'Play',
-      // active: true,
     });
   }
 
+  init(data) {
+    this.mapKey = data.mapKey;
+    this.mapData = new MapSaver(this.mapKey).load();
+
+    this.ui = this.scene.get('UI');
+  }
+
   setRunning(running) {
+    console.log(this.cameras.main);
     this.running = running;
     if (running) {
       const follow = this.parts.getLast(true);
@@ -91,24 +99,21 @@ export default class Play extends Phaser.Scene {
   }
 
   createListeners() {
-    this.input.on(
-      'pointerdown',
-      ({ worldX, worldY, button, position, event }) => {
-        // event.stopPropagation();
-        // event.preventDefault();
+    this.input.on('pointerdown', ({ worldX, worldY, button, position }) => {
+      // event.stopPropagation();
+      // event.preventDefault();
 
-        if (button === 2) {
-          this.dragView = {
-            x: this.cameras.main.scrollX + position.x,
-            y: this.cameras.main.scrollY + position.y,
-          };
-          this.dragView.dx = worldX - this.cameras.main.scrollX;
-          this.dragView.dy = worldY - this.cameras.main.scrollY;
-        } else if (this.tool) {
-          this.tool.handlePointerDown(worldX, worldY);
-        }
-      },
-    );
+      if (button === 2) {
+        this.dragView = {
+          x: this.cameras.main.scrollX + position.x,
+          y: this.cameras.main.scrollY + position.y,
+        };
+        this.dragView.dx = worldX - this.cameras.main.scrollX;
+        this.dragView.dy = worldY - this.cameras.main.scrollY;
+      } else if (this.tool) {
+        this.tool.handlePointerDown(worldX, worldY);
+      }
+    });
 
     this.input.on('pointermove', ({ worldX, worldY, position }) => {
       if (this.dragView) {
@@ -133,27 +138,26 @@ export default class Play extends Phaser.Scene {
       this.setRunning(!this.running);
     });
 
-    this.input.keyboard.addKey('R').on('down', () => {
-      // key event listeners aren't cleared automatically :(
-      for (const ee of this.input.keyboard.keys)
-        if (ee) ee.removeAllListeners();
-      this.matter.world.destroy();
-      this.scene.restart();
+    this.input.keyboard.addKey('R').on('down', this.restart);
+
+    this.input.keyboard.addKey('P').on('down', () => {
+      const debug = !localStorage.getItem('fc:debug');
+      localStorage.setItem('fc:debug', debug ? '1' : '');
+
+      this.matter.config.debug = debug;
+
+      this.restart();
     });
 
-    this.game.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-
-    this.game.canvas.addEventListener(
-      'wheel',
-      (e) => {
+    this.eventManager = new EventManager()
+      .on(this.game.canvas, 'contextmenu', (e) => e.preventDefault())
+      .on(this.game.canvas, 'wheel', (e) => {
         e.preventDefault();
         this.cameras.main.setZoom(
           // TODO: normalize zoom speed
           constrain(this.cameras.main.zoom + e.deltaY * 0.01, 0.2, 10),
         );
-      },
-      false,
-    );
+      });
 
     Matter.Events.on(this.matter.world.localWorld, 'afterAdd', ({ object }) => {
       if (object.type === 'body' && this.parts.getLength() > MAX_PARTS) {
@@ -161,14 +165,24 @@ export default class Play extends Phaser.Scene {
         setTimeout(() => object.gameObject.destroy());
       }
     });
+
+    this.events.on('shutdown', () => {
+      this.eventManager.off();
+    });
   }
 
-  create() {
-    this.ui = this.scene.get('UI');
+  restart = () => {
+    // key event listeners aren't cleared automatically :(
+    for (const ee of this.input.keyboard.keys) if (ee) ee.removeAllListeners();
+    this.matter.world.destroy();
+    this.scene.restart();
+  };
 
+  create() {
     // GROUPS
 
     this.parts = this.add.group();
+    this.terrainGroup = this.add.group();
 
     // CAMERA
 
@@ -191,11 +205,14 @@ export default class Play extends Phaser.Scene {
 
     this.createListeners();
 
-    const { width, height } = terrain.init(this);
+    if (this.mapData) {
+      MapSaver.loadPlayParts(this.mapData, this.terrainGroup);
+    } else {
+      const terrain = new Terrain(this);
+      this.terrainGroup.add(terrain);
 
-    // PHYSICS
-
-    this.matter.world.setBounds(0, 0, width, height);
+      this.matter.world.setBounds(0, 0, terrain.width, terrain.height);
+    }
   }
 
   update(_, delta) {

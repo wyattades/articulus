@@ -83,3 +83,44 @@ export const getFirstValue = (obj) => {
   for (const id in obj) return obj[id];
   return null;
 };
+
+export class EventManager {
+  events = [];
+
+  on(eventEmitter, eventName, cb) {
+    const [on, off] =
+      'on' in eventEmitter
+        ? ['on', 'off']
+        : 'addListener' in eventEmitter
+        ? ['addListener', 'removeListener']
+        : ['addEventListener', 'removeEventListener'];
+
+    eventEmitter[on](eventName, cb);
+    this.events.push({ off, eventName, eventEmitter, cb });
+
+    return this;
+  }
+
+  off(eventEmitter, eventName, cb) {
+    this.events = this.events.filter((e) => {
+      if (cb) {
+        if (
+          cb !== e.cb ||
+          eventName !== e.eventName ||
+          eventEmitter !== e.eventEmitter
+        )
+          return true;
+      } else if (eventName) {
+        if (eventName !== e.eventName || eventEmitter !== e.eventEmitter)
+          return true;
+      } else if (eventEmitter) {
+        if (eventEmitter !== e.eventEmitter) return true;
+      }
+
+      e.eventEmitter[e.off](e.eventName, e.cb);
+      return false;
+    });
+
+    return this;
+  }
+}
