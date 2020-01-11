@@ -5,6 +5,7 @@ import UIScene from './scenes/UI';
 import EditorScene from './scenes/Editor';
 import EditorUIScene from './scenes/EditorUI';
 import MenuScene from './scenes/Menu';
+import * as routes from './routes';
 
 export default class Game extends Phaser.Game {
   constructor(canvas, parent) {
@@ -24,15 +25,31 @@ export default class Game extends Phaser.Game {
       dom: {
         createContainer: true,
       },
-      // TODO: scene lazy-loading?
-      scene: [MenuScene, EditorUIScene, EditorScene, UIScene, PlayScene],
     });
 
-    // if (this.scene.isActive('Menu'))
-    // this.scene.start('Menu');
+    // TODO: scene lazy-loading?
+    for (const Scene of [
+      MenuScene,
+      EditorUIScene,
+      EditorScene,
+      UIScene,
+      PlayScene,
+    ])
+      this.scene.add(Scene.name, Scene);
+
+    this._setScene(...routes.getKeyParams());
+
+    this.unlisten = routes.listen((key, data) => {
+      this._setScene(key, data);
+    });
   }
 
-  setScene(key, data) {
+  destroy() {
+    this.unlisten();
+    super.destroy();
+  }
+
+  _setScene(key, data) {
     // the order that we stop scenes matters
     // i.e. must stop 'UI' scene before 'Play' (I think)
     for (const scene of this.scene.getScenes(true)) {
@@ -48,5 +65,9 @@ export default class Game extends Phaser.Game {
     } else {
       this.scene.start(key, data);
     }
+  }
+
+  setScene(key, data) {
+    routes.push(key, data);
   }
 }

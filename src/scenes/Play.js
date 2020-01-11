@@ -29,7 +29,6 @@ export default class Play extends Phaser.Scene {
   }
 
   setRunning(running) {
-    console.log(this.cameras.main);
     this.running = running;
     if (running) {
       const follow = this.parts.getLast(true);

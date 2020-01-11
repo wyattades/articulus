@@ -2,11 +2,10 @@ import Phaser from 'phaser';
 
 import { MapSaver } from '../lib/saver';
 
-export default class EditorUI extends Phaser.Scene {
+export default class Menu extends Phaser.Scene {
   constructor() {
     super({
       key: 'Menu',
-      active: true,
     });
   }
 
