@@ -3,14 +3,24 @@ import LineTool from './LineTool';
 import PlaceTool from './PlaceTool';
 import ShapeTool, { EllipseTool } from './ShapeTool';
 import SelectTool from './SelectTool';
+import NavTool from './NavTool';
+import DragTool from './DragTool';
 import theme from '../styles/theme';
 
-export const TOOL_TYPES = [
+export const PLAY_TOOL_TYPES = [
   'wood',
   'water',
   'forward_wheel',
   'back_wheel',
   'neutral_wheel',
+  'select',
+  'delete',
+];
+
+export const EDITOR_TOOL_TYPES = [
+  'rectangle_shape',
+  'ellipse_shape',
+  'select',
   'delete',
 ];
 
@@ -62,5 +72,13 @@ export const TOOLS = {
     label: 'Ellipse',
     color: theme.white,
     ToolClass: EllipseTool,
+  },
+
+  // non-UI tools:
+  nav: {
+    ToolClass: NavTool,
+  },
+  drag: {
+    ToolClass: DragTool,
   },
 };

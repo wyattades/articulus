@@ -9,6 +9,7 @@ export default class Part extends Phaser.GameObjects.Graphics {
 
   fillColor = 0xffffff;
   strokeColor = 0xffffff;
+  strokeWidth = 0;
 
   constructor(scene, x, y) {
     super(scene, { x, y });
@@ -36,6 +37,17 @@ export default class Part extends Phaser.GameObjects.Graphics {
 
   render() {}
 
+  _selected = false;
+  setHighlight(isSelected) {
+    isSelected = !!isSelected;
+    if (this._selected === isSelected) return;
+    this._selected = isSelected;
+
+    if (isSelected) this.strokeWidth += 2;
+    else this.strokeWidth -= 2;
+    this.render();
+  }
+
   get physicsShape() {
     return {};
   }
@@ -45,7 +57,7 @@ export default class Part extends Phaser.GameObjects.Graphics {
   }
 
   get geom() {
-    return new Phaser.Geom.Point(this.x, this.y);
+    return new Phaser.Geom.Circle(this.x, this.y, Part.CONNECTOR_RADIUS);
   }
 
   enablePhysics() {

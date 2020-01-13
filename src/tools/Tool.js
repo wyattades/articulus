@@ -1,9 +1,11 @@
 export default class Tool {
   /**
    * @param {Phaser.Scene} scene
+   * @param {string} toolKey
    */
-  constructor(scene) {
+  constructor(scene, toolKey) {
     this.scene = scene;
+    this.toolKey = toolKey;
   }
 
   handlePointerMove(x, y) {}

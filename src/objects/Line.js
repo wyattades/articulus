@@ -6,6 +6,8 @@ export default class Line extends Part {
   static MIN_LENGTH = 20;
   static type = 'line';
 
+  strokeWidth = 2;
+
   constructor(scene, x1, y1, x2, y2, lineWidth = 10) {
     super(scene, x1, y1);
 
@@ -57,7 +59,7 @@ export default class Line extends Part {
 
   render() {
     this.fillStyle(this.fillColor);
-    this.lineStyle(2, this.strokeColor, 1);
+    this.lineStyle(this.strokeWidth, this.strokeColor, 1);
     this.fillRect(-this.length / 2, -this.size / 2, this.length, this.size);
     this.strokeRect(-this.length / 2, -this.size / 2, this.length, this.size);
 

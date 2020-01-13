@@ -27,20 +27,42 @@ export const adjustBrightness = (color, n) =>
 let _id = 1;
 export const nextId = () => _id++;
 
-const Intersects = { ...Phaser.Geom.Intersects, ...MoreIntersects };
-const geomName = (g) => g.constructor.name;
+const genIntersectMatrix = () => {
+  const POINT_THICKNESS = 6;
+
+  const { PointToLine } = Phaser.Geom.Intersects;
+
+  // All available Geom intersect algorithms
+  const Intersects = {
+    ...Phaser.Geom.Intersects,
+    ...MoreIntersects,
+    PointToLine: (point, line) => PointToLine(point, line, POINT_THICKNESS),
+  };
+
+  const ContainsPoint = (point, geom) => geom.contains(point.x, point.y);
+  for (const name of ['Circle', 'Ellipse', 'Polygon', 'Rectangle'])
+    Intersects[`PointTo${name}`] = ContainsPoint;
+
+  // Geom `constructor.name` indexed by Geom `type`
+  const TYPES = ['Circle', 'Ellipse', 'Line', 'Point', 'Polygon', 'Rectangle'];
+
+  return TYPES.map((a) => TYPES.map((b) => Intersects[`${a}To${b}`]));
+};
+
+const INTERSECT_MATRIX = genIntersectMatrix();
+
 export const intersectsGeoms = (g1, g2) => {
-  const geoms = [g1, g2];
-  let fnName;
-  const fn =
-    Intersects[(fnName = geoms.map(geomName).join('To'))] ||
-    Intersects[
-      (fnName = geoms
-        .reverse()
-        .map(geomName)
-        .join('To'))
-    ];
-  if (fn) return fn(...geoms, fnName === 'PointToLine' ? 6 : undefined);
+  let fn;
+
+  if ((fn = INTERSECT_MATRIX[g1.type][g2.type])) return fn(g1, g2);
+
+  if ((fn = INTERSECT_MATRIX[g2.type][g1.type])) return fn(g2, g1);
+
+  console.warn(
+    'Missing intersect fn for:',
+    g1.constructor.name,
+    g2.constructor.name,
+  );
 
   return false;
 };
@@ -55,7 +77,6 @@ export const intersectsOtherSolid = (scene, obj, ignore = []) => {
   const geom = obj.geom;
   for (const part of parts)
     if (!part.noCollide && intersectsGeoms(geom, part.geom)) return part;
-
   return null;
 };
 

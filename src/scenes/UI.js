@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
-import { TOOL_TYPES, TOOLS } from '../tools';
-import { colorIntToHex, colorInverse, createUIButtons } from '../lib/utils';
+import { PLAY_TOOL_TYPES, TOOLS } from '../tools';
+import { colorInverse, createUIButtons } from '../lib/utils';
 import theme from '../styles/theme';
 
 export default class UI extends Phaser.Scene {
@@ -27,6 +27,14 @@ export default class UI extends Phaser.Scene {
     setTimeout(() => cl.add('animate'), 60);
   }
 
+  setTool(toolType) {
+    for (const button of this.toolButtons)
+      button.node.classList.toggle(
+        'ui-tool-button--active',
+        button.getData('tool') === toolType,
+      );
+  }
+
   create() {
     this.stateText = this.add
       .dom(this.scale.width - 10, 10, 'div')
@@ -35,7 +43,7 @@ export default class UI extends Phaser.Scene {
 
     this.toolButtons = createUIButtons(
       this,
-      TOOL_TYPES.map((toolType) => {
+      PLAY_TOOL_TYPES.map((toolType) => {
         const { label: title, color: bgColor } = TOOLS[toolType];
         return {
           title,
@@ -44,7 +52,7 @@ export default class UI extends Phaser.Scene {
           data: {
             tool: toolType,
           },
-          onClick: () => this.play.setTool(toolType),
+          onClick: () => this.play.tm.setTool(toolType),
         };
       }),
     );

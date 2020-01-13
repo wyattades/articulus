@@ -3,8 +3,7 @@ import Phaser from 'phaser';
 import { constrain, EventManager } from '../lib/utils';
 import ToolManager from '../tools/ToolManager';
 import { MapSaver } from '../lib/saver';
-
-const TOOL_TYPES = ['rectangle_shape', 'ellipse_shape', 'select', 'delete'];
+import { EDITOR_TOOL_TYPES } from '../tools';
 
 export default class Editor extends Phaser.Scene {
   constructor() {
@@ -57,13 +56,13 @@ export default class Editor extends Phaser.Scene {
   }
 
   create() {
-    this.tm = new ToolManager(this, TOOL_TYPES);
-
     this.createListeners();
 
     this.parts = this.add.group();
     this.mapSaver = new MapSaver(this.mapKey);
     MapSaver.loadEditorParts(this.mapSaver.load(), this.parts);
+
+    this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 
     // this.time.addEvent({
     //   loop: true,

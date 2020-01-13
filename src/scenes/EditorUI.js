@@ -1,10 +1,7 @@
 import Phaser from 'phaser';
 
-import { TOOLS } from '../tools';
-import theme from '../styles/theme';
-import { colorIntToHex, colorInverse, createUIButtons } from '../lib/utils';
-
-const TOOL_TYPES = ['rectangle_shape', 'ellipse_shape', 'select', 'delete'];
+import { TOOLS, EDITOR_TOOL_TYPES } from '../tools';
+import { colorInverse, createUIButtons } from '../lib/utils';
 
 export default class EditorUI extends Phaser.Scene {
   constructor() {
@@ -35,6 +32,14 @@ export default class EditorUI extends Phaser.Scene {
     // );
   }
 
+  setTool(toolType) {
+    for (const button of this.toolButtons)
+      button.node.classList.toggle(
+        'ui-tool-button--active',
+        button.getData('tool') === toolType,
+      );
+  }
+
   create() {
     this.pointerPosText = this.add
       .dom(this.scale.width - 10, this.scale.height - 10, 'div')
@@ -43,7 +48,7 @@ export default class EditorUI extends Phaser.Scene {
 
     this.toolButtons = createUIButtons(
       this,
-      TOOL_TYPES.map((toolType) => {
+      EDITOR_TOOL_TYPES.map((toolType) => {
         const { label: title, color: bgColor } = TOOLS[toolType];
         return {
           title,

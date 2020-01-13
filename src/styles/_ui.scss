@@ -54,13 +54,13 @@
 .ui-tool-button {
   @include button-base;
 
+  // TODO: hover isn't detected :(
   &:hover {
-    // TODO: hover isn't detected
     opacity: 0.8;
   }
 
   &--active {
-    border: 2px solid black;
+    border: 2px solid #b6b6b6;
   }
 }
 

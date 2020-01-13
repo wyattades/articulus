@@ -6,11 +6,6 @@ import Tool from './Tool';
 import { intersectsOtherSolid, getHovered } from '../lib/utils';
 
 export default class PlaceTool extends Tool {
-  constructor(scene, partType) {
-    super(scene);
-    this.partType = partType;
-  }
-
   /** @type {{ obj: Phaser.GameObjects.GameObject }} */
   drawObj = null;
 
@@ -106,7 +101,9 @@ export default class PlaceTool extends Tool {
         y = cursor.y;
       }
 
-      const obj = new OBJECTS[this.partType](this.scene, x, y);
+      // TODO: using `toolKey` for the object key is kinda dirty
+      /** @type {import('../objects/Part').default} */
+      const obj = new OBJECTS[this.toolKey](this.scene, x, y);
       obj.render();
       this.drawObj = { obj };
       this.scene.parts.add(obj);

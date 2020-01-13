@@ -1,91 +1,87 @@
 import Phaser from 'phaser';
 
 import { TOOLS } from '.';
+import { intersectsGeoms } from '../lib/utils';
 
 export default class ToolManager {
-  dragging = null;
+  tools = []; // active tools
 
   /**
    * @param {Phaser.Scene} scene
-   * @param {String[]} types
-   * @param {String} [initial]
+   * @param {string} initial
+   * @param {string[]} topTypes
    */
-  constructor(scene, types, initial = types[0]) {
+  constructor(scene, initial, topTypes = []) {
     this.scene = scene;
-    this.types = types;
+    this.topTypes = topTypes;
 
     this.setTool(initial);
     this.createListeners();
 
-    scene.events.once('destroy', () => this.tool.destroy());
+    // TODO: not doing anything atm b/c no Tool has implemented `destroy`
+    scene.events.on('shutdown', () => {
+      for (const tool of this.tools) tool.destroy();
+    });
   }
 
   setTool(toolType) {
-    if (this.tool) this.tool.destroy();
+    while (this.tools.length > 0) this.tools.pop().destroy();
 
-    const { ToolClass } = TOOLS[toolType];
+    const types = [...this.topTypes];
+    if (toolType === 'select') types.push('drag', 'select');
+    else if (toolType) types.push(toolType);
 
-    // Same tool
-    if (this.tool && this.tool.constructor.name === ToolClass.name) return;
-
-    this.tool = new ToolClass(this.scene, toolType);
+    this.tools = types.map(
+      (type) => new TOOLS[type].ToolClass(this.scene, type),
+    );
 
     // this.scene.events.emit('setTool', toolType);
-    for (const button of this.scene.ui.toolButtons)
-      button.node.classList.toggle(
-        'ui-tool-button--active',
-        button.getData('tool') === toolType,
-      );
+    this.scene.ui.setTool(toolType);
   }
 
+  getTopObject(x, y) {
+    const point = new Phaser.Geom.Point(x, y);
+
+    const children = this.scene.parts.getChildren();
+    for (let i = children.length - 1; i >= 0; i--) {
+      const obj = children[i];
+
+      if (intersectsGeoms(point, obj.geom)) return obj;
+    }
+
+    return null;
+  }
+
+  pointerDown = (pointer) => {
+    const { worldX, worldY } = pointer;
+
+    const topObject = this.getTopObject(worldX, worldY);
+
+    // stop propagation if a tool's handler returns `false`
+    for (const tool of this.tools)
+      if (tool.handlePointerDown(worldX, worldY, pointer, topObject) === false)
+        break;
+  };
+
+  pointerMove = (pointer) => {
+    const { worldX, worldY } = pointer;
+
+    for (const tool of this.tools)
+      if (tool.handlePointerMove(worldX, worldY, pointer) === false) break;
+  };
+
+  pointerUp = (pointer) => {
+    const { worldX, worldY } = pointer;
+
+    for (const tool of this.tools)
+      if (tool.handlePointerUp(worldX, worldY, pointer) === false) break;
+  };
+
   createListeners() {
-    const inp = this.scene.input;
-
-    inp.on(Phaser.Input.Events.POINTER_DOWN, (pointer) => {
-      if (this.dragging) {
-        this.dragging = null;
-        pointer.dragObj = null;
-        return;
-      }
-
-      const { worldX, worldY, dragObj } = pointer;
-      if (dragObj) {
-        const selected = this.scene.selected;
-        this.dragging = (selected && selected.length
-          ? selected
-          : [dragObj]
-        ).map((obj) => ({
-          obj,
-          dx: obj.x - worldX,
-          dy: obj.y - worldY,
-        }));
-        pointer.dragObj = null;
-        return;
-      }
-
-      if (this.tool) this.tool.handlePointerDown(worldX, worldY);
-    });
-
-    inp.on('pointermove', ({ worldX, worldY }) => {
-      if (this.dragging) {
-        for (const { obj, dx, dy } of this.dragging)
-          obj.setPosition(worldX + dx, worldY + dy);
-        return;
-      }
-      if (this.tool) this.tool.handlePointerMove(worldX, worldY);
-    });
-
-    inp.on('pointerup', ({ worldX, worldY }) => {
-      if (this.dragging) {
-        this.dragging = null;
-        return;
-      }
-      if (this.tool) this.tool.handlePointerUp(worldX, worldY);
-    });
-
-    // inp.on('drag', (_, obj, dragX, dragY) => {
-    //   obj.setPosition(dragX, dragY);
-    // });
+    this.scene.input
+      .on(Phaser.Input.Events.POINTER_DOWN, this.pointerDown)
+      .on(Phaser.Input.Events.POINTER_MOVE, this.pointerMove)
+      .on(Phaser.Input.Events.POINTER_UP, this.pointerUp);
   }
 
   // destroy() {

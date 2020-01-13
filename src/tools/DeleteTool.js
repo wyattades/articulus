@@ -1,10 +1,10 @@
-import SelectTool from './SelectTool';
+import BoxTool from './BoxTool';
 
-export default class DeleteTool extends SelectTool {
+export default class DeleteTool extends BoxTool {
   fillColor = 0xff0000;
   // fillOpacity = 0.3;
 
-  setSelected(selected) {
-    for (const obj of selected) obj.destroy();
+  handleCreateBox(intersected) {
+    for (const obj of intersected) obj.destroy();
   }
 }

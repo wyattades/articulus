@@ -19,6 +19,7 @@ export default class Wheel extends Part {
 
   spinDir = 0;
   appliedTorque = 0.1;
+  strokeWidth = 2;
 
   constructor(scene, x, y, radius = 30) {
     super(scene, x, y);
@@ -27,7 +28,7 @@ export default class Wheel extends Part {
   }
 
   render() {
-    this.lineStyle(2, this.strokeColor);
+    this.lineStyle(this.strokeWidth, this.strokeColor);
     this.fillStyle(this.fillColor);
     this.fillCircle(0, 0, this.radius);
     this.strokeCircle(0, 0, this.radius);

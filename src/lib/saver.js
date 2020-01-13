@@ -1,7 +1,7 @@
 import throttle from 'lodash/throttle';
 import * as R from 'ramda';
 
-import { SHAPE_TYPE_CLASSES } from '../tools/ShapeTool';
+import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
 
 /**
  * @typedef {{ x: number, y: number, width: number, height: number, type: string }[]} MapData
