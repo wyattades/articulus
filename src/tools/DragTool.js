@@ -4,7 +4,16 @@
 import Tool from './Tool';
 
 export default class DragTool extends Tool {
-  dragging = null;
+  // dragging = null;
+
+  setDragging(dragging, x, y) {
+    this.scene.dragging = dragging;
+    this.scene.events.emit('setDragging', dragging, x, y);
+  }
+
+  get dragging() {
+    return this.scene.dragging;
+  }
 
   handlePointerDown(x, y, pointer, topObject) {
     if (topObject) {
@@ -16,19 +25,21 @@ export default class DragTool extends Tool {
         selected.length > 0 &&
         selected.indexOf(topObject) !== -1
       ) {
-        // if (selected.indexOf(topObject) !== -1) {
         dragging = selected;
-        // }
       } else {
         dragging = [topObject];
       }
 
       if (dragging) {
-        this.dragging = dragging.map((obj) => ({
-          obj,
-          dx: obj.x - x,
-          dy: obj.y - y,
-        }));
+        this.setDragging(
+          dragging.map((obj) => ({
+            obj,
+            dx: obj.x - x,
+            dy: obj.y - y,
+          })),
+          x,
+          y,
+        );
 
         // return false;
       }
@@ -47,7 +58,7 @@ export default class DragTool extends Tool {
   handlePointerUp() {
     if (this.dragging) {
       const moved = this.dragging.moved;
-      this.dragging = null;
+      this.setDragging(null);
       if (moved) return false;
     }
   }

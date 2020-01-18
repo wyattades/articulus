@@ -21,6 +21,9 @@ export default class Editor extends Phaser.Scene {
   /** @type import('./EditorUI').default */
   ui;
 
+  /** @type {Phaser.GameObjects.GameObject[]} */
+  selected = [];
+
   createListeners() {
     this.cursors = this.input.keyboard.createCursorKeys();
 

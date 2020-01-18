@@ -20,6 +20,8 @@ export default class SelectTool extends BoxTool {
       ? R.union(currentSelected, intersected)
       : intersected;
 
+    this.scene.events.emit('setSelected', this.scene.selected);
+
     for (const child of R.difference(currentSelected, this.scene.selected)) {
       child.setHighlight(false);
     }

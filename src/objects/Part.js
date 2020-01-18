@@ -28,6 +28,14 @@ export default class Part extends Phaser.GameObjects.Graphics {
     this.strokeColor = this.iStrokeColor = adjustBrightness(color, -70);
   }
 
+  getBounds(bounds) {
+    bounds = bounds || new Phaser.Geom.Rectangle();
+
+    bounds.setTo(this.x, this.y, this.width || 1, this.height || 1);
+
+    return bounds;
+  }
+
   renderConnector(x, y) {
     this.lineStyle(1, 0xffffff);
     this.fillStyle(0xcccccc, 1);

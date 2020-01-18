@@ -5,6 +5,7 @@ import ShapeTool, { EllipseTool } from './ShapeTool';
 import SelectTool from './SelectTool';
 import NavTool from './NavTool';
 import DragTool from './DragTool';
+import ControlsTool from './ControlsTool';
 import theme from '../styles/theme';
 
 export const PLAY_TOOL_TYPES = [
@@ -77,6 +78,9 @@ export const TOOLS = {
   // non-UI tools:
   nav: {
     ToolClass: NavTool,
+  },
+  controls: {
+    ToolClass: ControlsTool,
   },
   drag: {
     ToolClass: DragTool,

@@ -28,8 +28,10 @@ export default class ToolManager {
     while (this.tools.length > 0) this.tools.pop().destroy();
 
     const types = [...this.topTypes];
-    if (toolType === 'select') types.push('drag', 'select');
-    else if (toolType) types.push(toolType);
+    if (toolType === 'select') {
+      types.push('drag', 'select');
+      types.unshift('controls');
+    } else if (toolType) types.push(toolType);
 
     this.tools = types.map(
       (type) => new TOOLS[type].ToolClass(this.scene, type),
