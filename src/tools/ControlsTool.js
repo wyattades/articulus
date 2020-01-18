@@ -4,6 +4,7 @@ import Phaser from 'phaser';
 import { EventManager } from '../lib/utils';
 import Tool from './Tool';
 import Controls from '../objects/Controls';
+import { MIN_SHAPE_SIZE } from './ShapeTool';
 
 export default class ControlsTool extends Tool {
   controls = new Controls(this.scene, 0, 0, 1, 1);
@@ -22,6 +23,7 @@ export default class ControlsTool extends Tool {
 
   destroy() {
     this.eventManager.off();
+    this.controls.destroy(true); // destroy it's children too
   }
 
   setSelected = (selected) => {
@@ -84,9 +86,9 @@ export default class ControlsTool extends Tool {
 
     const bounds = (this._bounds = this._bounds || new Phaser.Geom.Rectangle());
 
-    for (let i = 0; i < iSelected.length; i++) {
-      const s = iSelected[i];
-      const obj = this.scene.selected[i];
+    for (let i = 0, obj, s; i < iSelected.length; i++) {
+      s = iSelected[i];
+      obj = this.scene.selected[i];
 
       obj.getBounds(bounds);
 
@@ -108,7 +110,7 @@ export default class ControlsTool extends Tool {
       const { obj, dx, dy, ox, oy } = this.controlDragging;
       obj.setPosition(x + dx, y + dy);
 
-      const minSize = 10;
+      const minSize = MIN_SHAPE_SIZE;
       if (obj.originX === 0 && obj.x < ox + minSize) obj.x = ox + minSize;
       else if (obj.originX === 1 && obj.x > ox - minSize) obj.x = ox - minSize;
       if (obj.originY === 0 && obj.y < oy + minSize) obj.y = oy + minSize;

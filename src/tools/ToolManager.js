@@ -18,14 +18,15 @@ export default class ToolManager {
     this.setTool(initial);
     this.createListeners();
 
-    // TODO: not doing anything atm b/c no Tool has implemented `destroy`
-    scene.events.on('shutdown', () => {
-      for (const tool of this.tools) tool.destroy();
-    });
+    scene.events.on('shutdown', this.destroyTools);
   }
 
+  destroyTools = () => {
+    for (const tool of this.tools) tool.destroy();
+  };
+
   setTool(toolType) {
-    while (this.tools.length > 0) this.tools.pop().destroy();
+    this.destroyTools();
 
     const types = [...this.topTypes];
     if (toolType === 'select') {

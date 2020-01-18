@@ -30,4 +30,14 @@ export default class SelectTool extends BoxTool {
       child.setHighlight(true);
     }
   }
+
+  destroy() {
+    this.scene.events.emit('setSelected', []);
+
+    for (const child of this.scene.selected) {
+      child.setHighlight(false);
+    }
+
+    this.scene.selected = [];
+  }
 }
