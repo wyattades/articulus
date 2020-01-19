@@ -15,6 +15,8 @@ export default class Play extends Phaser.Scene {
   /** @type import('./UI').default */
   ui;
 
+  selected = [];
+
   constructor() {
     super({
       key: 'Play',
@@ -153,6 +155,10 @@ export default class Play extends Phaser.Scene {
     // START
 
     this.setRunning(false);
+  }
+
+  snapToGrid(obj) {
+    return obj;
   }
 
   update(_, delta) {
