@@ -10,6 +10,8 @@ export class Rectangle extends Part {
   strokeWidth = 2;
   width = 1;
   height = 1;
+  originX = 0.5;
+  originY = 0.5;
   type = 'rect';
 
   setSize(width, height) {
@@ -73,6 +75,11 @@ export class Ellipse extends Rectangle {
   }
 
   get physicsShape() {
+    // this.scene.matter.add.rectangle()
+
+    // Bodies.rectangle(200, 200, 200, 200, {
+    //   chamfer: { radius: [150, 20, 150, 20] }
+    // }),
     return {
       type: 'circle',
       // x: this.x,

@@ -27,6 +27,16 @@ export const adjustBrightness = (color, n) =>
 let _id = 1;
 export const nextId = () => _id++;
 
+export function* circle4Points(radius, startRotation = 0) {
+  const cos = Math.cos(startRotation) * radius;
+  const sin = Math.sin(startRotation) * radius;
+
+  yield [cos, sin];
+  yield [sin, -cos];
+  yield [-cos, -sin];
+  yield [-sin, cos];
+}
+
 const genIntersectMatrix = () => {
   const POINT_THICKNESS = 6;
 

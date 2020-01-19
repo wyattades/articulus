@@ -53,6 +53,20 @@ export default class Editor extends Phaser.Scene {
     });
   }
 
+  gridSize = 10;
+  snapToGrid(obj) {
+    if (this.gridSize) {
+      const offsetX = obj.originX != null ? obj.originX * obj.width : 0;
+      const offsetY = obj.originY != null ? obj.originY * obj.height : 0;
+      obj.x =
+        this.gridSize * Math.floor((obj.x - offsetX) / this.gridSize) + offsetX;
+      obj.y =
+        this.gridSize * Math.floor((obj.y - offsetY) / this.gridSize) + offsetY;
+      if (obj.setPosition) obj.setPosition(obj.x, obj.y);
+    }
+    return obj;
+  }
+
   saveLevel(force = false) {
     if (force) this.mapSaver.save(this.parts);
     else this.mapSaver.queueSave(this.parts);
@@ -60,6 +74,20 @@ export default class Editor extends Phaser.Scene {
 
   create() {
     this.createListeners();
+
+    if (this.gridSize) {
+      this.add.grid(
+        0,
+        0,
+        this.gridSize * 300,
+        this.gridSize * 300,
+        this.gridSize,
+        this.gridSize,
+        0x000000,
+        1,
+        0x444444,
+      );
+    }
 
     this.parts = this.add.group();
     this.mapSaver = new MapSaver(this.mapKey);

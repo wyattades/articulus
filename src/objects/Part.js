@@ -31,10 +31,31 @@ export default class Part extends Phaser.GameObjects.Graphics {
   getBounds(bounds) {
     bounds = bounds || new Phaser.Geom.Rectangle();
 
-    bounds.setTo(this.x, this.y, this.width || 1, this.height || 1);
+    bounds.setTo(
+      this.x - (this.originX != null ? this.originX : 0.5) * this.width,
+      this.y - (this.originY != null ? this.originY : 0.5) * this.height,
+      this.width || 1,
+      this.height || 1,
+    );
 
     return bounds;
   }
+
+  // setFromBounds({ x, y, width, height }) {
+  //   this.setPosition(
+  //     x + (this.originX != null ? this.originX : 0.5) * width,
+  //     y + (this.originY != null ? this.originY : 0.5) * height,
+  //   );
+  //   this.width = width;
+  //   this.height = height;
+  // }
+
+  // setOriginPosition(x, y) {
+  //   this.setPosition(
+  //     x + (this.originX != null ? this.originX : 0.5) * this.width,
+  //     y + (this.originY != null ? this.originY : 0.5) * this.height,
+  //   );
+  // }
 
   renderConnector(x, y) {
     this.lineStyle(1, 0xffffff);

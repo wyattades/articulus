@@ -3,7 +3,7 @@
 import BoxTool from './BoxTool';
 import { Rectangle, Ellipse } from '../objects/Shape';
 
-export const MIN_SHAPE_SIZE = 8;
+export const MIN_SHAPE_SIZE = 10;
 
 export default class ShapeTool extends BoxTool {
   fillColor = 0x00ff00;

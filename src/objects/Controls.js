@@ -14,6 +14,8 @@ export default class Controls extends Phaser.GameObjects.Group {
 
   width = 1;
   height = 1;
+  // originX = 0;
+  // originY = 0;
 
   static getBounds(objs) {
     const MAX = 999999;
@@ -74,12 +76,14 @@ export default class Controls extends Phaser.GameObjects.Group {
     this.width = w;
     this.height = h;
     if (!noUpdate) this.updateChildren();
+    return this;
   }
 
   setPosition(x, y, noUpdate = false) {
     this.x = x;
     this.y = y;
     if (!noUpdate) this.updateChildren();
+    return this;
   }
 
   updateFrom(obj) {
@@ -98,29 +102,34 @@ export default class Controls extends Phaser.GameObjects.Group {
     const { scene, width: w, height: h } = this;
 
     this.borderObj = scene.add.graphics();
-
     this.add(this.borderObj);
 
+    const canvasStyle = this.scene.game.canvas.style;
+    const pointerOut = () => {
+      canvasStyle.cursor = 'auto';
+    };
+
     const SIZE = 12;
-    const tl = scene.add.rectangle(0, 0, SIZE, SIZE).setOrigin(1, 1);
-    const tr = scene.add.rectangle(w, 0, SIZE, SIZE).setOrigin(0, 1);
-    const bl = scene.add.rectangle(0, h, SIZE, SIZE).setOrigin(1, 0);
-    const br = scene.add.rectangle(w, h, SIZE, SIZE).setOrigin(0, 0);
+    this.edgeObjs = [];
+    for (const [ox, oy, resizeAttr] of [
+      [1, 1, 'nw-resize'],
+      [0, 1, 'ne-resize'],
+      [1, 0, 'sw-resize'],
+      [0, 0, 'se-resize'],
+    ]) {
+      const obj = scene.add
+        .rectangle(w * (1 - ox), h * (1 - oy), SIZE, SIZE, theme.grey)
+        .setOrigin(ox, oy)
+        .setInteractive();
 
-    this.edgeObjs = [tl, tr, bl, br];
+      obj
+        .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
+          canvasStyle.cursor = resizeAttr;
+        })
+        .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, pointerOut);
 
-    for (const c of this.edgeObjs) {
-      c.setFillStyle(theme.grey);
-      // .setInteractive();
-
-      // c.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, (pointer, ...r) => {
-      //   console.log('down', pointer, ...r);
-      //   // pointer.dragObj = this;
-      // }).on(Phaser.Input.Events.GAMEOBJECT_MOVE, (...args) => {
-      //   console.log('move', ...args);
-      // });
-
-      this.add(c);
+      this.edgeObjs.push(obj);
+      this.add(obj);
     }
 
     this.updateChildren();

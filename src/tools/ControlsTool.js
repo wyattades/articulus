@@ -77,7 +77,7 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  updateSelectedFrom() {
+  updateSelected() {
     const { ox, oy, invW, invH, iSelected } = this.controlDragging;
     const { width: cw, height: ch } = this.controls;
 
@@ -110,6 +110,8 @@ export default class ControlsTool extends Tool {
       const { obj, dx, dy, ox, oy } = this.controlDragging;
       obj.setPosition(x + dx, y + dy);
 
+      this.scene.snapToGrid(obj);
+
       const minSize = MIN_SHAPE_SIZE;
       if (obj.originX === 0 && obj.x < ox + minSize) obj.x = ox + minSize;
       else if (obj.originX === 1 && obj.x > ox - minSize) obj.x = ox - minSize;
@@ -117,7 +119,7 @@ export default class ControlsTool extends Tool {
       else if (obj.originY === 1 && obj.y > oy - minSize) obj.y = oy - minSize;
 
       this.controls.updateFrom(obj);
-      this.updateSelectedFrom();
+      this.updateSelected();
 
       return false;
     }

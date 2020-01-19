@@ -54,9 +54,8 @@
 .ui-tool-button {
   @include button-base;
 
-  // TODO: hover isn't detected :(
   &:hover {
-    opacity: 0.8;
+    cursor: pointer;
   }
 
   &--active {

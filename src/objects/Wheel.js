@@ -2,16 +2,7 @@ import Phaser from 'phaser';
 
 import { Matter } from '../lib/physics';
 import Part from './Part';
-
-function* circle4Points(radius, startRotation = 0) {
-  const cos = Math.cos(startRotation) * radius;
-  const sin = Math.sin(startRotation) * radius;
-
-  yield [cos, sin];
-  yield [sin, -cos];
-  yield [-cos, -sin];
-  yield [-sin, cos];
-}
+import { circle4Points } from '../lib/utils';
 
 export default class Wheel extends Part {
   static type = 'wheel';

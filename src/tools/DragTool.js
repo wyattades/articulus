@@ -49,8 +49,12 @@ export default class DragTool extends Tool {
   handlePointerMove(x, y) {
     if (this.dragging) {
       this.dragging.moved = true;
-      for (const { obj, dx, dy } of this.dragging)
-        obj.setPosition(x + dx, y + dy);
+
+      for (const { obj, dx, dy } of this.dragging) {
+        obj.x = x + dx;
+        obj.y = y + dy;
+        this.scene.snapToGrid(obj);
+      }
       return false;
     }
   }
