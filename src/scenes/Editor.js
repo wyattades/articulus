@@ -15,6 +15,8 @@ export default class Editor extends Phaser.Scene {
   init(data) {
     this.mapKey = data.mapKey;
 
+    this.mapSaver = new MapSaver(this.mapKey);
+
     this.ui = this.scene.get('EditorUI');
   }
 
@@ -67,9 +69,9 @@ export default class Editor extends Phaser.Scene {
     return obj;
   }
 
-  saveLevel(force = false) {
-    if (force) this.mapSaver.save(this.parts);
-    else this.mapSaver.queueSave(this.parts);
+  async saveLevel(force = false) {
+    if (force) await this.mapSaver.save(this.parts);
+    else await this.mapSaver.queueSave(this.parts);
   }
 
   create() {
@@ -90,8 +92,9 @@ export default class Editor extends Phaser.Scene {
     }
 
     this.parts = this.add.group();
-    this.mapSaver = new MapSaver(this.mapKey);
-    MapSaver.loadEditorParts(this.mapSaver.load(), this.parts);
+    this.mapSaver
+      .load()
+      .then((mapData) => MapSaver.loadEditorParts(mapData, this.parts));
 
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 

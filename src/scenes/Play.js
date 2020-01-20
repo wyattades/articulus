@@ -25,7 +25,7 @@ export default class Play extends Phaser.Scene {
 
   init(data) {
     this.mapKey = data.mapKey;
-    if (this.mapKey) this.mapData = new MapSaver(this.mapKey).load();
+    if (this.mapKey) this.mapSaver = new MapSaver(this.mapKey);
 
     this.ui = this.scene.get('UI');
   }
@@ -135,8 +135,10 @@ export default class Play extends Phaser.Scene {
 
     // WORLD
 
-    if (this.mapData) {
-      MapSaver.loadPlayParts(this.mapData, this.terrainGroup);
+    if (this.mapSaver) {
+      this.mapSaver
+        .load()
+        .then((mapData) => MapSaver.loadPlayParts(mapData, this.terrainGroup));
     } else {
       const terrain = new Terrain(this);
       this.terrainGroup.add(terrain);

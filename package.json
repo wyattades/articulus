@@ -15,6 +15,9 @@
     "history": "^4.10.1",
     "path-to-regexp": "^6.1.0",
     "phaser": "^3.21.0",
+    "pouchdb": "^7.1.1",
+    "pouchdb-debug": "^7.1.1",
+    "pouchdb-find": "^7.1.1",
     "ramda": "^0.26.1"
   },
   "devDependencies": {

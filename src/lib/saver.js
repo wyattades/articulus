@@ -1,48 +1,65 @@
 import throttle from 'lodash/throttle';
 import * as R from 'ramda';
+import PouchDB from 'pouchdb';
+// import PouchDBDebug from 'pouchdb-debug';
+import PouchDBFind from 'pouchdb-find';
 
 import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
+
+PouchDB.plugin(PouchDBFind);
+// PouchDB.plugin(PouchDBDebug);
+// PouchDB.debug.enable('*');
 
 /**
  * @typedef {{ x: number, y: number, width: number, height: number, type: string }[]} MapData
  */
 
-export class MapSaver {
-  static STORAGE_KEY_PREFIX = 'fc:map:';
+/**
+ * @typedef {{ name: string, _rev: string, _id: string }[]} MapMeta
+ */
 
-  static *loadLevelsMeta() {
-    const len = localStorage.length;
-    for (let i = 0; i < len; i++) {
-      const key = localStorage.key(i);
-      if (!key) continue;
-      const match = key.match(`^${MapSaver.STORAGE_KEY_PREFIX}(.+)$`);
-      if (match) {
-        yield {
-          key: match[1],
-          name: match[1],
-        };
+export class MapSaver {
+  static metaCache = {};
+
+  static db = new PouchDB('fc');
+
+  objs = null;
+  id = null;
+  rev = null;
+  name = null;
+
+  static async loadLevelsMeta() {
+    const { rows: levels } = await MapSaver.db.allDocs({
+      include_docs: true,
+    });
+
+    return levels.map((l) => {
+      const meta = {
+        id: l.id,
+        rev: l.value.rev,
+        name: l.doc.name,
+      };
+
+      MapSaver.metaCache[meta.id] = meta;
+
+      return meta;
+    });
+  }
+
+  constructor(id) {
+    this.id = id;
+
+    if (id) {
+      const meta = MapSaver.metaCache[id];
+      if (meta) {
+        this.rev = meta.rev;
+        this.name = meta.name;
       }
     }
   }
 
-  constructor(key) {
-    this.setKey(key);
-  }
-
-  setKey(key) {
-    this.storageKey = `${MapSaver.STORAGE_KEY_PREFIX}${key}`;
-  }
-
-  load() {
-    let objects;
-
-    try {
-      objects = JSON.parse(localStorage.getItem(this.storageKey));
-    } catch (_) {}
-
-    if (!objects || !Array.isArray(objects)) return [];
-
-    return objects;
+  setName(name) {
+    this.name = name;
   }
 
   /**
@@ -85,16 +102,44 @@ export class MapSaver {
     }
   }
 
+  async load() {
+    const doc = await MapSaver.db.get(this.id);
+
+    this.id = doc._id;
+    this.rev = doc._rev;
+    this.name = doc.name;
+
+    this.objs = doc.objs;
+
+    return doc.objs;
+  }
+
   /**
    * @param {Phaser.GameObjects.Group} group
    */
-  save(group) {
+  async save(group) {
     const serialized = R.map(
       R.pick(['x', 'y', 'width', 'height', 'type']),
       group.getChildren(),
     );
 
-    localStorage.setItem(this.storageKey, JSON.stringify(serialized));
+    const data = {
+      name: this.name,
+      objs: serialized,
+    };
+
+    let res;
+    if (this.id) {
+      res = await MapSaver.db.put({
+        _id: this.id,
+        _rev: this.rev || undefined,
+        ...data,
+      });
+    } else {
+      res = await MapSaver.db.post(data);
+    }
+    this.id = res.id;
+    this.rev = res.rev;
   }
 
   queueSave = throttle(this.save.bind(this), 400);
