@@ -39,7 +39,6 @@ export default class ShapeTool extends BoxTool {
 export class EllipseTool extends ShapeTool {
   createShape() {
     return new Ellipse(this.scene, 0, 0);
-    // return this.scene.add.ellipse(0, 0, 1, 1, this.fillColor, this.fillOpacity);
   }
 
   updateShape() {

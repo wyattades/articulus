@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 
 import { TOOLS, EDITOR_TOOL_TYPES } from '../tools';
 import { colorInverse, createUIButtons } from '../lib/utils';
+import theme from '../styles/theme';
 
 export default class EditorUI extends Phaser.Scene {
   constructor() {
@@ -11,8 +12,6 @@ export default class EditorUI extends Phaser.Scene {
   }
 
   init(data) {
-    this.mapKey = data.mapKey;
-
     this.editor = this.scene.get('Editor');
   }
 
@@ -30,6 +29,12 @@ export default class EditorUI extends Phaser.Scene {
     // this.input.on('gameobjectmove', ({ worldX, worldY }) =>
     //   this.updatePointer(worldX, worldY),
     // );
+
+    this.editor.events.on('setSelected', (selected) => {
+      const visible = selected && selected.length > 0;
+      for (const button of this.objActions)
+        button.setVisible(visible).setActive(visible);
+    });
   }
 
   setTool(toolType) {
@@ -62,14 +67,14 @@ export default class EditorUI extends Phaser.Scene {
       }),
     );
 
-    const save = () => {
-      let mapKey = this.mapKey;
-      if (!mapKey) {
-        mapKey = window.prompt('Save key:', '');
-        if (mapKey) this.editor.mapSaver.setKey(mapKey);
+    const save = async () => {
+      let mapName = this.editor.mapSaver.name;
+      if (!mapName) {
+        mapName = window.prompt('Enter a map name:', '');
+        if (mapName) this.editor.mapSaver.setName(mapName);
         else return;
       }
-      this.editor.saveLevel(true);
+      await this.editor.saveLevel(true);
     };
 
     createUIButtons(
@@ -77,25 +82,59 @@ export default class EditorUI extends Phaser.Scene {
       [
         {
           title: 'Menu',
-          onClick: () => {
-            save();
+          onClick: async () => {
+            await save();
 
             this.game.setScene('Menu');
           },
         },
         {
           title: 'Play',
-          onClick: () => {
-            save();
+          onClick: async () => {
+            await save();
 
             this.game.setScene('Play', {
-              mapKey: this.mapKey,
+              mapKey: this.editor.mapSaver.id,
             });
           },
         },
       ],
       true,
     );
+
+    this.objActions = createUIButtons(
+      this,
+      [
+        {
+          title: 'Duplicate',
+          onClick: () => {
+            const offset = 10;
+            const newObjs = this.editor.selected.map((obj) => {
+              const newObj = obj.clone();
+              newObj.setPosition(obj.x + offset, obj.y + offset);
+              newObj.render();
+              this.editor.parts.add(newObj);
+
+              return newObj;
+            });
+
+            this.editor.events.emit('setSelected', newObjs);
+          },
+        },
+        {
+          title: 'Delete',
+          bgColor: theme.red,
+          color: colorInverse(theme.red),
+          onClick: () => {
+            for (const obj of this.editor.selected) obj.destroy();
+            this.editor.events.emit('setSelected', []);
+          },
+        },
+      ],
+      false,
+      true,
+    );
+    for (const obj of this.objActions) obj.setVisible(false).setActive(false);
 
     this.uiSaveStatus = this.add
       .dom(this.scale.width - 10, 10 + 2 * 50, 'div', '', '')

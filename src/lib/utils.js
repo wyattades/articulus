@@ -160,13 +160,21 @@ export class EventManager {
  * @param {Phaser.Scene} scene
  * @param {object[]} configs
  */
-export const createUIButtons = (scene, configs, right = false) => {
+export const createUIButtons = (
+  scene,
+  configs,
+  right = false,
+  bottom = false,
+) => {
   const padding = 10;
+  const bHeight = 50;
   const buttons = configs.map((c, i) => {
     const button = scene.add
       .dom(
         right ? scene.scale.width - padding : padding,
-        10 + i * 50,
+        bottom
+          ? scene.scale.height - padding - i * bHeight
+          : padding + i * bHeight,
         'button',
         `background-color: ${colorIntToHex(
           c.bgColor || theme.white,
@@ -175,7 +183,7 @@ export const createUIButtons = (scene, configs, right = false) => {
       )
       .setData(c.data || {})
       .setClassName('ui-tool-button')
-      .setOrigin(right ? 1 : 0, 0)
+      .setOrigin(right ? 1 : 0, bottom ? 1 : 0)
       .addListener('click');
     button.on('click', c.onClick);
 

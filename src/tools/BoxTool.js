@@ -50,6 +50,8 @@ export default class BoxTool extends Tool {
     this.box.ix = x;
     this.box.iy = y;
 
+    // TODO: snap to grid
+
     if (this.allowStartOverlapping || !topObject) {
       this.shape = this.createShape();
       this.updateShape();
@@ -68,6 +70,8 @@ export default class BoxTool extends Tool {
         this.box.height = iy - y;
         this.box.y = y;
       } else this.box.height = y - iy;
+
+      // TODO: snap to grid
 
       if (this.shape) this.updateShape();
     }

@@ -28,6 +28,14 @@ export default class Part extends Phaser.GameObjects.Graphics {
     this.strokeColor = this.iStrokeColor = adjustBrightness(color, -70);
   }
 
+  clone() {
+    const newObj = new this.constructor(this.scene, this.x, this.y);
+    newObj.setSize(this.width, this.height);
+    // TODO: copy color and stuff
+
+    return newObj;
+  }
+
   getBounds(bounds) {
     bounds = bounds || new Phaser.Geom.Rectangle();
 
