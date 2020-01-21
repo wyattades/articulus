@@ -25,7 +25,7 @@ export default class Play extends Phaser.Scene {
 
   init(data) {
     this.mapKey = data.mapKey;
-    if (this.mapKey) this.mapSaver = new MapSaver(this.mapKey);
+    this.mapSaver = this.mapKey ? new MapSaver(this.mapKey) : null;
 
     this.ui = this.scene.get('UI');
   }
