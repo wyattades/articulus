@@ -85,7 +85,6 @@
   }
 
   button {
-    @include button-base;
     &:first-child {
       margin-right: 0.5rem;
     }

@@ -52,6 +52,7 @@ export default class Menu extends Phaser.Scene {
 
       const editButton = document.createElement('button');
       inner.appendChild(editButton);
+      editButton.classList.add('ui-tool-button');
       editButton.innerText = 'Edit';
       editButton.addEventListener('click', () => {
         this.game.setScene('Editor', { mapKey: id });
@@ -59,6 +60,7 @@ export default class Menu extends Phaser.Scene {
 
       const playButton = document.createElement('button');
       inner.appendChild(playButton);
+      playButton.classList.add('ui-tool-button');
       playButton.innerText = 'Play';
       playButton.addEventListener('click', () => {
         this.game.setScene('Play', {
