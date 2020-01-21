@@ -8,6 +8,7 @@ export default class Controls extends Phaser.GameObjects.Group {
    */
   constructor(scene) {
     super(scene);
+    this.scene.add.existing(this);
     this.initChildren();
     this.setVisible(false);
   }
