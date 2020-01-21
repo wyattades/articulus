@@ -29,13 +29,11 @@ export default class Editor extends Phaser.Scene {
   createListeners() {
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    this.input.keyboard
-      .addKey(Phaser.Input.Keyboard.KeyCodes.BACKSPACE)
-      .on('down', () => {
-        for (const obj of this.selected || [])
-          this.parts.remove(obj, true, true);
-        this.selected = null;
-      });
+    this.input.keyboard.on('keydown-BACKSPACE', (e) => {
+      e.preventDefault();
+      for (const obj of this.selected || []) this.parts.remove(obj, true, true);
+      this.events.emit('setSelected', []);
+    });
 
     this.eventManager = new EventManager().on(
       this.game.canvas,

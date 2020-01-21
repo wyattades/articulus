@@ -60,6 +60,7 @@ export default class SelectTool extends BoxTool {
   }
 
   destroy() {
+    this.shiftKey.destroy();
     this.scene.events.emit('setSelected', []);
     this.eventManager.off();
 

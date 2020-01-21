@@ -84,13 +84,13 @@ export default class Play extends Phaser.Scene {
   }
 
   createListeners() {
-    this.input.keyboard.addKey('SPACE').on('down', () => {
+    this.input.keyboard.on('keydown-SPACE', () => {
       this.setRunning(!this.running);
     });
 
-    this.input.keyboard.addKey('R').on('down', this.restart);
+    this.input.keyboard.on('keydown-R', this.restart);
 
-    this.input.keyboard.addKey('P').on('down', () => {
+    this.input.keyboard.on('keydown-P', () => {
       const debug = !localStorage.getItem('fc:debug');
       localStorage.setItem('fc:debug', debug ? '1' : '');
 
@@ -109,8 +109,6 @@ export default class Play extends Phaser.Scene {
   }
 
   restart = () => {
-    // key event listeners aren't cleared automatically :(
-    for (const ee of this.input.keyboard.keys) if (ee) ee.removeAllListeners();
     this.matter.world.destroy();
     this.scene.restart();
   };

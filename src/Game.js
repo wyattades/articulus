@@ -56,10 +56,6 @@ export default class Game extends Phaser.Game {
     // the order that we stop scenes matters
     // i.e. must stop 'UI' scene before 'Play' (I think)
     for (const scene of this.scene.getScenes(true)) {
-      // remove all key listeners, why aren't these destroyed automatically???
-      for (const inputKey of scene.input.keyboard.keys)
-        if (inputKey) inputKey.destroy();
-
       this.scene.stop(scene.scene.key);
     }
 
