@@ -49,8 +49,7 @@ const parsePath = (pathname) => {
     if (match) return [key, match.params];
   }
 
-  replace('Menu');
-  return ['Menu', {}];
+  return [];
 };
 
 export const getKeyParams = () => parsePath(history.location.pathname);

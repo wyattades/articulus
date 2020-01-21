@@ -23,6 +23,20 @@ export class MapSaver {
 
   static db = new PouchDB('fc');
 
+  static charSample = [
+    ...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+  ];
+  static genId(size = 8) {
+    return [...new Array(size)]
+      .map(
+        () =>
+          MapSaver.charSample[
+            Math.floor(Math.random() * MapSaver.charSample.length)
+          ],
+      )
+      .join('');
+  }
+
   objs = null;
   id = null;
   rev = null;
@@ -128,16 +142,12 @@ export class MapSaver {
       objs: serialized,
     };
 
-    let res;
-    if (this.id) {
-      res = await MapSaver.db.put({
-        _id: this.id,
-        _rev: this.rev || undefined,
-        ...data,
-      });
-    } else {
-      res = await MapSaver.db.post(data);
-    }
+    const res = await MapSaver.db.put({
+      ...data,
+      _id: this.id || MapSaver.genId(),
+      _rev: this.rev || undefined,
+    });
+
     this.id = res.id;
     this.rev = res.rev;
   }

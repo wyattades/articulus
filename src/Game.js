@@ -37,11 +37,14 @@ export default class Game extends Phaser.Game {
     ])
       this.scene.add(Scene.name, Scene);
 
-    this._setScene(...routes.getKeyParams());
-
     this.unlisten = routes.listen((key, data) => {
-      this._setScene(key, data);
+      if (key) this._setScene(key, data);
+      else routes.replace('Menu');
     });
+
+    const [key, data] = routes.getKeyParams();
+    if (key) this._setScene(key, data);
+    else routes.replace('Menu'); // TODO: show a 404 page?
   }
 
   destroy() {
@@ -49,10 +52,14 @@ export default class Game extends Phaser.Game {
     super.destroy();
   }
 
-  _setScene(key, data) {
+  _setScene(key, data = {}) {
     // the order that we stop scenes matters
     // i.e. must stop 'UI' scene before 'Play' (I think)
     for (const scene of this.scene.getScenes(true)) {
+      // remove all key listeners, why aren't these destroyed automatically???
+      for (const inputKey of scene.input.keyboard.keys)
+        if (inputKey) inputKey.destroy();
+
       this.scene.stop(scene.scene.key);
     }
 
