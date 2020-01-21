@@ -30,8 +30,17 @@ export default class ShapeTool extends BoxTool {
 
   updateShape() {
     const { x, y, width, height } = this.box;
-    this.shape.setPosition(x + width / 2, y + height / 2);
-    this.shape.setSize(width, height);
+
+    const { x: sx, y: sy } = this.scene.snapToGrid({ x, y });
+    const { x: wx, y: hy } = this.scene.snapToGrid({
+      x: x + width,
+      y: y + height,
+    });
+    const sw = wx - sx;
+    const sh = hy - sy;
+
+    this.shape.setPosition(sx + sw / 2, sy + sh / 2);
+    this.shape.setSize(sw, sh);
     this.shape.render();
   }
 }
@@ -43,8 +52,17 @@ export class EllipseTool extends ShapeTool {
 
   updateShape() {
     const { ix, iy, width, height } = this.box;
-    this.shape.setPosition(ix, iy);
-    this.shape.setSize(width * 2, height * 2);
+
+    const { x: sx, y: sy } = this.scene.snapToGrid({ x: ix, y: iy });
+    const { x: wx, y: hy } = this.scene.snapToGrid({
+      x: ix + width,
+      y: iy + height,
+    });
+    const sw = wx - sx;
+    const sh = hy - sy;
+
+    this.shape.setPosition(sx, sy);
+    this.shape.setSize(sw * 2, sh * 2);
     this.shape.render();
   }
 }
