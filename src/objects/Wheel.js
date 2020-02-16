@@ -82,6 +82,7 @@ export default class Wheel extends Part {
   }
 
   onDisconnect({ x, y }) {
+    // TODO: use `joint` connection instead!
     if (Phaser.Math.Distance.Power(x, y, this.x, this.y) <= 1)
       this.stopSpinning();
   }

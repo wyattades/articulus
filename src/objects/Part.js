@@ -1,8 +1,7 @@
 import Phaser from 'phaser';
 
 import { adjustBrightness } from '../lib/utils';
-
-import { Matter, deleteConnections } from '../lib/physics';
+import { deleteConnections } from '../lib/physics';
 
 export default class Part extends Phaser.GameObjects.Graphics {
   static CONNECTOR_RADIUS = 6;
@@ -99,12 +98,10 @@ export default class Part extends Phaser.GameObjects.Graphics {
 
   enablePhysics() {
     this.scene.matter.add.gameObject(this, {
+      ...(this.physicsOptions || {}),
       shape: this.physicsShape,
       angle: this.rotation,
     });
-
-    const opt = this.physicsOptions;
-    if (opt) Matter.Body.set(this.body, opt);
 
     const cf = this.body.collisionFilter;
     cf.joints = {};
@@ -127,7 +124,14 @@ export default class Part extends Phaser.GameObjects.Graphics {
   onDisconnect() {}
 
   destroy() {
-    if (this.body) deleteConnections(this.scene, this.body);
+    if (this.body) {
+      deleteConnections(this.scene, this.body);
+      this.scene.matter.world.remove(this.body);
+    }
+
+    const scene = this.scene;
     super.destroy();
+
+    if (scene && scene.followingPart === this) scene.refreshCameraFollower?.();
   }
 }

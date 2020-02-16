@@ -15,7 +15,17 @@ export default class Play extends Phaser.Scene {
   /** @type import('./UI').default */
   ui;
 
-  selected = [];
+  // used by multiple tools e.g. SelectTool
+  selected;
+
+  // used in lib/physics
+  partJoints;
+
+  // Whether scene is running or not
+  running;
+
+  // `Part` that the camera is following
+  followingPart = null;
 
   constructor() {
     super({
@@ -28,41 +38,65 @@ export default class Play extends Phaser.Scene {
     this.mapSaver = this.mapKey ? new MapSaver(this.mapKey) : null;
 
     this.ui = this.scene.get('UI');
+    this.selected = [];
+    this.partJoints = {};
   }
 
   setRunning(running) {
     this.running = running;
     if (running) {
-      const follow = this.parts.getLast(true);
-      if (follow) {
-        const dist = Phaser.Math.Distance.Between(
-          this.cameras.main.scrollX,
-          this.cameras.main.scrollY,
-          follow.x,
-          follow.y,
-        );
-        this.cameras.main.pan(
-          follow.x,
-          follow.y,
-          dist * 0.6,
-          Phaser.Math.Easing.Quadratic.InOut,
-          false,
-          (_, progress) => {
-            if (progress === 1) {
-              this.matter.resume();
-              this.cameras.main.startFollow(follow, false, 0.08, 0.08);
-            }
-          },
-        );
-      }
+      this.refreshCameraFollower(() => {
+        this.matter.resume();
+
+        // TODO: don't enable cursor on physics-enabled objects
+        // this.events.emit('setRunning', running);
+        // this.tm.tools.find((tool) =>
+        //   tool.refreshCursor ? tool.refreshCursor() || true : false,
+        // );
+      });
     } else {
       this.matter.pause();
+      this.followingPart = null;
       this.cameras.main.stopFollow();
     }
 
-    // TODO: ???
-    // if (this.tool && this.tool.refreshCursor) this.tool.refreshCursor();
     this.ui.stateText.setText(running ? 'Running' : 'Paused');
+  }
+
+  refreshCameraFollower(cb) {
+    const camera = this.cameras.main;
+
+    camera.panEffect.reset();
+    camera.stopFollow();
+    this.followingPart = null;
+
+    const follow = this.parts.getLast(true);
+    if (follow) {
+      const dist = Phaser.Math.Distance.Between(
+        camera.scrollX,
+        camera.scrollY,
+        follow.x,
+        follow.y,
+      );
+
+      camera.pan(
+        follow.x,
+        follow.y,
+        dist * 0.6,
+        Phaser.Math.Easing.Quadratic.InOut,
+        false,
+        (_, progress) => {
+          if (progress === 1) {
+            cb?.();
+
+            this.followingPart = follow;
+            camera.startFollow(follow, false, 0.08, 0.08);
+          }
+        },
+      );
+    } else {
+      cb?.();
+    }
   }
 
   preload() {
@@ -133,6 +167,7 @@ export default class Play extends Phaser.Scene {
 
     // WORLD
 
+    let worldW, worldH;
     if (this.mapSaver) {
       this.mapSaver
         .load()
@@ -141,8 +176,13 @@ export default class Play extends Phaser.Scene {
       const terrain = new Terrain(this);
       this.terrainGroup.add(terrain);
 
-      this.matter.world.setBounds(0, 0, terrain.width, terrain.height);
+      worldW = terrain.width;
+      worldH = terrain.height;
     }
+
+    // PHYSICS
+
+    this.matter.world.setBounds(0, 0, worldW || 1000, worldH || 1000);
 
     // INPUTS
 

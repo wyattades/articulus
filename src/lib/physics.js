@@ -2,19 +2,25 @@ import Phaser from 'phaser';
 
 import { nextId, anySame, getFirstValue } from './utils';
 
-const joints = {};
+/**
+ * @type {import('@types/matter-js')}
+ */
+export const Matter = Phaser.Physics.Matter.Matter;
 
-const getJoint = (a, b, x, y) => {
+const getJoint = (joints, a, b, x, y) => {
   const bodies = [a, b];
   for (const id in joints) {
     const joint = joints[id];
     for (const body of bodies) {
       if (body.id in joint.bodies) {
         for (const c of joint.constraints) {
-          for (const [L, cBody] of [['A', c.bodyA], ['B', c.bodyB]]) {
+          for (const [cBody, cPoint] of [
+            [c.bodyA, c.pointA],
+            [c.bodyB, c.pointB],
+          ]) {
             if (cBody === body) {
               const { x: cx, y: cy } = cBody.position;
-              const { x: dx, y: dy } = c[`point${L}`];
+              const { x: dx, y: dy } = cPoint;
               if (Phaser.Math.Distance.Squared(x, y, cx + dx, cy + dy) <= 1.0) {
                 return joint;
               }
@@ -72,11 +78,6 @@ const reconnect = (scene, joint, point) => {
   }
 };
 
-/**
- * @type {import('@types/matter-js')}
- */
-export const Matter = Phaser.Physics.Matter.Matter;
-
 const oldCanCollide = Matter.Detector.canCollide;
 Matter.Detector.canCollide = (filterA, filterB) => {
   if ((filterA.noCollide && filterB.id) || (filterB.noCollide && filterA.id))
@@ -96,18 +97,19 @@ Matter.Detector.canCollide = (filterA, filterB) => {
 };
 
 /**
- * Connects two bodies at position of `child`
+ * Connects two bodies at position of `point`
  * @param {Phaser.Scene} scene
- * @param {Matter.Body} parent
- * @param {Matter.Body} child
+ * @param {Matter.Body} bodyA
+ * @param {Matter.Body} bodyB
+ * @param {{ x: number, y: number }} point
  */
 export const stiffConnect = (scene, bodyA, bodyB, point) => {
   const { x, y } = point;
 
-  let joint = getJoint(bodyA, bodyB, x, y);
+  let joint = getJoint(scene.partJoints, bodyA, bodyB, x, y);
   if (!joint) {
     const newId = nextId();
-    joints[newId] = joint = {
+    scene.partJoints[newId] = joint = {
       id: newId,
       bodies: {},
       constraints: [],
@@ -124,6 +126,7 @@ export const stiffConnect = (scene, bodyA, bodyB, point) => {
 };
 
 /**
+ * Delete all of the body's connections
  * @param {Phaser.Scene} scene
  * @param {Matter.Body} body
  */
@@ -139,13 +142,11 @@ export const deleteConnections = (scene, body) => {
     const jointPos = getJointPos(joint) || {};
 
     if (bodies.length <= 1) {
-      delete joints[jId]; // is this safe?
+      delete scene.partJoints[jId]; // is this safe?
       for (const b of bodies) {
-        b.gameObject.onDisconnect(jointPos);
+        b.gameObject.onDisconnect(jointPos); // FIXME: use joint id, not position!
         delete b.collisionFilter.joints[jId];
       }
     }
   }
-
-  scene.matter.world.remove(body);
 };
