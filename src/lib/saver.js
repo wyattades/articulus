@@ -1,14 +1,8 @@
 import throttle from 'lodash/throttle';
 import * as R from 'ramda';
-import PouchDB from 'pouchdb';
-// import PouchDBDebug from 'pouchdb-debug';
-import PouchDBFind from 'pouchdb-find';
 
 import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
-
-PouchDB.plugin(PouchDBFind);
-// PouchDB.plugin(PouchDBDebug);
-// PouchDB.debug.enable('*');
+import { Subject } from './async';
 
 /**
  * @typedef {{ x: number, y: number, width: number, height: number, type: string }[]} MapData
@@ -21,7 +15,23 @@ PouchDB.plugin(PouchDBFind);
 export class MapSaver {
   static metaCache = {};
 
-  static db = new PouchDB('fc');
+  static db = null;
+
+  static initter = null;
+
+  static async init() {
+    if (MapSaver.initter) return MapSaver.initter.toPromise();
+    MapSaver.initter = new Subject();
+
+    const { default: PouchDB } = await import('pouchdb');
+    const { default: PouchDBFind } = await import('pouchdb-find');
+
+    PouchDB.plugin(PouchDBFind);
+
+    MapSaver.db = new PouchDB('fc');
+
+    MapSaver.initter.complete();
+  }
 
   static charSample = [
     ...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
@@ -43,6 +53,8 @@ export class MapSaver {
   name = null;
 
   static async loadLevelsMeta() {
+    await MapSaver.init();
+
     const { rows: levels } = await MapSaver.db.allDocs({
       include_docs: true,
     });
@@ -88,11 +100,12 @@ export class MapSaver {
       const obj = new ShapeClass(group.scene, sobj.x, sobj.y);
       obj.setSize(sobj.width, sobj.height);
       obj.render();
+      obj.enablePhysics();
 
-      group.scene.matter.add.gameObject(obj, {
-        isStatic: true,
-        shape: obj.physicsShape,
-      });
+      // group.scene.matter.add.gameObject(obj, {
+      //   isStatic: true,
+      //   shape: obj.physicsShape,
+      // });
 
       group.add(obj);
     }
@@ -109,7 +122,6 @@ export class MapSaver {
 
       const obj = new ShapeClass(group.scene, sobj.x, sobj.y);
       obj.setSize(sobj.width, sobj.height);
-      obj.initListeners();
       obj.render();
 
       group.add(obj);
@@ -117,6 +129,8 @@ export class MapSaver {
   }
 
   async load() {
+    await MapSaver.init();
+
     const doc = await MapSaver.db.get(this.id);
 
     this.id = doc._id;
@@ -132,6 +146,8 @@ export class MapSaver {
    * @param {Phaser.GameObjects.Group} group
    */
   async save(group) {
+    await MapSaver.init();
+
     const serialized = R.map(
       R.pick(['x', 'y', 'width', 'height', 'type']),
       group.getChildren(),
