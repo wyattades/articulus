@@ -1,11 +1,21 @@
 {
   "name": "fantastic_contraption",
-  "version": "0.1.0",
   "license": "MIT",
+  "description": "A sandbox physics game",
+  "main": "src/index.js",
+  "author": "wyattades",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wyattades/fantastic_contraption.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wyattades/fantastic_contraption/issues"
+  },
+  "homepage": "https://github.com/wyattades/fantastic_contraption#readme",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_ENV=development webpack-dev-server",
+    "dev": "yarn && NODE_ENV=development webpack-dev-server",
     "build": "NODE_ENV=production webpack",
     "deploy": "npm run build && gh-pages -d dist"
   },
@@ -21,14 +31,16 @@
     "ramda": "^0.26.1"
   },
   "devDependencies": {
-    "babel-eslint": "^10.0.1",
+    "babel-eslint": "^10.0.3",
     "babel-plugin-ramda": "^2.0.0",
-    "eslint": "^5.16.0",
-    "eslint-config-airbnb": "^17.1.0",
-    "eslint-plugin-import": "^2.17.3",
-    "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-react": "^7.13.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-config-react": "^1.1.7",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-react": "^7.18.3",
+    "eslint-plugin-react-hooks": "^2.3.0",
     "gh-pages": "^2.1.1",
+    "prettier": "^1.19.1",
     "webpack-boiler": "^0.4.2"
   }
 }
