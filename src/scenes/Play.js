@@ -167,22 +167,45 @@ export default class Play extends Phaser.Scene {
 
     // WORLD
 
-    let worldW, worldH;
+    const bounds = new Phaser.Geom.Rectangle();
+
     if (this.mapSaver) {
       this.mapSaver
         .load()
         .then((mapData) => MapSaver.loadPlayParts(mapData, this.terrainGroup));
+
+      bounds.setTo(-1000, -1000, 3000, 3000);
     } else {
       const terrain = new Terrain(this);
       this.terrainGroup.add(terrain);
 
-      worldW = terrain.width;
-      worldH = terrain.height;
+      // TODO: the height doesn't seem to be quite correct here
+      bounds.setTo(
+        terrain.x,
+        -terrain.height,
+        terrain.width,
+        terrain.height * 2,
+      );
     }
+
+    // outline of world boundary
+    this.add
+      .rectangle(
+        bounds.x + bounds.width / 2,
+        bounds.y + bounds.height / 2,
+        bounds.width,
+        bounds.height,
+      )
+      .setStrokeStyle(2, 0xffffff, 0.9);
 
     // PHYSICS
 
-    this.matter.world.setBounds(0, 0, worldW || 1000, worldH || 1000);
+    this.matter.world.setBounds(
+      bounds.x,
+      bounds.y,
+      bounds.width,
+      bounds.height,
+    );
 
     // INPUTS
 
