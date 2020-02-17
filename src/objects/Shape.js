@@ -2,6 +2,23 @@ import Phaser from 'phaser';
 
 import Part from './Part';
 
+const getEllipsePoints = (w, h, numPoints) => {
+  const a = w / 2,
+    b = h / 2;
+
+  const points = [];
+
+  let delta = (2 * Math.PI) / numPoints;
+  for (let angle = 0; angle < Math.PI * 2; angle += delta) {
+    const x = a * Math.cos(angle);
+    const y = b * Math.sin(angle);
+
+    points.push({ x, y });
+  }
+
+  return points;
+};
+
 export class Rectangle extends Part {
   fillColor = 0x00ff00;
   fillOpacity = 1;
@@ -36,26 +53,31 @@ export class Rectangle extends Part {
     );
   }
 
-  get physicsShape() {
-    return 'rectangle';
-    // {
-    //   type: 'rectangle',
-    //   // x: this.x,
-    //   // y: this.y,
-    //   width: this.width,
-    //   height: this.height,
-    // };
+  get physicsOptions() {
+    return {
+      isStatic: true,
+    };
   }
 
-  initListeners() {
-    // this.setInteractive(this.geom, (geom, dx, dy, obj) => {
-    //   geom.x = obj.x - geom.width / 2;
-    //   geom.y = obj.y - geom.height / 2;
-    //   return geom.contains(obj.x + dx, obj.y + dy);
-    // });
-    // this.on(Phaser.Input.Events.GAMEOBJECT_POINTER_DOWN, (pointer) => {
-    //   pointer.dragObj = this;
-    // });
+  get physicsShape() {
+    return 'rectangle';
+  }
+
+  enablePhysics() {
+    this.scene.matter.add.gameObject(this, {
+      shape: this.physicsShape,
+      angle: this.rotation,
+      ...(this.physicsOptions || {}),
+    });
+
+    // FIXME: needed to override because `noFilter` prevents
+    //        Water Lines from colliding with Shapes
+    // const cf = this.body.collisionFilter;
+    // cf.joints = {};
+    // cf.id = this.body.id;
+    // if (this.noCollide) cf.noCollide = true;
+
+    return this;
   }
 }
 
@@ -75,19 +97,15 @@ export class Ellipse extends Rectangle {
   }
 
   get physicsShape() {
-    // this.scene.matter.add.rectangle()
+    if (this.width === this.height)
+      return {
+        type: 'circle',
+        radius: this.width / 2,
+      };
 
-    // Bodies.rectangle(200, 200, 200, 200, {
-    //   chamfer: { radius: [150, 20, 150, 20] }
-    // }),
     return {
-      type: 'circle',
-      // x: this.x,
-      // y: this.y,
-      radius: this.width / 2,
-      // type: 'ellipse',
-      // width: this.width,
-      // height: this.height,
+      type: 'fromVertices',
+      verts: getEllipsePoints(this.width, this.height, 16),
     };
   }
 }
