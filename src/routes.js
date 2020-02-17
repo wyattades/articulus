@@ -4,20 +4,15 @@ import * as pathToRegexp from 'path-to-regexp';
 
 const history = createBrowserHistory();
 
-export const routes = {
+let routes = {
   Menu: '/',
   Play: '/play/:mapKey?',
   Editor: '/edit/:mapKey?',
 };
+routes = R.map((route) => `/${process.env.BASENAME}${route}`, routes);
 
-const compiledRoutes = R.mapObjIndexed(
-  (route) => pathToRegexp.compile(route),
-  routes,
-);
-const matchedRoutes = R.mapObjIndexed(
-  (route) => pathToRegexp.match(route),
-  routes,
-);
+const compiledRoutes = R.map((route) => pathToRegexp.compile(route), routes);
+const matchedRoutes = R.map((route) => pathToRegexp.match(route), routes);
 
 const resolvePath = (type, params = {}) => {
   const toPath = compiledRoutes[type];
