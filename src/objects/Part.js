@@ -81,6 +81,8 @@ export default class Part extends Phaser.GameObjects.Graphics {
 
     if (isSelected) this.strokeWidth += 2;
     else this.strokeWidth -= 2;
+
+    this.clear();
     this.render();
   }
 
