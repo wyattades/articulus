@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
 
 import { TOOLS } from '.';
-import { intersectsGeoms } from '../lib/utils';
+import { intersectsGeoms, EventManager } from '../lib/utils';
 
 export default class ToolManager {
   tools = []; // active tools
+
+  lastPointer = null;
 
   /**
    * @param {Phaser.Scene} scene
@@ -18,11 +20,16 @@ export default class ToolManager {
     this.setTool(initial);
     this.createListeners();
 
-    scene.events.on('shutdown', this.destroyTools);
+    scene.events.on('shutdown', this.cleanup);
   }
 
-  destroyTools = () => {
+  destroyTools() {
     for (const tool of this.tools) tool.destroy();
+  }
+
+  cleanup = () => {
+    this.destroyTools();
+    this.eventManager.off();
   };
 
   setTool(toolType) {
@@ -56,6 +63,8 @@ export default class ToolManager {
   }
 
   pointerDown = (pointer) => {
+    this.lastPointer = pointer;
+
     const { worldX, worldY } = pointer;
 
     const topObject = this.getTopObject(worldX, worldY);
@@ -67,6 +76,8 @@ export default class ToolManager {
   };
 
   pointerMove = (pointer) => {
+    this.lastPointer = pointer;
+
     const { worldX, worldY } = pointer;
 
     for (const tool of this.tools)
@@ -74,6 +85,8 @@ export default class ToolManager {
   };
 
   pointerUp = (pointer) => {
+    this.lastPointer = pointer;
+
     const { worldX, worldY } = pointer;
 
     for (const tool of this.tools)
@@ -85,9 +98,13 @@ export default class ToolManager {
       .on(Phaser.Input.Events.POINTER_DOWN, this.pointerDown)
       .on(Phaser.Input.Events.POINTER_MOVE, this.pointerMove)
       .on(Phaser.Input.Events.POINTER_UP, this.pointerUp);
-  }
 
-  // destroy() {
-  //   this.tool.destroy();
-  // }
+    this.eventManager = new EventManager()
+      .on(this.scene.game.canvas, 'mouseleave', () => {
+        this.pointerUp(this.lastPointer);
+      })
+      .on(window, 'blur', () => {
+        this.pointerUp(this.lastPointer);
+      });
+  }
 }
