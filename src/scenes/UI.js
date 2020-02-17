@@ -35,6 +35,18 @@ export default class UI extends Phaser.Scene {
       );
   }
 
+  createListeners() {
+    this.play.events.on('setSelected', (selected) => {
+      const visible = selected && selected.length > 0;
+      this.enableObjectActions(visible);
+    });
+  }
+
+  enableObjectActions(enabled) {
+    for (const button of this.objActions)
+      button.setVisible(enabled).setActive(enabled);
+  }
+
   create() {
     this.stateText = this.add
       .dom(this.scale.width - 10, 10, 'div')
@@ -77,6 +89,40 @@ export default class UI extends Phaser.Scene {
       ],
       true,
     );
+
+    this.objActions = createUIButtons(
+      this,
+      [
+        {
+          title: 'Duplicate',
+          onClick: () => {
+            const offset = 10;
+            const newObjs = this.play.selected.map((obj) => {
+              const newObj = obj.clone();
+              newObj.setPosition(obj.x + offset, obj.y + offset);
+              newObj.render();
+              this.play.parts.add(newObj);
+
+              return newObj;
+            });
+
+            this.play.events.emit('setSelected', newObjs);
+          },
+        },
+        {
+          title: 'Delete',
+          bgColor: theme.red,
+          color: colorInverse(theme.red),
+          onClick: () => {
+            for (const obj of this.play.selected) obj.destroy();
+            this.play.events.emit('setSelected', []);
+          },
+        },
+      ],
+      false,
+      true,
+    );
+    this.enableObjectActions(false);
 
     this.flashText = this.add
       .dom(this.scale.width / 2, 0, 'div')

@@ -24,7 +24,7 @@
     "bulma": "^0.7.5",
     "history": "^4.10.1",
     "path-to-regexp": "^6.1.0",
-    "phaser": "^3.21.0",
+    "phaser": "^3.22.0",
     "pouchdb": "^7.1.1",
     "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.1.1",

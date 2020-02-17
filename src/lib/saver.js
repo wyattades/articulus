@@ -170,3 +170,35 @@ export class MapSaver {
 
   queueSave = throttle(this.save.bind(this), 400);
 }
+
+export const settingsSaver = new (class SettingsSaver {
+  static STORAGE_KEY = 'fc:settings';
+
+  settings = this.load();
+
+  load() {
+    try {
+      const obj = JSON.parse(localStorage.getItem(SettingsSaver.STORAGE_KEY));
+      if (obj && typeof obj === 'object') return obj;
+    } catch (_) {}
+    return {};
+  }
+
+  save() {
+    try {
+      localStorage.setItem(
+        SettingsSaver.STORAGE_KEY,
+        JSON.stringify(this.settings),
+      );
+    } catch (_) {}
+  }
+
+  get(key) {
+    return this.settings[key];
+  }
+
+  set(key, value) {
+    this.settings[key] = value;
+    this.save();
+  }
+})();

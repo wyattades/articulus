@@ -158,7 +158,7 @@ let Phaser = {
   // Structs: require('ph/structs'),
   // Textures: require('ph/textures'),
   // Tilemaps: require('ph/tilemaps'),
-  // Time: require('ph/time'),
+  Time: require('ph/time'),
   // Tweens: require('ph/tweens'),
   Utils: require('ph/utils'),
   // Sound: require('ph/sound'),

@@ -1,8 +1,7 @@
 import Phaser from 'phaser';
 
-import { constrain, EventManager } from '../lib/utils';
 import ToolManager from '../tools/ToolManager';
-import { MapSaver } from '../lib/saver';
+import { MapSaver, settingsSaver } from '../lib/saver';
 import { EDITOR_TOOL_TYPES } from '../tools';
 
 export default class Editor extends Phaser.Scene {
@@ -34,26 +33,18 @@ export default class Editor extends Phaser.Scene {
       for (const obj of this.selected || []) this.parts.remove(obj, true, true);
       this.events.emit('setSelected', []);
     });
-
-    this.eventManager = new EventManager().on(
-      this.game.canvas,
-      'wheel',
-      (e) => {
-        e.preventDefault();
-        this.cameras.main.setZoom(
-          // TODO: normalize zoom speed
-          constrain(this.cameras.main.zoom + e.deltaY * 0.01, 0.2, 10),
-        );
-      },
-      false,
-    );
-
-    this.events.on('shutdown', () => {
-      this.eventManager.off();
-    });
   }
 
-  gridSize = 10;
+  gridSize;
+
+  enableSnapping(enabled) {
+    settingsSaver.set('snapping', enabled);
+
+    this.gridObj.setVisible(enabled).setActive(enabled);
+
+    this.gridSize = enabled ? 10 : null;
+  }
+
   snapToGrid(obj) {
     if (this.gridSize) {
       const offsetX = obj.originX != null ? obj.originX * obj.width : 0;
@@ -68,6 +59,7 @@ export default class Editor extends Phaser.Scene {
   }
 
   async saveLevel(force = false) {
+    // this.parts.isDirty();
     if (force) await this.mapSaver.save(this.parts);
     else await this.mapSaver.queueSave(this.parts);
   }
@@ -75,19 +67,18 @@ export default class Editor extends Phaser.Scene {
   create() {
     this.createListeners();
 
-    if (this.gridSize) {
-      this.add.grid(
-        0,
-        0,
-        this.gridSize * 300,
-        this.gridSize * 300,
-        this.gridSize,
-        this.gridSize,
-        0x000000,
-        1,
-        0x444444,
-      );
-    }
+    this.gridObj = this.add.grid(
+      0,
+      0,
+      this.gridSize * 300,
+      this.gridSize * 300,
+      this.gridSize,
+      this.gridSize,
+      0x000000,
+      1,
+      0x444444,
+    );
+    this.enableSnapping(settingsSaver.get('snapping'));
 
     this.parts = this.add.group();
     this.mapSaver
@@ -96,11 +87,11 @@ export default class Editor extends Phaser.Scene {
 
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 
-    // this.time.addEvent({
-    //   loop: true,
-    //   delay: 400,
-    //   callback: () => this.saveLevel(),
-    // });
+    this.time.addEvent({
+      loop: true,
+      delay: 1000,
+      callback: () => this.saveLevel(),
+    });
   }
 
   update(_, delta) {

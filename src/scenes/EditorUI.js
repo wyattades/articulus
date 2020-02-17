@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { TOOLS, EDITOR_TOOL_TYPES } from '../tools';
 import { colorInverse, createUIButtons } from '../lib/utils';
 import theme from '../styles/theme';
+import { settingsSaver } from '../lib/saver';
 
 export default class EditorUI extends Phaser.Scene {
   constructor() {
@@ -32,8 +33,7 @@ export default class EditorUI extends Phaser.Scene {
 
     this.editor.events.on('setSelected', (selected) => {
       const visible = selected && selected.length > 0;
-      for (const button of this.objActions)
-        button.setVisible(visible).setActive(visible);
+      this.enableObjectActions(visible);
     });
   }
 
@@ -43,6 +43,11 @@ export default class EditorUI extends Phaser.Scene {
         'ui-tool-button--active',
         button.getData('tool') === toolType,
       );
+  }
+
+  enableObjectActions(enabled) {
+    for (const button of this.objActions)
+      button.setVisible(enabled).setActive(enabled);
   }
 
   create() {
@@ -98,6 +103,12 @@ export default class EditorUI extends Phaser.Scene {
             });
           },
         },
+        {
+          title: 'Grid\nSnapping?',
+          onClick: () => {
+            this.editor.enableSnapping(!settingsSaver.get('snapping'));
+          },
+        },
       ],
       true,
     );
@@ -134,7 +145,7 @@ export default class EditorUI extends Phaser.Scene {
       false,
       true,
     );
-    for (const obj of this.objActions) obj.setVisible(false).setActive(false);
+    this.enableObjectActions(false);
 
     this.uiSaveStatus = this.add
       .dom(this.scale.width - 10, 10 + 2 * 50, 'div', '', '')
