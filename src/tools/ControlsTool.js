@@ -35,18 +35,30 @@ export default class ControlsTool extends Tool {
       dragging &&
       this.scene.selected &&
       this.scene.selected.indexOf(dragging[0].obj) !== -1
-    )
+    ) {
+      for (const data of dragging) {
+        data.cdx = data.obj.x - this.controls.x;
+        data.cdy = data.obj.y - this.controls.y;
+      }
+
       this.scene.dragging = [
-        ...dragging,
         {
           obj: this.controls,
+          afterUpdate(x, y) {
+            for (const { obj, cdx, cdy } of dragging) {
+              obj.setPosition(x + cdx, y + cdy);
+            }
+          },
+          ix: x,
+          iy: y,
           dx: this.controls.x - x,
           dy: this.controls.y - y,
         },
       ];
+    }
   };
 
-  handlePointerDown(x, y, pointer, topObject) {
+  handlePointerDown(x, y, _pointer, _topObject) {
     if (!this.controls.getChildren()[0].visible) return;
 
     const bounds = new Phaser.Geom.Rectangle();
@@ -104,13 +116,14 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  handlePointerMove(x, y, pointer) {
+  handlePointerMove(x, y, _pointer) {
     if (this.controlDragging) {
       this.controlDragging.moved = true;
       const { obj, dx, dy, ox, oy } = this.controlDragging;
-      obj.setPosition(x + dx, y + dy);
 
-      this.scene.snapToGrid(obj);
+      const newPos = { x: x + dx, y: y + dy };
+      this.scene.snapToGrid(newPos);
+      obj.setPosition(newPos.x, newPos.y);
 
       const minSize = MIN_SHAPE_SIZE;
       if (obj.originX === 0 && obj.x < ox + minSize) obj.x = ox + minSize;
@@ -125,7 +138,7 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  handlePointerUp(x, y, pointer) {
+  handlePointerUp(_x, _y, _pointer) {
     if (this.controlDragging) {
       // const moved = this.controlDragging.moved;
       this.controlDragging = null;

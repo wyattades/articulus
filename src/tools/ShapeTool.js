@@ -30,15 +30,16 @@ export default class ShapeTool extends BoxTool {
   updateShape() {
     const { x, y, width, height } = this.box;
 
-    const { x: sx, y: sy } = this.scene.snapToGrid({ x, y });
-    const { x: wx, y: hy } = this.scene.snapToGrid({
-      x: x + width,
-      y: y + height,
-    });
-    const sw = wx - sx;
-    const sh = hy - sy;
+    const s = { x, y };
+    const w = { x: x + width, y: y + height };
 
-    this.shape.setPosition(sx + sw / 2, sy + sh / 2);
+    this.scene.snapToGrid(s);
+    this.scene.snapToGrid(w);
+
+    const sw = w.x - s.x;
+    const sh = w.y - s.y;
+
+    this.shape.setPosition(s.x + sw / 2, s.y + sh / 2);
     this.shape.setSize(sw, sh);
     this.shape.render();
   }
@@ -52,15 +53,16 @@ export class EllipseTool extends ShapeTool {
   updateShape() {
     const { ix, iy, width, height } = this.box;
 
-    const { x: sx, y: sy } = this.scene.snapToGrid({ x: ix, y: iy });
-    const { x: wx, y: hy } = this.scene.snapToGrid({
-      x: ix + width,
-      y: iy + height,
-    });
-    const sw = wx - sx;
-    const sh = hy - sy;
+    const ip = { x: ix, y: iy };
+    const w = { x: ix + width, y: iy + height };
 
-    this.shape.setPosition(sx, sy);
+    this.scene.snapToGrid(ip);
+    this.scene.snapToGrid(w);
+
+    const sw = w.x - ip.x;
+    const sh = w.y - ip.y;
+
+    this.shape.setPosition(ip.x, ip.y);
     this.shape.setSize(sw * 2, sh * 2);
     this.shape.render();
   }

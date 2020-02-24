@@ -220,8 +220,8 @@ export default class Play extends Phaser.Scene {
     this.setRunning(false);
   }
 
-  snapToGrid(obj) {
-    return obj;
+  snapToGrid(_obj) {
+    return false;
   }
 
   update(_, delta) {

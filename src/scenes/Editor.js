@@ -35,6 +35,7 @@ export default class Editor extends Phaser.Scene {
     });
   }
 
+  iGridSize = 10;
   gridSize;
 
   enableSnapping(enabled) {
@@ -42,7 +43,7 @@ export default class Editor extends Phaser.Scene {
 
     this.gridObj.setVisible(enabled).setActive(enabled);
 
-    this.gridSize = enabled ? 10 : null;
+    this.gridSize = enabled ? this.iGridSize : null;
   }
 
   snapToGrid(obj) {
@@ -53,9 +54,9 @@ export default class Editor extends Phaser.Scene {
         this.gridSize * Math.floor((obj.x - offsetX) / this.gridSize) + offsetX;
       obj.y =
         this.gridSize * Math.floor((obj.y - offsetY) / this.gridSize) + offsetY;
-      if (obj.setPosition) obj.setPosition(obj.x, obj.y);
+      return true;
     }
-    return obj;
+    return false;
   }
 
   async saveLevel(force = false) {
@@ -70,15 +71,15 @@ export default class Editor extends Phaser.Scene {
     this.gridObj = this.add.grid(
       0,
       0,
-      this.gridSize * 300,
-      this.gridSize * 300,
-      this.gridSize,
-      this.gridSize,
+      this.iGridSize * 300,
+      this.iGridSize * 300,
+      this.iGridSize,
+      this.iGridSize,
       0x000000,
       1,
       0x444444,
     );
-    this.enableSnapping(settingsSaver.get('snapping'));
+    this.enableSnapping(!!settingsSaver.get('snapping'));
 
     this.parts = this.add.group();
     this.mapSaver

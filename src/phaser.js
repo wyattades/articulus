@@ -108,6 +108,7 @@ const GameObjects = {
   },
 };
 
+// eslint-disable-next-line no-constant-condition
 if (typeof WEBGL_RENDERER) {
   //  WebGL only Game Objects
   GameObjects.Mesh = require('ph/gameobjects/mesh/Mesh');

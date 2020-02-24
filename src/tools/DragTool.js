@@ -4,8 +4,6 @@
 import Tool from './Tool';
 
 export default class DragTool extends Tool {
-  // dragging = null;
-
   setDragging(dragging, x, y) {
     this.scene.dragging = dragging;
     this.scene.events.emit('setDragging', dragging, x, y);
@@ -50,10 +48,14 @@ export default class DragTool extends Tool {
     if (this.dragging) {
       this.dragging.moved = true;
 
-      for (const { obj, dx, dy } of this.dragging) {
-        obj.x = x + dx;
-        obj.y = y + dy;
-        this.scene.snapToGrid(obj);
+      for (const { obj, dx, dy, afterUpdate } of this.dragging) {
+        // `obj` may be `Controls`, which is a `Group` with a custom `setPosition` method
+        // which should be called only once for performance
+        const newPos = { x: x + dx, y: y + dy };
+        this.scene.snapToGrid(newPos);
+        obj.setPosition(newPos.x, newPos.y);
+
+        if (afterUpdate) afterUpdate(newPos.x, newPos.y);
       }
       return false;
     }
