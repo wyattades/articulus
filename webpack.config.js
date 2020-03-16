@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { resolve } = require('path');
 
 const config = (module.exports = require('webpack-boiler')({
@@ -8,8 +9,9 @@ const config = (module.exports = require('webpack-boiler')({
     },
   ],
   env: {
-    CANVAS_RENDERER: true,
+    CANVAS_RENDERER: false,
     WEBGL_RENDERER: true,
+    FAUNA_CLIENT_KEY: process.env.FAUNA_CLIENT_KEY,
   },
   basename: 'fantastic_contraption',
 }));

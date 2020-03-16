@@ -1,8 +1,23 @@
 import throttle from 'lodash/throttle';
 import * as R from 'ramda';
+import faunadb from 'faunadb';
 
 import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
 import { Subject } from './async';
+import { base48 } from './utils';
+
+const q = faunadb.query;
+
+// TEMP: until I build user system
+const userId = (() => {
+  let u = localStorage.getItem('fc:user_id');
+  if (typeof u === 'string' && u.length >= 6) return u;
+
+  u = base48(8);
+  localStorage.setItem('fc:user_id', u);
+
+  return u;
+})();
 
 /**
  * @typedef {{ x: number, y: number, width: number, height: number, type: string }[]} MapData
@@ -15,36 +30,31 @@ import { Subject } from './async';
 export class MapSaver {
   static metaCache = {};
 
+  /**
+   * @type {faunadb.Client}
+   */
   static db = null;
 
   static initter = null;
+
+  static async query(expr) {
+    try {
+      return MapSaver.db.query(expr);
+    } catch (err) {
+      console.error('fauna error', err);
+      throw err;
+    }
+  }
 
   static async init() {
     if (MapSaver.initter) return MapSaver.initter.toPromise();
     MapSaver.initter = new Subject();
 
-    const { default: PouchDB } = await import('pouchdb');
-    const { default: PouchDBFind } = await import('pouchdb-find');
-
-    PouchDB.plugin(PouchDBFind);
-
-    MapSaver.db = new PouchDB('fc');
+    MapSaver.db = new faunadb.Client({
+      secret: process.env.FAUNA_CLIENT_KEY,
+    });
 
     MapSaver.initter.complete();
-  }
-
-  static charSample = [
-    ...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-  ];
-  static genId(size = 8) {
-    return [...new Array(size)]
-      .map(
-        () =>
-          MapSaver.charSample[
-            Math.floor(Math.random() * MapSaver.charSample.length)
-          ],
-      )
-      .join('');
   }
 
   objs = null;
@@ -55,15 +65,17 @@ export class MapSaver {
   static async loadLevelsMeta() {
     await MapSaver.init();
 
-    const { rows: levels } = await MapSaver.db.allDocs({
-      include_docs: true,
-    });
+    const res = await MapSaver.query(
+      q.Map(
+        q.Paginate(q.Match(q.Index('maps_by_user_id'), userId), { size: 21 }),
+        q.Lambda('ref', q.Get(q.Var('ref'))),
+      ),
+    );
 
-    return levels.map((l) => {
+    return res.data.map((l) => {
       const meta = {
-        id: l.id,
-        rev: l.value.rev,
-        name: l.doc.name,
+        id: l.ref.id,
+        name: l.data.name,
       };
 
       MapSaver.metaCache[meta.id] = meta;
@@ -78,7 +90,6 @@ export class MapSaver {
     if (id) {
       const meta = MapSaver.metaCache[id];
       if (meta) {
-        this.rev = meta.rev;
         this.name = meta.name;
       }
     }
@@ -101,11 +112,6 @@ export class MapSaver {
       obj.setSize(sobj.width, sobj.height);
       obj.render();
       obj.enablePhysics();
-
-      // group.scene.matter.add.gameObject(obj, {
-      //   isStatic: true,
-      //   shape: obj.physicsShape,
-      // });
 
       group.add(obj);
     }
@@ -131,15 +137,16 @@ export class MapSaver {
   async load() {
     await MapSaver.init();
 
-    const doc = await MapSaver.db.get(this.id);
+    const { ref, data } = await MapSaver.query(
+      q.Get(q.Ref(q.Collection('maps'), this.id)),
+    );
 
-    this.id = doc._id;
-    this.rev = doc._rev;
-    this.name = doc.name;
+    this.id = ref.id;
+    this.name = data.name;
 
-    this.objs = doc.objs;
+    this.objs = data.objs;
 
-    return doc.objs;
+    return data.objs;
   }
 
   /**
@@ -148,24 +155,28 @@ export class MapSaver {
   async save(group) {
     await MapSaver.init();
 
+    // TODO: obj.toJSON ?
     const serialized = R.map(
       R.pick(['x', 'y', 'width', 'height', 'type']),
       group.getChildren(),
     );
 
     const data = {
+      user_id: userId,
       name: this.name,
       objs: serialized,
     };
 
-    const res = await MapSaver.db.put({
-      ...data,
-      _id: this.id || MapSaver.genId(),
-      _rev: this.rev || undefined,
-    });
+    const res = await MapSaver.query(
+      this.id
+        ? // TODO: test if ref exists first?
+          q.Update(q.Ref(q.Collection('maps'), this.id), { data })
+        : q.Create(q.Collection('maps'), {
+            data,
+          }),
+    );
 
-    this.id = res.id;
-    this.rev = res.rev;
+    this.id = res.ref.id;
   }
 
   queueSave = throttle(this.save.bind(this), 400);

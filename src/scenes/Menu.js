@@ -9,8 +9,15 @@ export default class Menu extends Phaser.Scene {
     });
   }
 
+  levels = [];
+
   async loadLevels() {
-    this.levels = [...(await MapSaver.loadLevelsMeta())];
+    try {
+      this.levels = [...(await MapSaver.loadLevelsMeta())];
+    } catch (err) {
+      console.error('loadLevels', err);
+    }
+
     return this.levels;
   }
 
@@ -40,9 +47,16 @@ export default class Menu extends Phaser.Scene {
 
     await this.loadLevels();
 
+    const rows = 7;
     this.uiLevels = this.levels.map(({ id, name }, i) => {
       const uiLevel = this.add
-        .dom(200, 40 + i * 100, 'div', '', name)
+        .dom(
+          200 + Math.floor(i / rows) * 200,
+          40 + (i % rows) * 100,
+          'div',
+          '',
+          name,
+        )
         .setClassName('ui-level-select')
         .setOrigin(0, 0);
 
@@ -70,5 +84,17 @@ export default class Menu extends Phaser.Scene {
 
       return uiLevel;
     });
+
+    if (this.levels.length === 0) {
+      this.add
+        .dom(
+          this.scale.width / 2,
+          this.scale.height / 2,
+          'div',
+          '',
+          'No levels!',
+        )
+        .setClassName('ui-text');
+    }
   }
 }
