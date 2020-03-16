@@ -27,6 +27,14 @@ export const adjustBrightness = (color, n) =>
 let _id = 1;
 export const nextId = () => _id++;
 
+const charSample = [
+  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+];
+export const base48 = (size = 8) =>
+  [...new Array(size)]
+    .map(() => charSample[Math.floor(Math.random() * charSample.length)])
+    .join('');
+
 export function* circle4Points(radius, startRotation = 0) {
   const cos = Math.cos(startRotation) * radius;
   const sin = Math.sin(startRotation) * radius;
@@ -191,4 +199,18 @@ export const createUIButtons = (
   });
 
   return buttons;
+};
+
+export const getObjectsBounds = (objs) => {
+  const o = objs[0];
+  const bounds = new Phaser.Geom.Rectangle(o?.x, o?.y, 0, 0);
+
+  for (const { geom } of objs) {
+    if (geom.right > bounds.right) bounds.right = geom.right;
+    if (geom.bottom > bounds.bottom) bounds.bottom = geom.bottom;
+    if (geom.left < bounds.left) bounds.left = geom.left;
+    if (geom.top < bounds.top) bounds.top = geom.top;
+  }
+
+  return bounds;
 };

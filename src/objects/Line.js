@@ -12,8 +12,10 @@ export default class Line extends Part {
     super(scene, x1, y1);
 
     this.size = lineWidth;
-    this._x1 = x1;
-    this._y1 = y1;
+    this.length = 1;
+
+    this.x1 = x1;
+    this.y1 = y1;
 
     this.setEnd(x2, y2);
   }
@@ -26,35 +28,40 @@ export default class Line extends Part {
     return Math.sin(this.rotation) * this.length;
   }
 
-  get x1() {
-    return this.x - this.cosX / 2;
-  }
-
-  get y1() {
-    return this.y - this.cosY / 2;
-  }
-
-  get x2() {
-    return this.x + this.cosX / 2;
-  }
-
-  get y2() {
-    return this.y + this.cosY / 2;
-  }
-
   // this only works before calling enablePhysics
-  setEnd(x2, y2) {
-    const { _x1: x1, _y1: y1 } = this;
+  recalculateGeom() {
+    const { x1, y1, x2, y2 } = this;
 
     this.length = Math.max(1, Phaser.Math.Distance.Between(x1, y1, x2, y2));
 
     this.setRotation(Phaser.Math.Angle.Between(x1, y1, x2, y2));
 
-    this.x = x1 + this.cosX / 2;
-    this.y = y1 + this.cosY / 2;
+    this.x = (x1 + x2) / 2;
+    this.y = (y1 + y2) / 2;
+  }
 
-    this.clear();
-    this.render();
+  recomputeEnds() {
+    const cx = this.cosX / 2,
+      cy = this.cosY / 2;
+
+    this.x1 = this.x - cx;
+    this.y1 = this.y - cy;
+    this.x2 = this.x + cx;
+    this.y2 = this.y + cy;
+  }
+
+  setStart(x1, y1) {
+    this.x1 = x1;
+    this.y1 = y1;
+
+    this.recalculateGeom();
+  }
+
+  setEnd(x2, y2) {
+    this.x2 = x2;
+    this.y2 = y2;
+
+    this.recalculateGeom();
   }
 
   render() {
@@ -65,6 +72,19 @@ export default class Line extends Part {
 
     this.renderConnector(-this.length / 2, 0);
     this.renderConnector(this.length / 2, 0);
+  }
+
+  clone() {
+    const newObj = super.clone();
+
+    newObj.size = this.size;
+    newObj.length = this.length;
+    newObj.x1 = this.x1;
+    newObj.y1 = this.y1;
+    newObj.x2 = this.x2;
+    newObj.y2 = this.y2;
+
+    return newObj;
   }
 
   get physicsShape() {
@@ -78,25 +98,21 @@ export default class Line extends Part {
   }
 
   get geom() {
+    this.recomputeEnds();
     return new Phaser.Geom.Line(this.x1, this.y1, this.x2, this.y2);
   }
 
-  updateTPos = () => {
-    if (this.t) {
-      this.t.x = this.x;
-      this.t.y = this.y;
-    }
-  };
-
   getHoverPoint(x, y, dist) {
+    this.recomputeEnds();
+
     dist *= dist;
 
-    const { x1, y1 } = this;
-    if (Phaser.Math.Distance.Squared(x, y, x1, y1) < dist)
-      return { x: x1, y: y1 };
-    const { x2, y2 } = this;
-    if (Phaser.Math.Distance.Squared(x, y, x2, y2) < dist)
-      return { x: x2, y: y2 };
+    if (Phaser.Math.Distance.Squared(x, y, this.x1, this.y1) < dist)
+      return { x: this.x1, y: this.y1 };
+
+    if (Phaser.Math.Distance.Squared(x, y, this.x2, this.y2) < dist)
+      return { x: this.x2, y: this.y2 };
+
     return null;
   }
 }

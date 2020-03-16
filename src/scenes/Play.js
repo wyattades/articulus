@@ -6,8 +6,7 @@ import { Matter } from '../lib/physics';
 import { MapSaver } from '../lib/saver';
 import theme from '../styles/theme';
 import ToolManager from '../tools/ToolManager';
-
-const MAX_PARTS = 32;
+import { MAX_PARTS } from '../const';
 
 export default class Play extends Phaser.Scene {
   running = false;
@@ -196,7 +195,8 @@ export default class Play extends Phaser.Scene {
         bounds.width,
         bounds.height,
       )
-      .setStrokeStyle(2, 0xffffff, 0.9);
+      .setStrokeStyle(2, 0xffffff, 0.9)
+      .setDepth(-1);
 
     // PHYSICS
 

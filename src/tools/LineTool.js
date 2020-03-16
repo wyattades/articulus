@@ -48,19 +48,21 @@ export default class LineTool extends PlaceTool {
     return true;
   }
 
-  getConnections(drawObj) {
+  *getConnections(drawObj) {
     const cursor = this.scene.cursor;
     const { startData } = drawObj;
+
     const start = startData && startData.obj;
     const end = cursor.visible && cursor.getData('connectObj');
 
-    const c = [];
-    if (start) c.push({ body: start.body, x: startData.x, y: startData.y });
-    if (end) c.push({ body: end.body, x: cursor.x, y: cursor.y });
-    return c;
+    if (start) yield { body: start.body, x: startData.x, y: startData.y };
+    if (end) yield { body: end.body, x: cursor.x, y: cursor.y };
   }
 
   handleObjDrag(x, y) {
-    this.drawObj.obj.setEnd(x, y);
+    const obj = this.drawObj.obj;
+    obj.setEnd(x, y);
+    obj.clear();
+    obj.render();
   }
 }

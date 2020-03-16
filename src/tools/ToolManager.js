@@ -101,10 +101,10 @@ export default class ToolManager {
 
     this.eventManager = new EventManager()
       .on(this.scene.game.canvas, 'mouseleave', () => {
-        this.pointerUp(this.lastPointer);
+        if (this.lastPointer) this.pointerUp(this.lastPointer);
       })
       .on(window, 'blur', () => {
-        this.pointerUp(this.lastPointer);
+        if (this.lastPointer) this.pointerUp(this.lastPointer);
       });
   }
 }

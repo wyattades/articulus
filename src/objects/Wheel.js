@@ -65,8 +65,9 @@ export default class Wheel extends Part {
   onConnect({ x, y }) {
     if (
       this.spinDir !== 0 &&
-      // this.x === x && this.y === y <-- this works too
-      Phaser.Math.Distance.Power(x, y, this.x, this.y) <= 1
+      // make sure it's the center connector
+      // TODO: use `joint.id` instead?
+      Phaser.Math.Distance.Squared(x, y, this.x, this.y) <= 1.0
     ) {
       Matter.Events.on(
         this.scene.matter.world.engine,
@@ -82,8 +83,7 @@ export default class Wheel extends Part {
   }
 
   onDisconnect({ x, y }) {
-    // TODO: use `joint` connection instead!
-    if (Phaser.Math.Distance.Power(x, y, this.x, this.y) <= 1)
+    if (Phaser.Math.Distance.Squared(x, y, this.x, this.y) <= 1.0)
       this.stopSpinning();
   }
 

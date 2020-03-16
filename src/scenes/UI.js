@@ -1,8 +1,10 @@
-import Phaser from 'phaser';
+import Phaser, { GameObjects } from 'phaser';
 
 import { PLAY_TOOL_TYPES, TOOLS } from '../tools';
-import { colorInverse, createUIButtons } from '../lib/utils';
+import { colorInverse, createUIButtons, getObjectsBounds } from '../lib/utils';
 import theme from '../styles/theme';
+import { clonePhysics } from '../lib/physics';
+import { MAX_PARTS } from '../const';
 
 export default class UI extends Phaser.Scene {
   constructor() {
@@ -96,17 +98,31 @@ export default class UI extends Phaser.Scene {
         {
           title: 'Duplicate',
           onClick: () => {
-            const offset = 10;
+            if (
+              this.play.parts.getLength() + this.play.selected.length >
+              MAX_PARTS
+            ) {
+              this.flash('MAX ITEM LIMIT EXCEEDED');
+              return;
+            }
+
+            const bounds = getObjectsBounds(this.play.selected);
+
             const newObjs = this.play.selected.map((obj) => {
               const newObj = obj.clone();
-              newObj.setPosition(obj.x + offset, obj.y + offset);
+              // TODO: let user click where they want to "paste" the duplicates
+              newObj.setPosition(obj.x + bounds.width + 40, obj.y);
               newObj.render();
               this.play.parts.add(newObj);
 
               return newObj;
             });
 
+            clonePhysics(this.play, this.play.selected, newObjs);
+
             this.play.events.emit('setSelected', newObjs);
+
+            this.play.refreshCameraFollower();
           },
         },
         {
@@ -128,5 +144,7 @@ export default class UI extends Phaser.Scene {
       .dom(this.scale.width / 2, 0, 'div')
       .setClassName('ui-flash ui-text')
       .setOrigin(0.5, 0);
+
+    this.createListeners();
   }
 }

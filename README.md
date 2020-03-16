@@ -2,14 +2,14 @@
 > A sandbox physics game
 
 ## TODO
-- Select/move tool
-- Show user that object placement is invalid *while* placing/dragging object
-- level editor
+- New types of physics objects!
 - premade levels
 - add goal e.g. get the thing to the end
 - scoring system (time? object count?)
+- Start/menu screens (WIP)
 - save levels & high scores in DB
-- Start/menu screens
+- Show user that object placement is invalid *while* placing/dragging object
 
 ## BUGS
-- deleting objects while game is running (i.e. not paused) may crash
+- dragging while zoomed out is too slow
+- 

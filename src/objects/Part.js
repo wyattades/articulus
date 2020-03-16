@@ -27,14 +27,6 @@ export default class Part extends Phaser.GameObjects.Graphics {
     this.strokeColor = this.iStrokeColor = adjustBrightness(color, -70);
   }
 
-  clone() {
-    const newObj = new this.constructor(this.scene, this.x, this.y);
-    newObj.setSize(this.width, this.height);
-    // TODO: copy color and stuff
-
-    return newObj;
-  }
-
   getBounds(bounds) {
     bounds = bounds || new Phaser.Geom.Rectangle();
 
@@ -47,22 +39,6 @@ export default class Part extends Phaser.GameObjects.Graphics {
 
     return bounds;
   }
-
-  // setFromBounds({ x, y, width, height }) {
-  //   this.setPosition(
-  //     x + (this.originX != null ? this.originX : 0.5) * width,
-  //     y + (this.originY != null ? this.originY : 0.5) * height,
-  //   );
-  //   this.width = width;
-  //   this.height = height;
-  // }
-
-  // setOriginPosition(x, y) {
-  //   this.setPosition(
-  //     x + (this.originX != null ? this.originX : 0.5) * this.width,
-  //     y + (this.originY != null ? this.originY : 0.5) * this.height,
-  //   );
-  // }
 
   renderConnector(x, y) {
     this.lineStyle(1, 0xffffff);
@@ -111,6 +87,16 @@ export default class Part extends Phaser.GameObjects.Graphics {
     if (this.noCollide) cf.noCollide = true;
 
     return this;
+  }
+
+  clone() {
+    const newObj = new this.constructor(this.scene, this.x, this.y);
+
+    newObj.width = this.width;
+    newObj.height = this.height;
+    newObj.rotation = this.rotation;
+
+    return newObj;
   }
 
   getHoverPoint(x, y, dist) {

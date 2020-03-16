@@ -53,15 +53,13 @@ export default class PlaceTool extends Tool {
     return true;
   }
 
-  getConnections(drawObj) {
-    const c = [];
+  *getConnections(drawObj) {
     if (this.scene.cursor.visible)
-      c.push({
+      yield {
         body: this.scene.cursor.getData('connectObj').body,
         x: drawObj.obj.x,
         y: drawObj.obj.y,
-      });
-    return c;
+      };
   }
 
   activateObject(destroy = false) {
