@@ -89,7 +89,7 @@ export default class Play extends Phaser.Scene {
             cb?.();
 
             this.followingPart = follow;
-            camera.startFollow(follow, false, 0.08, 0.08);
+            if (this.running) camera.startFollow(follow, false, 0.08, 0.08);
           }
         },
       );
