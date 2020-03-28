@@ -11,38 +11,59 @@ export default class NavTool extends Tool {
     super(scene, toolKey);
 
     this.eventManager = new EventManager()
-      .on(scene.game.canvas, 'contextmenu', (e) => e.preventDefault())
-      .on(scene.game.canvas, 'wheel', (e) => {
+
+      .on(scene.game.canvas, 'contextmenu', (e) => {
+        // disable right-click menu
         e.preventDefault();
-        scene.cameras.main.setZoom(
-          // TODO: normalize zoom speed
-          constrain(scene.cameras.main.zoom + e.deltaY * 0.01, 0.2, 10),
-        );
-      });
+      })
+      .on(scene.game.canvas, 'wheel', this.onScroll);
   }
 
-  handlePointerDown(x, y, { button, position }, topObject) {
+  onScroll = (e) => {
+    e.preventDefault();
+    const camera = this.scene.cameras.main;
+
+    if (e.ctrlKey) {
+      // ctrl-scroll & pinch-to-zoom
+      camera.setZoom(constrain(camera.zoom - e.deltaY * 0.01, 0.2, 10));
+    } else {
+      // scroll & shift-scroll
+      const l = 3000;
+      const scale = 1 / camera.zoom;
+
+      camera.setScroll(
+        constrain(camera.scrollX - e.deltaX * scale, -l, l),
+        constrain(camera.scrollY - e.deltaY * scale, -l, l),
+      );
+    }
+  };
+
+  handlePointerDown(x, y, { button, position }, _topObject) {
     // if (topObject) return;
 
     // right click
     if (button === 2) {
       const camera = this.scene.cameras.main;
+      const invScale = camera.zoom;
 
       this.dragView = {
-        x: camera.scrollX + position.x,
-        y: camera.scrollY + position.y,
+        x: camera.scrollX * invScale + position.x,
+        y: camera.scrollY * invScale + position.y,
       };
-      this.dragView.dx = x - camera.scrollX;
-      this.dragView.dy = y - camera.scrollY;
+
       return false;
     }
   }
 
   handlePointerMove(x, y, { position }) {
     if (this.dragView) {
-      this.scene.cameras.main.setScroll(
-        this.dragView.x - position.x,
-        this.dragView.y - position.y,
+      const camera = this.scene.cameras.main;
+
+      const scale = 1 / camera.zoom;
+
+      camera.setScroll(
+        (this.dragView.x - position.x) * scale,
+        (this.dragView.y - position.y) * scale,
       );
       return false;
     }

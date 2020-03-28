@@ -13,8 +13,8 @@
 - high score system
 - ability to save & load contraptions
 - Show user that object placement is invalid _while_ placing/dragging object
+- use React for UI? atleast emit more comprehensive user interaction events, and respond to them in a clean way in the UI scenes
 
 ## BUGS
 
-- dragging while zoomed out is too slow
-- grid snapping doesn't snap to the right grid
+- grid snapping doesn't snap to the correct grid

@@ -1,4 +1,4 @@
-import Phaser, { GameObjects } from 'phaser';
+import Phaser from 'phaser';
 
 import { PLAY_TOOL_TYPES, TOOLS } from '../tools';
 import { colorInverse, createUIButtons, getObjectsBounds } from '../lib/utils';
