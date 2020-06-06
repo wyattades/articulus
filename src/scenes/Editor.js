@@ -61,8 +61,14 @@ export default class Editor extends Phaser.Scene {
 
   async saveLevel(force = false) {
     // this.parts.isDirty();
-    if (force) await this.mapSaver.save(this.parts);
-    else await this.mapSaver.queueSave(this.parts);
+    if (force) {
+      await this.mapSaver.save(this.parts);
+    } else {
+      this.debounceSave?.destroy();
+      this.debounceSave = this.time.delayedCall(1000, () => {
+        this.mapSaver.queueSave(this.parts);
+      });
+    }
   }
 
   create() {
@@ -81,6 +87,13 @@ export default class Editor extends Phaser.Scene {
     );
     this.enableSnapping(!!settingsSaver.get('snapping'));
 
+    // TODO: necessary?
+    this.cursor = this.add
+      .circle(0, 0, 6, 0xeeeeee)
+      .setStrokeStyle(1, 0xbbbbbb)
+      .setVisible(false)
+      .setDepth(1000);
+
     this.parts = this.add.group();
     this.mapSaver
       .load()
@@ -88,11 +101,7 @@ export default class Editor extends Phaser.Scene {
 
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 
-    this.time.addEvent({
-      loop: true,
-      delay: 1000,
-      callback: () => this.saveLevel(),
-    });
+    this.input.on('pointerup', () => this.saveLevel());
   }
 
   update(_, delta) {

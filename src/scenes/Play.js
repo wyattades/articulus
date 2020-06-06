@@ -64,6 +64,7 @@ export default class Play extends Phaser.Scene {
 
   refreshCameraFollower(cb) {
     const camera = this.cameras.main;
+    if (!camera) return;
 
     camera.panEffect.reset();
     camera.stopFollow();
