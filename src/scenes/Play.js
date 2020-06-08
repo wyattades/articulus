@@ -35,6 +35,9 @@ export default class Play extends Phaser.Scene {
   init(data) {
     this.mapKey = data.mapKey;
     this.mapSaver = this.mapKey ? new MapSaver(this.mapKey) : null;
+    this.buildSaver = new MapSaver(
+      localStorage.getItem('fc:latest-build:id') || null,
+    );
 
     this.ui = this.scene.get('UI');
     this.selected = [];
@@ -122,7 +125,18 @@ export default class Play extends Phaser.Scene {
       this.setRunning(!this.running);
     });
 
-    this.input.keyboard.on('keydown-R', this.restart);
+    this.input.on('pointerup', () => {
+      this.buildSaver.queueSave(this.parts);
+
+      localStorage.setItem('fc:latest-build:id', this.buildSaver.id || '');
+    });
+
+    this.input.keyboard.on('keydown-R', () => this.restart());
+
+    this.input.keyboard.on('keydown-C', () => {
+      this.parts.clear(true, true);
+      this.buildSaver.save(this.parts);
+    });
 
     this.input.keyboard.on('keydown-P', () => {
       const debug = !localStorage.getItem('fc:debug');
@@ -131,7 +145,7 @@ export default class Play extends Phaser.Scene {
       // TODO: this only works for disabling dubugging
       this.matter.config.debug = debug;
 
-      this.restart();
+      this.restart(true);
     });
 
     Matter.Events.on(this.matter.world.localWorld, 'afterAdd', ({ object }) => {
@@ -142,10 +156,13 @@ export default class Play extends Phaser.Scene {
     });
   }
 
-  restart = () => {
+  restart(all) {
     this.matter.world.destroy();
     this.scene.restart();
-  };
+    if (all) {
+      this.ui.scene.restart();
+    }
+  }
 
   create() {
     // CAMERA
@@ -164,6 +181,12 @@ export default class Play extends Phaser.Scene {
 
     this.parts = this.add.group();
     this.terrainGroup = this.add.group();
+
+    if (this.buildSaver.id)
+      this.buildSaver
+        .load()
+        .then((partsData) => MapSaver.loadPlayParts(partsData, this.parts))
+        .catch(console.error);
 
     // WORLD
 

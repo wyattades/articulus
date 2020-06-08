@@ -1,5 +1,5 @@
 import Line from '../objects/Line';
-import { intersectsOtherSolid, anySame } from '../lib/utils';
+import { intersectsOtherSolid, anySame, getFirstValue } from '../lib/utils';
 import PlaceTool from './PlaceTool';
 
 export default class LineTool extends PlaceTool {
@@ -8,33 +8,30 @@ export default class LineTool extends PlaceTool {
 
     const cursor = this.scene.cursor;
 
-    const { obj: start, x: startX, y: startY } = drawObj.startData || {};
-    const end = cursor.visible && cursor.getData('connectObj');
+    const start = drawObj.startAnchorJoint;
+    const end = cursor.visible && cursor.getData('connectAnchorJoint');
 
     const ignore = [];
 
-    let startJoint, endJoint;
     if (start) {
-      startJoint = this.getJointAt(start, startX, startY);
-      if (startJoint)
-        for (const id in startJoint.bodies)
-          ignore.push(startJoint.bodies[id].gameObject);
-      else ignore.push(start);
+      if (start.obj) ignore.push(start.obj);
+      else
+        for (const id in start.joint.bodies)
+          ignore.push(start.joint.bodies[id].gameObject);
     }
     if (end) {
-      endJoint = this.getJointAt(end, cursor.x, cursor.y);
-      if (endJoint) {
-        for (const id in endJoint.bodies)
-          ignore.push(endJoint.bodies[id].gameObject);
-      } else ignore.push(end);
+      if (end.obj) ignore.push(end.obj);
+      else
+        for (const id in end.joint.bodies)
+          ignore.push(end.joint.bodies[id].gameObject);
     }
 
     if (
-      (start || startJoint) &&
-      (end || endJoint) &&
+      start &&
+      end &&
       anySame(
-        startJoint ? startJoint.bodies : { [start.body.id]: true },
-        endJoint ? endJoint.bodies : { [end.body.id]: true },
+        start.obj ? { [start.obj.body.id]: true } : start.joint.bodies,
+        end.obj ? { [end.obj.body.id]: true } : end.joint.bodies,
       )
     )
       return false;
@@ -50,13 +47,13 @@ export default class LineTool extends PlaceTool {
 
   *getConnections(drawObj) {
     const cursor = this.scene.cursor;
-    const { startData } = drawObj;
+    const { startAnchorJoint } = drawObj;
 
-    const start = startData && startData.obj;
-    const end = cursor.visible && cursor.getData('connectObj');
+    const start = startAnchorJoint;
+    const end = cursor.visible && cursor.getData('connectAnchorJoint');
 
-    if (start) yield { body: start.body, x: startData.x, y: startData.y };
-    if (end) yield { body: end.body, x: cursor.x, y: cursor.y };
+    if (start) yield start;
+    if (end) yield end;
   }
 
   handleObjDrag(x, y) {

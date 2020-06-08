@@ -36,4 +36,20 @@ declare module FC {
     bodies: Record<number, Body>;
     constraints: Matter.Constraint[];
   };
+
+  export type Anchor = {
+    x: number;
+    y: number;
+    id: number;
+  };
+
+  export type AnchorJoint = Anchor &
+    (
+      | {
+          obj: GameObject;
+        }
+      | {
+          joint: Joint;
+        }
+    );
 }

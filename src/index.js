@@ -9,14 +9,16 @@ const $canvas = document.getElementById('game');
 let game = new Game($canvas, $container);
 
 if (process.env.NODE_ENV === 'development') {
-  window.GAME = game;
-  window.SCENES = game.scene.scenes;
+  Object.defineProperties(window, {
+    PLAY: {
+      get() {
+        return game.scene.scenes[4];
+      },
+    },
+  });
 
-  if (module.hot) {
-    module.hot.accept('./Game.js', () => {
-      game.destroy();
-      game = new Game($canvas, $container);
-    });
-  }
+  module.hot?.accept('./Game.js', () => {
+    game.destroy();
+    game = new Game($canvas, $container);
+  });
 }
-// import api from './lib/api';

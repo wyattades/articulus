@@ -1,51 +1,26 @@
-import Phaser from 'phaser';
-
-import { stiffConnect, getJointPos } from '../lib/physics';
+import { stiffConnect } from '../lib/physics';
 import { Wheel, OBJECTS } from '../objects';
 import Tool from './Tool';
-import { intersectsOtherSolid, getHovered } from '../lib/utils';
+import { intersectsOtherSolid } from '../lib/utils';
 
 export default class PlaceTool extends Tool {
-  /** @type {{ obj: Phaser.GameObjects.GameObject }} */
+  /** @type {{ obj: FC.GameObject, startAnchorJoint?: FC.AnchorJoint }} */
   drawObj = null;
 
-  refreshCursor(x, y) {
-    const cursor = this.scene.cursor;
-
-    const hovered = getHovered(
-      this.scene,
-      x,
-      y,
-      this.drawObj && this.drawObj.obj,
-    );
-    if (hovered) {
-      cursor.setPosition(hovered.x, hovered.y);
-      cursor.setData('connectObj', hovered.obj);
-    }
-    if (!!hovered !== cursor.visible) cursor.setVisible(!!hovered);
-
-    return hovered;
-  }
-
-  getJointAt(obj, x, y) {
-    return Object.values(obj.body.collisionFilter.joints).find((j) => {
-      const pos = getJointPos(j);
-      return Phaser.Math.Distance.Squared(pos.x, pos.y, x, y) <= 1;
-    });
-  }
-
-  // Overwritten by LineTool
+  // Overridden by LineTool
   canPlaceObject(drawObj) {
     const cursor = this.scene.cursor;
 
-    if (cursor.visible) {
-      const connectObj = cursor.getData('connectObj');
-      if (connectObj instanceof Wheel) return false;
+    const anchorJoint = cursor.getData('connectAnchorJoint');
 
-      const joint = this.getJointAt(connectObj, cursor.x, cursor.y);
-      if (
-        joint &&
-        Object.values(joint.bodies).find((b) => b.gameObject instanceof Wheel)
+    if (cursor.visible && anchorJoint) {
+      if (anchorJoint.obj) {
+        if (anchorJoint.obj instanceof Wheel) return false;
+      } else if (
+        anchorJoint.joint &&
+        Object.values(anchorJoint.joint.bodies).find(
+          (body) => body.gameObject instanceof Wheel,
+        )
       )
         return false;
     } else if (intersectsOtherSolid(this.scene, drawObj.obj)) return false;
@@ -53,13 +28,19 @@ export default class PlaceTool extends Tool {
     return true;
   }
 
-  *getConnections(drawObj) {
-    if (this.scene.cursor.visible)
-      yield {
-        body: this.scene.cursor.getData('connectObj').body,
-        x: drawObj.obj.x,
-        y: drawObj.obj.y,
-      };
+  *getConnections(_drawObj) {
+    const cursor = this.scene.cursor;
+
+    const anchorJoint = cursor.getData('connectAnchorJoint');
+
+    if (cursor.visible && anchorJoint) yield anchorJoint;
+    // {
+    //   body: anchorJoint.obj
+    //     ? anchorJoint.obj.body
+    //     : getFirstValue(anchorJoint.joint.bodies),
+    //   x: drawObj.obj.x,
+    //   y: drawObj.obj.y,
+    // };
   }
 
   activateObject(destroy = false) {
@@ -77,13 +58,12 @@ export default class PlaceTool extends Tool {
 
         obj.enablePhysics();
 
-        for (const { body, x, y } of this.getConnections(drawObj)) {
-          stiffConnect(this.scene, body, obj.body, {
-            x,
-            y,
-          });
+        for (const anchorJoint of this.getConnections(drawObj)) {
+          stiffConnect(this.scene, obj.body, anchorJoint);
         }
       }
+
+      drawObj.startAnchorJoint = undefined;
     }
 
     return drawObj;
@@ -106,12 +86,9 @@ export default class PlaceTool extends Tool {
       this.drawObj = { obj };
       this.scene.parts.add(obj);
 
-      if (cursor.visible) {
-        this.drawObj.startData = {
-          x,
-          y,
-          obj: cursor.getData('connectObj'),
-        };
+      const anchorJoint = cursor.getData('connectAnchorJoint');
+      if (cursor.visible && anchorJoint) {
+        this.drawObj.startAnchorJoint = anchorJoint;
       }
     }
   }
@@ -121,11 +98,11 @@ export default class PlaceTool extends Tool {
   }
 
   handlePointerMove(x, y) {
-    const jointPoint = this.refreshCursor(x, y);
+    const anchorJoint = this.refreshCursor(x, y);
     if (this.drawObj) {
-      if (jointPoint) {
-        x = jointPoint.x;
-        y = jointPoint.y;
+      if (anchorJoint) {
+        x = anchorJoint.x;
+        y = anchorJoint.y;
       }
       this.handleObjDrag(x, y);
     }

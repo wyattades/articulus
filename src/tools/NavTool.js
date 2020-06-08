@@ -38,7 +38,7 @@ export default class NavTool extends Tool {
     }
   };
 
-  handlePointerDown(x, y, { button, position }, _topObject) {
+  handlePointerDown(x, y, { button, position }) {
     // if (topObject) return;
 
     // right click

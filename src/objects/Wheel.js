@@ -30,6 +30,22 @@ export default class Wheel extends Part {
     }
   }
 
+  toJSON() {
+    return {
+      type: this.constructor.type,
+      x: this.x,
+      y: this.y,
+      radius: this.radius,
+      rotation: this.rotation,
+    };
+  }
+
+  static fromJSON(scene, { x, y, radius, rotation }) {
+    const obj = new this(scene, x, y, radius);
+    obj.rotation = rotation;
+    return obj;
+  }
+
   get physicsShape() {
     return {
       type: 'circle',
@@ -62,7 +78,8 @@ export default class Wheel extends Part {
       );
   };
 
-  onConnect({ x, y }) {
+  // TODO: use anchor.id
+  onConnect(x, y) {
     if (
       this.spinDir !== 0 &&
       // make sure it's the center connector
@@ -82,8 +99,8 @@ export default class Wheel extends Part {
     }
   }
 
-  onDisconnect({ x, y }) {
-    if (Phaser.Math.Distance.Squared(x, y, this.x, this.y) <= 1.0)
+  onDisconnect(x, y) {
+    if (x == null || Phaser.Math.Distance.Squared(x, y, this.x, this.y) <= 1.0)
       this.stopSpinning();
   }
 
@@ -109,19 +126,11 @@ export default class Wheel extends Part {
     super.destroy();
   }
 
-  getHoverPoint(x, y, dist) {
-    dist *= dist;
+  *anchors() {
+    yield { x: this.x, y: this.y, id: 0 };
 
-    if (Phaser.Math.Distance.Squared(x, y, this.x, this.y) < dist)
-      return { x: this.x, y: this.y };
-
-    for (const [dx, dy] of circle4Points(this.radius, this.rotation)) {
-      const rx = this.x + dx;
-      const ry = this.y + dy;
-      if (Phaser.Math.Distance.Squared(x, y, rx, ry) < dist)
-        return { x: rx, y: ry };
-    }
-
-    return null;
+    let i = 1;
+    for (const [dx, dy] of circle4Points(this.radius, this.rotation))
+      yield { x: this.x + dx, y: this.y + dy, id: i++ };
   }
 }

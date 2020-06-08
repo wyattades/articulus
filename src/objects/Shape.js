@@ -30,6 +30,7 @@ export class Rectangle extends Part {
   originX = 0.5;
   originY = 0.5;
   type = 'rect';
+  static type = 'rect';
 
   setSize(width, height) {
     this.width = width;
@@ -83,6 +84,7 @@ export class Rectangle extends Part {
 
 export class Ellipse extends Rectangle {
   type = 'ellipse';
+  static type = 'ellipse';
 
   render() {
     this.clear();

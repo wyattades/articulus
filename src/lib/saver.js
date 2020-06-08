@@ -1,10 +1,23 @@
-import throttle from 'lodash/throttle';
-import * as R from 'ramda';
+import { debounce } from 'lodash';
 import faunadb from 'faunadb';
 
-import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
 import { Subject } from './async';
 import { base48 } from './utils';
+import { OBJECTS } from '../objects';
+import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
+import { serializePhysics, deserializePhysics } from './physics';
+
+export const fromJSON = (scene, json) => {
+  if (json?.id == null) return null;
+
+  const Klass = OBJECTS[json.type] || SHAPE_TYPE_CLASSES[json.type];
+  if (!Klass) return null;
+
+  const obj = Klass.fromJSON(scene, json);
+  obj.id = json.id;
+  obj.render();
+  return obj;
+};
 
 const q = faunadb.query;
 
@@ -20,7 +33,7 @@ const userId = (() => {
 })();
 
 /**
- * @typedef {{ x: number, y: number, width: number, height: number, type: string }[]} MapData
+ * @typedef { objs: { type: string }[], physics?: {} } MapData
  */
 
 /**
@@ -57,7 +70,6 @@ export class MapSaver {
     MapSaver.initter.complete();
   }
 
-  objs = null;
   id = null;
   rev = null;
   name = null;
@@ -103,32 +115,26 @@ export class MapSaver {
    * @param {MapData} mapData
    * @param {Phaser.GameObjects.Group} group
    */
-  static loadPlayParts(mapData, group) {
-    for (const sobj of mapData) {
-      const ShapeClass = SHAPE_TYPE_CLASSES[sobj.type];
-      if (!ShapeClass) continue;
+  static loadPlayParts({ objs, physics }, group) {
+    for (const sobj of objs) {
+      const obj = fromJSON(group.scene, sobj);
+      if (!obj) continue;
 
-      const obj = new ShapeClass(group.scene, sobj.x, sobj.y);
-      obj.setSize(sobj.width, sobj.height);
-      obj.render();
       obj.enablePhysics();
-
       group.add(obj);
     }
+
+    if (physics) deserializePhysics(group.scene, physics);
   }
 
   /**
    * @param {MapData} mapData
    * @param {Phaser.GameObjects.Group} group
    */
-  static loadEditorParts(mapData, group) {
-    for (const sobj of mapData) {
-      const ShapeClass = SHAPE_TYPE_CLASSES[sobj.type];
-      if (!ShapeClass) continue;
-
-      const obj = new ShapeClass(group.scene, sobj.x, sobj.y);
-      obj.setSize(sobj.width, sobj.height);
-      obj.render();
+  static loadEditorParts({ objs }, group) {
+    for (const sobj of objs) {
+      const obj = fromJSON(group.scene, sobj);
+      if (!obj) continue;
 
       group.add(obj);
     }
@@ -144,9 +150,10 @@ export class MapSaver {
     this.id = ref.id;
     this.name = data.name;
 
-    this.objs = data.objs;
-
-    return data.objs;
+    return {
+      objs: data.objs,
+      physics: data.physics,
+    };
   }
 
   /**
@@ -155,22 +162,38 @@ export class MapSaver {
   async save(group) {
     await MapSaver.init();
 
-    // TODO: obj.toJSON ?
-    const serialized = R.map(
-      R.pick(['x', 'y', 'width', 'height', 'type']),
-      group.getChildren(),
-    );
+    const scene = group.scene;
+    if (!scene) return;
+
+    const objs = group.getChildren().map((obj) => {
+      const json = obj.toJSON();
+      json.id = obj.id;
+      return json;
+    });
+
+    const physics = scene.ui ? serializePhysics(scene) : null;
 
     const data = {
       user_id: userId,
       name: this.name,
-      objs: serialized,
+      objs,
+      physics,
     };
 
     const res = await MapSaver.query(
       this.id
-        ? // TODO: test if ref exists first?
-          q.Update(q.Ref(q.Collection('maps'), this.id), { data })
+        ? q.Let(
+            { data },
+            q.If(
+              q.Exists(q.Ref(q.Collection('maps'), this.id)),
+              q.Update(q.Ref(q.Collection('maps'), this.id), {
+                data: q.Var('data'),
+              }),
+              q.Create(q.Collection('maps'), {
+                data: q.Var('data'),
+              }),
+            ),
+          )
         : q.Create(q.Collection('maps'), {
             data,
           }),
@@ -179,8 +202,41 @@ export class MapSaver {
     this.id = res.ref.id;
   }
 
-  queueSave = throttle(this.save.bind(this), 400);
+  queueSave = debounce(this.save.bind(this), 1000);
 }
+
+// // TEMP
+// export const buildSaver = new (class BuildSaver {
+//   static STORAGE_KEY = 'fc:latest-build';
+
+//   data = this.load();
+
+//   load() {
+//     try {
+//       const obj = JSON.parse(localStorage.getItem(BuildSaver.STORAGE_KEY));
+//       if (obj && typeof obj === 'object') return obj;
+//     } catch (_) {}
+//     return {};
+//   }
+
+//   save() {
+//     try {
+//       localStorage.setItem(
+//         BuildSaver.STORAGE_KEY,
+//         JSON.stringify(this.settings),
+//       );
+//     } catch (_) {}
+//   }
+
+//   get() {
+//     return this.data;
+//   }
+
+//   set(data) {
+//     this.data = data;
+//     this.save();
+//   }
+// })();
 
 export const settingsSaver = new (class SettingsSaver {
   static STORAGE_KEY = 'fc:settings';

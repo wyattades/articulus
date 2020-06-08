@@ -37,11 +37,20 @@ export default class UI extends Phaser.Scene {
       );
   }
 
+  updatePointer(x, y) {
+    this.pointerPosText.setText(`x: ${Math.round(x)}, y: ${Math.round(y)}`);
+  }
+
   createListeners() {
     this.play.events.on('setSelected', (selected) => {
       const visible = selected && selected.length > 0;
       this.enableObjectActions(visible);
     });
+
+    if (this.pointerPosText)
+      this.input.on('pointermove', ({ worldX, worldY }) =>
+        this.updatePointer(worldX, worldY),
+      );
   }
 
   enableObjectActions(enabled) {
@@ -54,6 +63,18 @@ export default class UI extends Phaser.Scene {
       .dom(this.scale.width - 10, 10, 'div')
       .setClassName('ui-text')
       .setOrigin(1, 0);
+
+    if (localStorage.getItem('fc:debug')) {
+      this.pointerPosText = this.add
+        .dom(this.scale.width - 10, this.scale.height - 10, 'div')
+        .setClassName('ui-text')
+        .setOrigin(1, 1);
+
+      this.updatePointer(
+        this.input.activePointer.worldX,
+        this.input.activePointer.worldY,
+      );
+    }
 
     this.toolButtons = createUIButtons(
       this,

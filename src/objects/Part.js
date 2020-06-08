@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import { adjustBrightness } from '../lib/utils';
+import { adjustBrightness, nextId } from '../lib/utils';
 import { deleteConnections } from '../lib/physics';
 
 export default class Part extends Phaser.GameObjects.Graphics {
@@ -9,15 +9,14 @@ export default class Part extends Phaser.GameObjects.Graphics {
   fillColor = 0xffffff;
   strokeColor = 0xffffff;
   strokeWidth = 0;
+  id = nextId();
 
   constructor(scene, x, y) {
     super(scene, { x, y });
     scene.add.existing(this);
   }
 
-  /**
-   * @type Matter.Body
-   */
+  /** @type {FC.Body} */
   body;
 
   static type = 'base_part';
@@ -75,6 +74,16 @@ export default class Part extends Phaser.GameObjects.Graphics {
   }
 
   enablePhysics() {
+    if (this.body) {
+      console.warn(
+        "Shouldn't call enablePhysics again!",
+        this.id,
+        this.body.id,
+      );
+      // deleteConnections(this.scene, this.body);
+      // this.scene.matter.world.remove(this.body);
+    }
+
     this.scene.matter.add.gameObject(this, {
       ...(this.physicsOptions || {}),
       shape: this.physicsShape,
@@ -90,20 +99,49 @@ export default class Part extends Phaser.GameObjects.Graphics {
   }
 
   clone() {
-    const newObj = new this.constructor(this.scene, this.x, this.y);
-
-    newObj.width = this.width;
-    newObj.height = this.height;
-    newObj.rotation = this.rotation;
-
-    return newObj;
+    return this.constructor.fromJSON(this.scene, this.toJSON());
   }
 
-  getHoverPoint(x, y, dist) {
+  toJSON() {
+    return {
+      type: this.constructor.type,
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+      rotation: this.rotation,
+    };
+  }
+
+  static fromJSON(scene, { type: _, x, y, ...rest }) {
+    const obj = new this(scene, x, y);
+
+    for (const k in rest) {
+      obj[k] = rest[k];
+    }
+
+    return obj;
+  }
+
+  *anchors() {
+    yield { x: this.x, y: this.y, id: 0 };
+  }
+
+  getAnchorById(id) {
+    let i = 0;
+    for (const anchor of this.anchors()) if (i++ === id) return anchor;
+
+    console.warn('Invalid anchorId', id, this.constructor.type);
+    return null;
+  }
+
+  getHoveredAnchor(x, y, dist) {
     dist *= dist;
 
-    if (Phaser.Math.Distance.Squared(x, y, this.x, this.y) < dist)
-      return { x: this.x, y: this.y };
+    for (const anchor of this.anchors())
+      if (Phaser.Math.Distance.Squared(x, y, anchor.x, anchor.y) < dist)
+        return anchor;
+
     return null;
   }
 

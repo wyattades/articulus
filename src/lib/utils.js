@@ -98,17 +98,16 @@ export const intersectsOtherSolid = (scene, obj, ignore = []) => {
   return null;
 };
 
-export const getHovered = (scene, x, y, ignore = null) => {
-  const hoverDist = constrain(10 / scene.cameras.main.zoom, 6, 24);
+export const getTopObject = (scene, x, y) => {
+  const point = new Phaser.Geom.Point(x, y);
 
-  for (const child of scene.parts.getChildren()) {
-    if (ignore === child) continue;
+  const children = scene.parts.getChildren();
+  for (let i = children.length - 1; i >= 0; i--) {
+    const obj = children[i];
 
-    const jointPoint = child.getHoverPoint(x, y, hoverDist);
-    if (jointPoint) {
-      return { x: jointPoint.x, y: jointPoint.y, obj: child };
-    }
+    if (intersectsGeoms(point, obj.geom)) return obj;
   }
+
   return null;
 };
 
@@ -118,8 +117,20 @@ export const anySame = (objA, objB) => {
   return false;
 };
 
+export function* valuesIterator(obj) {
+  for (const k in obj) yield obj[k];
+}
+
 export const getFirstValue = (obj) => {
   for (const id in obj) return obj[id];
+  return null;
+};
+
+export const getFirstSameKeyValue = (a, b) => {
+  for (const k in a) if (k in b) return a[k];
+
+  for (const k in b) if (k in a) return a[k];
+
   return null;
 };
 

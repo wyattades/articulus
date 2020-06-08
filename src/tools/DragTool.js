@@ -1,71 +1,178 @@
-/* eslint-disable consistent-return */
-// import Phaser from 'phaser';
-
 import Tool from './Tool';
+import { getTopObject, constrain } from '../lib/utils';
+import {
+  getConnectedObjects,
+  serializePhysics,
+  deserializePhysics,
+} from '../lib/physics';
+import { Line } from '../objects';
+import { fromJSON } from '../lib/saver';
 
 export default class DragTool extends Tool {
-  setDragging(dragging, x, y) {
-    this.scene.dragging = dragging;
-    this.scene.events.emit('setDragging', dragging, x, y);
+  setDragging(objects, x, y) {
+    let activeDrag = null;
+    if (objects?.length) {
+      activeDrag = {
+        x,
+        y,
+        dragging: objects.map((obj) => ({
+          obj,
+          dx: obj.x - x,
+          dy: obj.y - y,
+        })),
+      };
+    }
+
+    this.scene.activeDrag = activeDrag;
+    this.scene.events.emit('setDragging', activeDrag);
   }
 
-  get dragging() {
-    return this.scene.dragging;
+  setDraggingAnchor(anchorJoint, x, y) {
+    if (!anchorJoint) {
+      this.scene.activeDrag = null;
+      return;
+    }
+
+    const afterUpdate = (obj) => {
+      if (obj instanceof Line) {
+        obj.clear();
+        obj.render();
+      }
+    };
+
+    // TODO: this is horribly inefficient
+    const afterPlace = () => {
+      const sobjs = this.scene.parts.getChildren().map((p) => {
+        const sobj = p.toJSON();
+        sobj.id = p.id;
+        return sobj;
+      });
+      const physData = serializePhysics(this.scene);
+      this.scene.parts.clear(true, true);
+      for (const sobj of sobjs) {
+        const obj = fromJSON(this.scene, sobj);
+        obj?.enablePhysics();
+        if (obj) this.scene.parts.add(obj);
+        else console.warn('failed to recompute in afterPlace', sobj);
+      }
+      deserializePhysics(this.scene, physData);
+    };
+
+    const hoverDist = constrain(10 / this.scene.cameras.main.zoom, 6, 24);
+
+    const dragging = (anchorJoint.obj
+      ? [anchorJoint.obj.body]
+      : Object.values(anchorJoint.joint.bodies)
+    )
+      .map((body) => {
+        const obj = body.gameObject;
+
+        if (obj instanceof Line) {
+          // TODO: not resilient
+          const anchor = obj.getHoveredAnchor(x, y, hoverDist);
+          if (!anchor) {
+            console.warn('Cannot find dragging anchor!', obj, x, y);
+            return null;
+          }
+
+          return {
+            setPosFn: anchor.id === 0 ? 'setStart' : 'setEnd',
+            afterUpdate,
+            obj,
+            dx: 0,
+            dy: 0,
+          };
+        }
+        return {
+          obj,
+          dx: obj.x - x,
+          dy: obj.y - y,
+        };
+      })
+      .filter(Boolean);
+
+    this.scene.activeDrag = {
+      afterPlace,
+      dragging,
+      x,
+      y,
+    };
   }
 
-  handlePointerDown(x, y, pointer, topObject) {
-    if (topObject) {
+  handlePointerDown(x, y) {
+    let topObject;
+
+    // TODO
+    const cursor = this.scene.cursor;
+    const anchorJoint = cursor.getData('connectAnchorJoint');
+    if (cursor.visible && anchorJoint) {
+      const { obj } = anchorJoint;
+      if (obj) {
+        if (obj instanceof Line) {
+          this.setDraggingAnchor(anchorJoint, x, y);
+          return;
+        } else topObject = obj; // not necessary, just an optimization
+      } else {
+        this.setDraggingAnchor(anchorJoint, x, y);
+        return;
+      }
+    }
+
+    if ((topObject = topObject || getTopObject(this.scene, x, y))) {
       let dragging;
 
       const selected = this.scene.selected;
-      if (
-        selected &&
-        selected.length > 0 &&
-        selected.indexOf(topObject) !== -1
-      ) {
-        dragging = selected;
+      if (selected?.includes(topObject)) {
+        dragging = getConnectedObjects(selected);
       } else {
-        dragging = [topObject];
+        dragging = getConnectedObjects(topObject);
       }
 
-      if (dragging) {
-        this.setDragging(
-          dragging.map((obj) => ({
-            obj,
-            dx: obj.x - x,
-            dy: obj.y - y,
-          })),
-          x,
-          y,
-        );
+      this.setDragging(dragging, x, y);
 
-        // return false;
-      }
+      // return false;
     }
   }
 
   handlePointerMove(x, y) {
-    if (this.dragging) {
-      this.dragging.moved = true;
+    this.refreshCursor(x, y);
 
-      for (const { obj, dx, dy, afterUpdate } of this.dragging) {
-        // `obj` may be `Controls`, which is a `Group` with a custom `setPosition` method
-        // which should be called only once for performance
+    const { activeDrag } = this.scene;
+    if (!activeDrag) return;
+
+    if (activeDrag.moved !== true) activeDrag.moved = true;
+
+    if (activeDrag.dragging) {
+      for (const {
+        obj,
+        dx = 0,
+        dy = 0,
+        setPosFn = 'setPosition',
+        afterUpdate,
+      } of activeDrag.dragging) {
         const newPos = { x: x + dx, y: y + dy };
         this.scene.snapToGrid(newPos);
-        obj.setPosition(newPos.x, newPos.y);
+        // `obj` may be `Controls`, which is a `Group` with a custom `setPosition` method
+        // which should be called only once for performance
 
-        if (afterUpdate) afterUpdate(newPos.x, newPos.y);
+        obj[setPosFn](newPos.x, newPos.y);
+
+        afterUpdate?.(obj, newPos.x, newPos.y);
       }
       return false;
     }
   }
 
-  handlePointerUp() {
-    if (this.dragging) {
-      const moved = this.dragging.moved;
+  handlePointerUp(x, y) {
+    const { activeDrag } = this.scene;
+
+    if (activeDrag) {
       this.setDragging(null);
-      if (moved) return false;
+      if (activeDrag.moved) {
+        activeDrag.afterPlace?.(x, y);
+
+        return false;
+      }
     }
   }
 }

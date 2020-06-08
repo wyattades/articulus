@@ -30,9 +30,11 @@ export default class ControlsTool extends Tool {
     this.controls.setSelected(selected);
   };
 
-  setDragging = (dragging, x, y) => {
+  setDragging = (activeDrag) => {
+    if (!activeDrag?.dragging) return;
+
+    const { dragging, x, y } = activeDrag;
     if (
-      dragging &&
       this.scene.selected &&
       this.scene.selected.indexOf(dragging[0].obj) !== -1
     ) {
@@ -41,10 +43,10 @@ export default class ControlsTool extends Tool {
         data.cdy = data.obj.y - this.controls.y;
       }
 
-      this.scene.dragging = [
+      activeDrag.dragging = [
         {
           obj: this.controls,
-          afterUpdate(x, y) {
+          afterUpdate(_obj, x, y) {
             for (const { obj, cdx, cdy } of dragging) {
               obj.setPosition(x + cdx, y + cdy);
             }
@@ -58,7 +60,7 @@ export default class ControlsTool extends Tool {
     }
   };
 
-  handlePointerDown(x, y, _pointer, _topObject) {
+  handlePointerDown(x, y) {
     if (!this.controls.getChildren()[0].visible) return;
 
     const bounds = new Phaser.Geom.Rectangle();

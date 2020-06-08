@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 import Tool from './Tool';
-import { intersectsGeoms } from '../lib/utils';
+import { intersectsGeoms, getTopObject } from '../lib/utils';
 
 export default class BoxTool extends Tool {
   fillColor = 0xffffff;
@@ -43,7 +43,7 @@ export default class BoxTool extends Tool {
       .setOrigin(0, 0);
   }
 
-  handlePointerDown(x, y, pointer, topObject) {
+  handlePointerDown(x, y) {
     this.clearBox();
 
     this.box = new Phaser.Geom.Rectangle(x, y, 1, 1);
@@ -52,7 +52,7 @@ export default class BoxTool extends Tool {
 
     // TODO: snap to grid
 
-    if (this.allowStartOverlapping || !topObject) {
+    if (this.allowStartOverlapping || !getTopObject(this.scene, x, y)) {
       this.shape = this.createShape();
       this.updateShape();
     }

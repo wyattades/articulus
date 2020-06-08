@@ -64,10 +64,7 @@ export default class Editor extends Phaser.Scene {
     if (force) {
       await this.mapSaver.save(this.parts);
     } else {
-      this.debounceSave?.destroy();
-      this.debounceSave = this.time.delayedCall(1000, () => {
-        this.mapSaver.queueSave(this.parts);
-      });
+      this.mapSaver.queueSave(this.parts);
     }
   }
 

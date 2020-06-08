@@ -49,30 +49,14 @@ export default class ToolManager {
     this.scene.ui.setTool(toolType);
   }
 
-  getTopObject(x, y) {
-    const point = new Phaser.Geom.Point(x, y);
-
-    const children = this.scene.parts.getChildren();
-    for (let i = children.length - 1; i >= 0; i--) {
-      const obj = children[i];
-
-      if (intersectsGeoms(point, obj.geom)) return obj;
-    }
-
-    return null;
-  }
-
   pointerDown = (pointer) => {
     this.lastPointer = pointer;
 
     const { worldX, worldY } = pointer;
 
-    const topObject = this.getTopObject(worldX, worldY);
-
     // stop propagation if a tool's handler returns `false`
     for (const tool of this.tools)
-      if (tool.handlePointerDown(worldX, worldY, pointer, topObject) === false)
-        break;
+      if (tool.handlePointerDown(worldX, worldY, pointer) === false) break;
   };
 
   pointerMove = (pointer) => {

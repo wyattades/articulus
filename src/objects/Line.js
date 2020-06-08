@@ -74,17 +74,19 @@ export default class Line extends Part {
     this.renderConnector(this.length / 2, 0);
   }
 
-  clone() {
-    const newObj = super.clone();
+  toJSON() {
+    return {
+      type: this.constructor.type,
+      x1: this.x1,
+      y1: this.y1,
+      x2: this.x2,
+      y2: this.y2,
+      size: this.size,
+    };
+  }
 
-    newObj.size = this.size;
-    newObj.length = this.length;
-    newObj.x1 = this.x1;
-    newObj.y1 = this.y1;
-    newObj.x2 = this.x2;
-    newObj.y2 = this.y2;
-
-    return newObj;
+  static fromJSON(scene, { x1, y1, x2, y2, size }) {
+    return new this(scene, x1, y1, x2, y2, size);
   }
 
   get physicsShape() {
@@ -98,21 +100,17 @@ export default class Line extends Part {
   }
 
   get geom() {
+    // need to recalculate x1,y1,etc. when gameObject moves
     this.recomputeEnds();
+
     return new Phaser.Geom.Line(this.x1, this.y1, this.x2, this.y2);
   }
 
-  getHoverPoint(x, y, dist) {
+  *anchors() {
+    // need to recalculate x1,y1,etc. when gameObject moves
     this.recomputeEnds();
 
-    dist *= dist;
-
-    if (Phaser.Math.Distance.Squared(x, y, this.x1, this.y1) < dist)
-      return { x: this.x1, y: this.y1 };
-
-    if (Phaser.Math.Distance.Squared(x, y, this.x2, this.y2) < dist)
-      return { x: this.x2, y: this.y2 };
-
-    return null;
+    yield { x: this.x1, y: this.y1, id: 0 };
+    yield { x: this.x2, y: this.y2, id: 1 };
   }
 }
