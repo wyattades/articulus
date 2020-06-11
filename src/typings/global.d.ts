@@ -13,6 +13,7 @@ declare module FC {
 
   export type Body = Matter.Body & {
     id: number;
+    gameObject: GameObject;
     collisionFilter: {
       id?: number;
       noCollide?: boolean;

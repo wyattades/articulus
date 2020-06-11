@@ -20,16 +20,27 @@ export const Matter = Phaser.Physics.Matter.Matter;
  * @param {FC.Body} body
  * @return {{ x: number: y: number }}
  */
-export const getJointPos = (joint, body = getFirstValue(joint.bodies)) => {
-  if (!body) return null;
+export const getJointPos = (joint, tryConstraints = true) => {
+  if (tryConstraints) {
+    const con = joint.constraints[0];
+    if (con)
+      return {
+        x: con.pointA.x + con.bodyA.position.x,
+        y: con.pointA.y + con.bodyA.position.y,
+      };
+  }
 
-  const con = joint.constraints[0];
-  if (!con) return null;
+  const [a, b] = Object.values(joint.bodies);
 
-  return {
-    x: con.pointA.x + con.bodyA.position.x,
-    y: con.pointA.y + con.bodyA.position.y,
-  };
+  if (!a || !b) return null;
+
+  for (const { x, y } of a.gameObject.anchors()) {
+    for (const { x: x2, y: y2 } of b.gameObject.anchors()) {
+      if (Phaser.Math.Distance.Squared(x, y, x2, y2) <= 1) return { x, y };
+    }
+  }
+
+  return null;
 };
 
 const allConnectedBodies = (body, res = [], hitIds = {}) => {
@@ -76,7 +87,7 @@ const getObjectJointAt = (obj, x, y) => {
   if (!obj.body) return null;
 
   for (const joint of valuesIterator(obj.body.collisionFilter.joints)) {
-    const pos = getJointPos(joint, obj.body);
+    const pos = getJointPos(joint);
     if (Phaser.Math.Distance.Squared(pos.x, pos.y, x, y) <= 1) return joint;
   }
 
@@ -118,7 +129,7 @@ export const getHoveredJoint = (scene, x, y, ignore = null) => {
 export const reconnect = (scene, joint, point = null) => {
   const bodyA = getFirstValue(joint.bodies);
 
-  if (!point) point = getJointPos(joint, bodyA);
+  if (!point) point = getJointPos(joint);
   if (!point) return false;
 
   const { x, y } = point;
@@ -308,35 +319,26 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
   }
 };
 
-const getJointPosSlow = (joint) => {
-  const [{ gameObject: objA }, { gameObject: objB }] = Object.values(
-    joint.bodies,
-  );
-
-  for (const { x, y } of objA.anchors()) {
-    for (const { x: x2, y: y2 } of objB.anchors()) {
-      if (Phaser.Math.Distance.Squared(x, y, x2, y2) <= 1) return { x, y };
-    }
-  }
-
-  return null;
-};
-
 /** @typedef {{ joints: { x: number, y: number, connections: { objId: number, anchorId: number }[] }[] }} SerialPhysics */
 
 /**
  * @param {Phaser.Scene} scene
  * @return {SerialPhysics}
  */
-export const serializePhysics = (scene) => {
+export const serializePhysics = (scene, tryConstraints = true) => {
   const joints = [];
 
   for (const joint of valuesIterator(scene.partJoints)) {
-    const pos = getJointPosSlow(joint);
+    const pos = getJointPos(joint, tryConstraints);
     if (!pos) {
       console.warn('Cannot find joint pos!', joint);
       continue;
     }
+
+    console.log(
+      pos,
+      Object.values(joint.bodies).map((b) => [...b.gameObject.anchors()]),
+    );
 
     const jointData = { ...pos, connections: [] };
     joints.push(jointData);

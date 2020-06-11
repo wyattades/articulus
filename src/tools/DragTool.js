@@ -47,7 +47,7 @@ export default class DragTool extends Tool {
         sobj.id = p.id;
         return sobj;
       });
-      const physData = serializePhysics(this.scene);
+      const physData = serializePhysics(this.scene, false);
       this.scene.parts.clear(true, true);
       for (const sobj of sobjs) {
         const obj = fromJSON(this.scene, sobj);

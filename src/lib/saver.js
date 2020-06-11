@@ -15,7 +15,7 @@ export const fromJSON = (scene, json) => {
 
   const obj = Klass.fromJSON(scene, json);
 
-  if (obj.x == null || Number.isNaN(obj.x)) return null;
+  if (obj?.x == null || Number.isNaN(obj.x)) return null;
 
   obj.id = json.id;
   obj.render();
