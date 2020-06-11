@@ -7,9 +7,7 @@ type Override<T, R> = Omit<T, keyof R> & R;
 // physics:
 
 declare module FC {
-  // TODO: how to do this?
-  // import Phaser from 'phaser';
-  // import Matter from 'matter-js';
+  // TODO: how to do this properly?
   type Phaser = typeof import('phaser');
   type Matter = typeof import('matter-js');
 

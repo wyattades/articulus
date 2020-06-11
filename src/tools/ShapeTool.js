@@ -1,5 +1,3 @@
-// import Phaser from 'phaser';
-
 import BoxTool from './BoxTool';
 import { Rectangle, Ellipse } from '../objects/Shape';
 

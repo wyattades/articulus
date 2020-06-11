@@ -1,6 +1,3 @@
-/* eslint-disable consistent-return */
-// import Phaser from 'phaser';
-
 import Tool from './Tool';
 import { EventManager, constrain } from '../lib/utils';
 
@@ -11,7 +8,6 @@ export default class NavTool extends Tool {
     super(scene, toolKey);
 
     this.eventManager = new EventManager()
-
       .on(scene.game.canvas, 'contextmenu', (e) => {
         // disable right-click menu
         e.preventDefault();

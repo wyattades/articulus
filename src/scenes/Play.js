@@ -85,7 +85,7 @@ export default class Play extends Phaser.Scene {
       camera.pan(
         follow.x,
         follow.y,
-        dist * 0.6,
+        Math.min(2000, dist * 0.6),
         Phaser.Math.Easing.Quadratic.InOut,
         false,
         (_, progress) => {
