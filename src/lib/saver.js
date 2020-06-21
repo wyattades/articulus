@@ -1,11 +1,59 @@
 import { debounce } from 'lodash';
-import faunadb from 'faunadb';
 
 import { Subject } from './async';
 import { base48 } from './utils';
 import { OBJECTS } from '../objects';
 import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
 import { serializePhysics, deserializePhysics } from './physics';
+
+/** @type {typeof import('faunadb').query} */
+let q;
+
+const addExtras = (q) => {
+  q.FindOrCreate = (collection, id, data) => {
+    if (id != null)
+      return q.Let(
+        { data },
+        q.If(
+          q.Exists(q.Ref(q.Collection(collection), id)),
+          q.Update(q.Ref(q.Collection(collection), id), {
+            data: q.Var('data'),
+          }),
+          q.Create(q.Collection(collection), { data: q.Var('data') }),
+        ),
+      );
+    else return q.Create(q.Collection(collection), { data });
+  };
+};
+
+const db = new (class DB {
+  initter = null;
+
+  async query(expr) {
+    try {
+      return this.client.query(expr);
+    } catch (err) {
+      console.error('failed query', err);
+      throw err;
+    }
+  }
+
+  async init() {
+    if (this.initter) return this.initter.toPromise();
+    this.initter = new Subject();
+
+    this.fauna = await import('faunadb');
+
+    q = this.fauna.query;
+    addExtras(q);
+
+    this.client = new this.fauna.Client({
+      secret: process.env.FAUNA_CLIENT_KEY,
+    });
+
+    this.initter.complete();
+  }
+})();
 
 export const fromJSON = (scene, json) => {
   if (json?.id == null) return null;
@@ -21,8 +69,6 @@ export const fromJSON = (scene, json) => {
   obj.render();
   return obj;
 };
-
-const q = faunadb.query;
 
 // TEMP: until I build user system
 const userId = (() => {
@@ -43,44 +89,117 @@ const userId = (() => {
  * @typedef {{ name: string, _rev: string, _id: string }[]} MapMeta
  */
 
-export class MapSaver {
-  static metaCache = {};
+export class BuildSaver {
+  static buildsMetaCache = {};
 
-  /**
-   * @type {faunadb.Client}
-   */
-  static db = null;
+  static async loadBuildsMeta(limit = 21) {
+    await db.init();
 
-  static initter = null;
+    const res = await db.query(
+      q.Map(
+        q.Paginate(q.Match(q.Index('builds_by_user_id'), userId), {
+          size: limit,
+        }),
+        q.Lambda('ref', q.Get(q.Var('ref'))),
+      ),
+    );
 
-  static async query(expr) {
-    try {
-      return MapSaver.db.query(expr);
-    } catch (err) {
-      console.error('fauna error', err);
-      throw err;
-    }
+    return res.data.map((l) => {
+      const build = {
+        id: l.ref.id,
+        name: l.data.name,
+        image: l.data.image,
+      };
+
+      MapSaver.buildsMetaCache[build.id] = build;
+
+      return build;
+    });
   }
 
-  static async init() {
-    if (MapSaver.initter) return MapSaver.initter.toPromise();
-    MapSaver.initter = new Subject();
+  static loadPlayParts({ objs, physics }, group) {
+    for (const sobj of objs) {
+      const obj = fromJSON(group.scene, sobj);
+      if (!obj) continue;
 
-    MapSaver.db = new faunadb.Client({
-      secret: process.env.FAUNA_CLIENT_KEY,
-    });
+      obj.enablePhysics();
+      group.add(obj);
+    }
 
-    MapSaver.initter.complete();
+    if (physics) deserializePhysics(group.scene, physics);
   }
 
   id = null;
-  rev = null;
-  name = null;
 
-  static async loadLevelsMeta() {
-    await MapSaver.init();
+  async load() {
+    await db.init();
 
-    const res = await MapSaver.query(
+    let build;
+    if (this.id) {
+      build = await db.query(q.Get(q.Ref(q.Collection('maps'), this.id)));
+    } else {
+      const res = await db.query(
+        q.Map(
+          q.Paginate(q.Match(q.Index('builds_by_user_id'), userId), {
+            size: 1,
+          }),
+          q.Lambda('ref', q.Get(q.Var('ref'))),
+        ),
+      );
+      build = res.data[0];
+    }
+
+    if (!build) return null;
+
+    this.id = build.ref.id;
+    // this.name = build.data.name;
+
+    return {
+      objs: build.data.objs,
+      physics: build.data.physics,
+    };
+  }
+
+  /**
+   * @param {Phaser.GameObjects.Group} group
+   */
+  async save(group) {
+    await db.init();
+
+    const scene = group.scene;
+    if (!scene) return;
+
+    if (scene.running) return;
+
+    const objs = group.getChildren().map((obj) => {
+      const json = obj.toJSON();
+      json.id = obj.id;
+      return json;
+    });
+
+    const physics = serializePhysics(scene);
+
+    const data = {
+      user_id: userId,
+      objs,
+      physics,
+    };
+
+    const res = await db.query(q.FindOrCreate('builds', this.id, data));
+
+    this.id = res.ref.id;
+  }
+
+  queueSave = debounce(this.save.bind(this), 1000);
+}
+
+export class MapSaver {
+  static mapsMetaCache = {};
+
+  static async loadMapsMeta() {
+    await db.init();
+
+    const res = await db.query(
       q.Map(
         q.Paginate(q.Match(q.Index('maps_by_user_id'), userId), { size: 21 }),
         q.Lambda('ref', q.Get(q.Var('ref'))),
@@ -93,17 +212,20 @@ export class MapSaver {
         name: l.data.name,
       };
 
-      MapSaver.metaCache[meta.id] = meta;
+      MapSaver.mapsMetaCache[meta.id] = meta;
 
       return meta;
     });
   }
 
+  id = null;
+  name = null;
+
   constructor(id) {
     this.id = id;
 
     if (id) {
-      const meta = MapSaver.metaCache[id];
+      const meta = MapSaver.mapsMetaCache[id];
       if (meta) {
         this.name = meta.name;
       }
@@ -118,7 +240,7 @@ export class MapSaver {
    * @param {MapData} mapData
    * @param {Phaser.GameObjects.Group} group
    */
-  static loadPlayParts({ objs, physics }, group) {
+  static loadPlayParts({ objs }, group) {
     for (const sobj of objs) {
       const obj = fromJSON(group.scene, sobj);
       if (!obj) continue;
@@ -126,8 +248,6 @@ export class MapSaver {
       obj.enablePhysics();
       group.add(obj);
     }
-
-    if (physics) deserializePhysics(group.scene, physics);
   }
 
   /**
@@ -144,9 +264,9 @@ export class MapSaver {
   }
 
   async load() {
-    await MapSaver.init();
+    await db.init();
 
-    const { ref, data } = await MapSaver.query(
+    const { ref, data } = await db.query(
       q.Get(q.Ref(q.Collection('maps'), this.id)),
     );
 
@@ -155,7 +275,6 @@ export class MapSaver {
 
     return {
       objs: data.objs,
-      physics: data.physics,
     };
   }
 
@@ -163,13 +282,10 @@ export class MapSaver {
    * @param {Phaser.GameObjects.Group} group
    */
   async save(group) {
-    await MapSaver.init();
+    await db.init();
 
     const scene = group.scene;
     if (!scene) return;
-
-    const isPlayScene = !!scene.ui;
-    if (isPlayScene && scene.running) return;
 
     const objs = group.getChildren().map((obj) => {
       const json = obj.toJSON();
@@ -177,72 +293,19 @@ export class MapSaver {
       return json;
     });
 
-    const physics = isPlayScene ? serializePhysics(scene) : null;
-
     const data = {
       user_id: userId,
       name: this.name,
       objs,
-      physics,
     };
 
-    const res = await MapSaver.query(
-      this.id
-        ? q.Let(
-            { data },
-            q.If(
-              q.Exists(q.Ref(q.Collection('maps'), this.id)),
-              q.Update(q.Ref(q.Collection('maps'), this.id), {
-                data: q.Var('data'),
-              }),
-              q.Create(q.Collection('maps'), {
-                data: q.Var('data'),
-              }),
-            ),
-          )
-        : q.Create(q.Collection('maps'), {
-            data,
-          }),
-    );
+    const res = await db.query(q.FindOrCreate('maps', this.id, data));
 
     this.id = res.ref.id;
   }
 
   queueSave = debounce(this.save.bind(this), 1000);
 }
-
-// // TEMP
-// export const buildSaver = new (class BuildSaver {
-//   static STORAGE_KEY = 'fc:latest-build';
-
-//   data = this.load();
-
-//   load() {
-//     try {
-//       const obj = JSON.parse(localStorage.getItem(BuildSaver.STORAGE_KEY));
-//       if (obj && typeof obj === 'object') return obj;
-//     } catch (_) {}
-//     return {};
-//   }
-
-//   save() {
-//     try {
-//       localStorage.setItem(
-//         BuildSaver.STORAGE_KEY,
-//         JSON.stringify(this.settings),
-//       );
-//     } catch (_) {}
-//   }
-
-//   get() {
-//     return this.data;
-//   }
-
-//   set(data) {
-//     this.data = data;
-//     this.save();
-//   }
-// })();
 
 export const settingsSaver = new (class SettingsSaver {
   static STORAGE_KEY = 'fc:settings';

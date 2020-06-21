@@ -13,7 +13,7 @@ export default class Menu extends Phaser.Scene {
 
   async loadLevels() {
     try {
-      this.levels = [...(await MapSaver.loadLevelsMeta())];
+      this.levels = [...(await MapSaver.loadMapsMeta())];
     } catch (err) {
       console.error('loadLevels', err);
     }

@@ -3,12 +3,13 @@ import Phaser from 'phaser';
 import { PLAY_TOOL_TYPES } from '../tools';
 import { Terrain } from '../lib/terrain';
 import { Matter } from '../lib/physics';
-import { MapSaver } from '../lib/saver';
+import { BuildSaver, MapSaver } from '../lib/saver';
 import theme from '../styles/theme';
 import ToolManager from '../tools/ToolManager';
 import { MAX_PARTS } from '../const';
 
 export default class Play extends Phaser.Scene {
+  // Whether scene is running or not
   running = false;
 
   /** @type import('./UI').default */
@@ -19,9 +20,6 @@ export default class Play extends Phaser.Scene {
 
   // used in lib/physics
   partJoints;
-
-  // Whether scene is running or not
-  running;
 
   // `Part` that the camera is following
   followingPart = null;
@@ -35,9 +33,7 @@ export default class Play extends Phaser.Scene {
   init(data) {
     this.mapKey = data.mapKey;
     this.mapSaver = this.mapKey ? new MapSaver(this.mapKey) : null;
-    this.buildSaver = new MapSaver(
-      localStorage.getItem('fc:latest-build:id') || null,
-    );
+    this.buildSaver = new BuildSaver();
 
     this.ui = this.scene.get('UI');
     this.selected = [];
@@ -122,15 +118,11 @@ export default class Play extends Phaser.Scene {
 
   createListeners() {
     this.input.keyboard.on('keydown-SPACE', () => {
-      this.buildSaver.queueSave(this.parts);
-
       this.setRunning(!this.running);
     });
 
     this.input.on('pointerup', () => {
       this.buildSaver.queueSave(this.parts);
-
-      localStorage.setItem('fc:latest-build:id', this.buildSaver.id || '');
     });
 
     this.input.keyboard.on('keydown-R', () => this.restart());
@@ -144,7 +136,6 @@ export default class Play extends Phaser.Scene {
       const debug = !localStorage.getItem('fc:debug');
       localStorage.setItem('fc:debug', debug ? '1' : '');
 
-      // TODO: this only works for disabling dubugging
       this.matter.config.debug = debug;
 
       this.restart(true);
@@ -184,11 +175,13 @@ export default class Play extends Phaser.Scene {
     this.parts = this.add.group();
     this.terrainGroup = this.add.group();
 
-    if (this.buildSaver.id)
-      this.buildSaver
-        .load()
-        .then((partsData) => MapSaver.loadPlayParts(partsData, this.parts))
-        .catch(console.error);
+    this.buildSaver
+      .load()
+      .then(
+        (partsData) =>
+          partsData && BuildSaver.loadPlayParts(partsData, this.parts),
+      )
+      .catch(console.error);
 
     // WORLD
 
