@@ -89,6 +89,7 @@ export const createAnchorJoint = (anchor, objOrJoint) => {
 };
 
 /**
+ * Runs on every tick, must be performant
  * @param {Phaser.Scene} scene
  * @param {number} x
  * @param {number} y

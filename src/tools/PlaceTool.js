@@ -1,4 +1,4 @@
-import { stiffConnect, createAnchorJoint } from '../lib/physics';
+import { stiffConnect } from '../lib/physics';
 import { Wheel, OBJECTS } from '../objects';
 import Tool from './Tool';
 import { intersectsOtherSolid } from '../lib/utils';

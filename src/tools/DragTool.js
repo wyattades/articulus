@@ -70,8 +70,8 @@ export default class DragTool extends Tool {
           setPosFn: anchorId === 0 ? 'setStart' : 'setEnd',
           afterUpdate,
           obj,
-          dx: 0,
-          dy: 0,
+          dx: anchorJoint.x - x,
+          dy: anchorJoint.y - y,
         };
       }
 
