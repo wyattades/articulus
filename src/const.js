@@ -1,1 +1,1 @@
-export const MAX_PARTS = 32;
+export const MAX_PARTS = 64;

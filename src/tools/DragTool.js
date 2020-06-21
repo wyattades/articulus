@@ -1,9 +1,12 @@
+import * as R from 'ramda';
+
 import Tool from './Tool';
-import { getTopObject } from '../lib/utils';
+import { getTopObject, valuesIterator } from '../lib/utils';
 import {
   getConnectedObjects,
   serializePhysics,
   deserializePhysics,
+  getJointPos,
 } from '../lib/physics';
 import { Line } from '../objects';
 import { fromJSON } from '../lib/saver';
@@ -59,28 +62,53 @@ export default class DragTool extends Tool {
       deserializePhysics(this.scene, physData);
     };
 
-    const dragging = (anchorJoint.obj
-      ? [[anchorJoint.id, anchorJoint.obj.body]]
-      : Object.values(anchorJoint.joint.bodies)
-    ).map(([anchorId, body]) => {
+    let dragging;
+
+    if (anchorJoint.obj) {
+      dragging = [[anchorJoint, anchorJoint.id, anchorJoint.obj.body]];
+    } else {
+      dragging = Object.values(
+        anchorJoint.joint.bodies,
+      ).map(([anchorId, body]) => [anchorJoint, anchorId, body]);
+    }
+
+    const more = [];
+    for (const [_, __, body] of dragging) {
       const obj = body.gameObject;
-
-      if (obj instanceof Line) {
-        return {
-          setPosFn: anchorId === 0 ? 'setStart' : 'setEnd',
-          afterUpdate,
-          obj,
-          dx: anchorJoint.x - x,
-          dy: anchorJoint.y - y,
-        };
+      if (!(obj instanceof Line)) {
+        for (const joint of valuesIterator(body.collisionFilter.joints)) {
+          const pos = getJointPos(joint);
+          more.push(
+            ...Object.values(joint.bodies).map(([anchorId, body]) => [
+              pos,
+              anchorId,
+              body,
+            ]),
+          );
+        }
       }
+    }
 
-      return {
-        obj,
-        dx: obj.x - x,
-        dy: obj.y - y,
-      };
-    });
+    dragging = R.uniqBy((a) => a[2], dragging.concat(more)).map(
+      ([pos, anchorId, body]) => {
+        const obj = body.gameObject;
+
+        if (obj instanceof Line) {
+          return {
+            setPosFn: anchorId === 0 ? 'setStart' : 'setEnd',
+            afterUpdate,
+            obj,
+            dx: pos.x - x,
+            dy: pos.y - y,
+          };
+        } else
+          return {
+            obj,
+            dx: obj.x - x,
+            dy: obj.y - y,
+          };
+      },
+    );
 
     this.scene.activeDrag = {
       afterPlace,
@@ -91,25 +119,15 @@ export default class DragTool extends Tool {
   }
 
   handlePointerDown(x, y) {
-    let topObject;
-
-    // TODO
     const cursor = this.scene.cursor;
     const anchorJoint = cursor.getData('connectAnchorJoint');
     if (cursor.visible && anchorJoint) {
-      const { obj } = anchorJoint;
-      if (obj) {
-        if (obj instanceof Line) {
-          this.setDraggingAnchor(anchorJoint, x, y);
-          return;
-        } else topObject = obj; // not necessary, just an optimization
-      } else {
-        this.setDraggingAnchor(anchorJoint, x, y);
-        return;
-      }
+      this.setDraggingAnchor(anchorJoint, x, y);
+      return false;
     }
 
-    if ((topObject = topObject || getTopObject(this.scene, x, y))) {
+    const topObject = getTopObject(this.scene, x, y);
+    if (topObject) {
       let dragging;
 
       const selected = this.scene.selected;

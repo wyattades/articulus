@@ -117,6 +117,11 @@ export const anySame = (objA, objB) => {
   return false;
 };
 
+/**
+ * @template T
+ * @param {Record<string, T>} obj
+ * @yields {T}
+ */
 export function* valuesIterator(obj) {
   for (const k in obj) yield obj[k];
 }
