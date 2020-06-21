@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import Part from './Part';
 
 export default class Line extends Part {
+  static zIndex = 1;
   static MIN_LENGTH = 20;
   static type = 'line';
 

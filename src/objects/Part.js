@@ -5,6 +5,7 @@ import { deleteConnections } from '../lib/physics';
 
 export default class Part extends Phaser.GameObjects.Graphics {
   static CONNECTOR_RADIUS = 6;
+  static zIndex = 0;
 
   fillColor = 0xffffff;
   strokeColor = 0xffffff;
@@ -14,6 +15,7 @@ export default class Part extends Phaser.GameObjects.Graphics {
   constructor(scene, x, y) {
     super(scene, { x, y });
     scene.add.existing(this);
+    if (this.constructor.zIndex !== 0) this.setDepth(this.constructor.zIndex);
   }
 
   /** @type {FC.Body} */
