@@ -1,4 +1,4 @@
-import { stiffConnect } from '../lib/physics';
+import { stiffConnect, createAnchorJoint } from '../lib/physics';
 import { Wheel, OBJECTS } from '../objects';
 import Tool from './Tool';
 import { intersectsOtherSolid } from '../lib/utils';
@@ -19,7 +19,7 @@ export default class PlaceTool extends Tool {
       } else if (
         anchorJoint.joint &&
         Object.values(anchorJoint.joint.bodies).find(
-          (body) => body.gameObject instanceof Wheel,
+          ([, body]) => body.gameObject instanceof Wheel,
         )
       )
         return false;
@@ -33,14 +33,7 @@ export default class PlaceTool extends Tool {
 
     const anchorJoint = cursor.getData('connectAnchorJoint');
 
-    if (cursor.visible && anchorJoint) yield anchorJoint;
-    // {
-    //   body: anchorJoint.obj
-    //     ? anchorJoint.obj.body
-    //     : getFirstValue(anchorJoint.joint.bodies),
-    //   x: drawObj.obj.x,
-    //   y: drawObj.obj.y,
-    // };
+    if (cursor.visible && anchorJoint) yield [anchorJoint, 0];
   }
 
   activateObject(destroy = false) {
@@ -58,8 +51,8 @@ export default class PlaceTool extends Tool {
 
         obj.enablePhysics();
 
-        for (const anchorJoint of this.getConnections(drawObj)) {
-          stiffConnect(this.scene, obj.body, anchorJoint);
+        for (const [anchorJoint, anchorId] of this.getConnections(drawObj)) {
+          stiffConnect(this.scene, anchorJoint, obj, anchorId);
         }
       }
 

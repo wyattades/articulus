@@ -1,5 +1,5 @@
 import Line from '../objects/Line';
-import { intersectsOtherSolid, anySame, getFirstValue } from '../lib/utils';
+import { intersectsOtherSolid, anySame } from '../lib/utils';
 import PlaceTool from './PlaceTool';
 
 export default class LineTool extends PlaceTool {
@@ -17,13 +17,13 @@ export default class LineTool extends PlaceTool {
       if (start.obj) ignore.push(start.obj);
       else
         for (const id in start.joint.bodies)
-          ignore.push(start.joint.bodies[id].gameObject);
+          ignore.push(start.joint.bodies[id][1].gameObject);
     }
     if (end) {
       if (end.obj) ignore.push(end.obj);
       else
         for (const id in end.joint.bodies)
-          ignore.push(end.joint.bodies[id].gameObject);
+          ignore.push(end.joint.bodies[id][1].gameObject);
     }
 
     if (
@@ -52,8 +52,8 @@ export default class LineTool extends PlaceTool {
     const start = startAnchorJoint;
     const end = cursor.visible && cursor.getData('connectAnchorJoint');
 
-    if (start) yield start;
-    if (end) yield end;
+    if (start) yield [start, 0];
+    if (end) yield [end, 1];
   }
 
   handleObjDrag(x, y) {

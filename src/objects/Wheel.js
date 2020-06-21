@@ -11,6 +11,7 @@ export default class Wheel extends Part {
   spinDir = 0;
   appliedTorque = 0.1;
   strokeWidth = 2;
+  activeSpinDir = 0;
 
   constructor(scene, x, y, radius = 30) {
     super(scene, x, y);
@@ -78,14 +79,15 @@ export default class Wheel extends Part {
       );
   };
 
-  // TODO: use anchor.id
-  onConnect(x, y) {
+  onConnect(anchorId) {
     if (
       this.spinDir !== 0 &&
-      // make sure it's the center connector
-      // TODO: use `joint.id` instead?
-      Phaser.Math.Distance.Squared(x, y, this.x, this.y) <= 1.0
+      anchorId === 0 &&
+      this.activeSpinDir !== this.spinDir
     ) {
+      this.stopSpinning(anchorId);
+
+      this.activeSpinDir = this.spinDir;
       Matter.Events.on(
         this.scene.matter.world.engine,
         'beforeUpdate',
@@ -99,12 +101,15 @@ export default class Wheel extends Part {
     }
   }
 
-  onDisconnect(x, y) {
-    if (x == null || Phaser.Math.Distance.Squared(x, y, this.x, this.y) <= 1.0)
+  onDisconnect(anchorId) {
+    if (anchorId === 0) {
       this.stopSpinning();
+    }
   }
 
   stopSpinning() {
+    this.activeSpinDir = 0;
+
     // TODO: this shouldn't be necessary,
     // but destroy() is being called when this.scene is undefined :/
     if (!this.scene) return;

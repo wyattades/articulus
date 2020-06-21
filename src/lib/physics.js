@@ -20,34 +20,18 @@ export const Matter = Phaser.Physics.Matter.Matter;
  * @param {FC.Body} body
  * @return {{ x: number: y: number }}
  */
-export const getJointPos = (joint, tryConstraints = true) => {
-  if (tryConstraints) {
-    const con = joint.constraints[0];
-    if (con)
-      return {
-        x: con.pointA.x + con.bodyA.position.x,
-        y: con.pointA.y + con.bodyA.position.y,
-      };
-  }
+export const getJointPos = (joint) => {
+  const a = getFirstValue(joint.bodies);
+  if (!a) return null;
 
-  const [a, b] = Object.values(joint.bodies);
+  const [anchorId, body] = a;
 
-  if (!a || !b) return null;
-
-  for (const { x, y } of a.gameObject.anchors()) {
-    for (const { x: x2, y: y2 } of b.gameObject.anchors()) {
-      if (Phaser.Math.Distance.Squared(x, y, x2, y2) <= 1) return { x, y };
-    }
-  }
-
-  return null;
+  return body.gameObject.getAnchorById(anchorId);
 };
 
 const allConnectedBodies = (body, res = [], hitIds = {}) => {
   for (const joint of valuesIterator(body.collisionFilter.joints)) {
-    for (const c of joint.constraints) {
-      const connectedBody = c.bodyA === body ? c.bodyB : c.bodyA;
-
+    for (const [_, connectedBody] of valuesIterator(joint.bodies)) {
       if (hitIds[connectedBody.id]) continue;
       hitIds[connectedBody.id] = true;
 
@@ -95,6 +79,16 @@ const getObjectJointAt = (obj, x, y) => {
 };
 
 /**
+ * @param {FC.Anchor} y
+ * @param {FC.GameObject | FC.Joint} objOrJoint
+ * @return {FC.AnchorJoint}
+ */
+export const createAnchorJoint = (anchor, objOrJoint) => {
+  if (objOrJoint.bodies) return { ...anchor, joint: objOrJoint };
+  else return { ...anchor, obj: objOrJoint };
+};
+
+/**
  * @param {Phaser.Scene} scene
  * @param {number} x
  * @param {number} y
@@ -111,8 +105,7 @@ export const getHoveredJoint = (scene, x, y, ignore = null) => {
     if (anchor) {
       const joint = getObjectJointAt(child, anchor.x, anchor.y);
 
-      if (joint) return { ...anchor, joint };
-      else return { ...anchor, obj: child };
+      return createAnchorJoint(anchor, joint || child);
     }
   }
 
@@ -127,8 +120,6 @@ export const getHoveredJoint = (scene, x, y, ignore = null) => {
  * @return {boolean}
  */
 export const reconnect = (scene, joint, point = null) => {
-  const bodyA = getFirstValue(joint.bodies);
-
   if (!point) point = getJointPos(joint);
   if (!point) return false;
 
@@ -137,9 +128,14 @@ export const reconnect = (scene, joint, point = null) => {
   while (joint.constraints.length > 0)
     scene.matter.world.removeConstraint(joint.constraints.pop());
 
-  for (const body of valuesIterator(joint.bodies)) {
-    if (body.id !== bodyA.id) {
-      const c = scene.matter.add.constraint(bodyA, body, 0, 0.8, {
+  const [, bodyA] = getFirstValue(joint.bodies);
+
+  for (const [anchorId, bodyB] of valuesIterator(joint.bodies)) {
+    bodyB.collisionFilter.joints[joint.id] = joint;
+    bodyB.gameObject.onConnect(anchorId);
+
+    if (bodyB.id !== bodyA.id) {
+      const c = scene.matter.add.constraint(bodyA, bodyB, 0, 0.8, {
         render: {
           visible: false,
         },
@@ -148,10 +144,11 @@ export const reconnect = (scene, joint, point = null) => {
           y: y - bodyA.position.y,
         },
         pointB: {
-          x: x - body.position.x,
-          y: y - body.position.y,
+          x: x - bodyB.position.x,
+          y: y - bodyB.position.y,
         },
       });
+
       joint.constraints.push(c);
     }
   }
@@ -174,49 +171,39 @@ Matter.Detector.canCollide = (filterA, filterB) => {
     anySame(filterA.joints, filterB.joints)
   )
     return false; // FIXME: slow!
-  // if (
-  //   (filterA.connections && filterB.id in filterA.connections) ||
-  //   (filterB.connections && filterA.id in filterB.connections)
-  // )
-  //   return false;
+
   return oldCanCollide(filterA, filterB);
 };
 
+const createJoint = (scene) => {
+  const newId = nextId();
+  const joint = (scene.partJoints[newId] = {
+    id: newId,
+    bodies: {},
+    constraints: [],
+  });
+  return joint;
+};
+
 /**
- * Connects a body to an "anchorJoint"
+ * Connects two `anchorJoint`s
  * @param {Phaser.Scene} scene
- * @param {FC.Body} body
  * @param {FC.AnchorJoint} anchorJoint
+ * @param {FC.GameObject} obj
+ * @param {number} anchorId
  */
-export const stiffConnect = (scene, body, anchorJoint) => {
-  const { x, y } = anchorJoint;
-
+export const stiffConnect = (scene, anchorJoint, obj, anchorId) => {
+  const newBodies = [[anchorId, obj.body]];
+  let joint = anchorJoint.joint || createJoint(scene);
   if (anchorJoint.obj) {
-    const newId = nextId();
-    const joint = (scene.partJoints[newId] = {
-      id: newId,
-      bodies: {},
-      constraints: [],
-    });
-
-    for (const body of [body, anchorJoint.obj.body]) {
-      joint.bodies[body.id] = body;
-      body.collisionFilter.joints[joint.id] = joint;
-      body.gameObject.onConnect(x, y);
-    }
-
-    return reconnect(scene, joint, { x, y });
-  } else {
-    const { joint } = anchorJoint;
-
-    for (const body of [body, ...Object.values(joint.bodies)]) {
-      joint.bodies[body.id] = body;
-      body.collisionFilter.joints[joint.id] = joint;
-      body.gameObject.onConnect(x, y);
-    }
-
-    return reconnect(scene, joint, { x, y });
+    newBodies.push([anchorJoint.id, anchorJoint.obj.body]);
   }
+
+  for (const [aId, body] of newBodies) {
+    joint.bodies[body.id] = [aId, body];
+  }
+
+  reconnect(scene, joint);
 };
 
 /**
@@ -233,31 +220,16 @@ export const deleteConnections = (scene, body) => {
 
     const bodies = Object.values(joint.bodies);
 
-    const jointPos = getJointPos(joint);
-
     if (bodies.length <= 1) {
       delete scene.partJoints[jId]; // is this safe?
-      for (const b of bodies) {
-        // TODO: use joint.id or anchor.id, not position!
-        if (jointPos) b.gameObject.onDisconnect(jointPos.x, jointPos.y);
+      for (const [anchorId, b] of bodies) {
+        b.gameObject.onDisconnect(anchorId);
         delete b.collisionFilter.joints[jId];
       }
     }
   }
-};
 
-/**
- * @param {FC.Joint} joint
- * @param {FC.Body} body
- */
-const getJointOffset = (joint, body) => {
-  for (const c of joint.constraints) {
-    if (c.bodyA === body) return c.pointA;
-    else if (c.bodyB === body) return c.pointB;
-  }
-
-  console.warn('No matching constraint!', joint, body);
-  return null;
+  body.collisionFilter.joints = null;
 };
 
 /**
@@ -278,44 +250,26 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
     if (!from.body) continue;
 
     for (const joint of valuesIterator(from.body.collisionFilter.joints)) {
-      let jointData = jointDatas[joint.id];
+      let jointData = (jointDatas[joint.id] = jointDatas[joint.id] || []);
 
-      if (!jointData) {
-        const { x: dx, y: dy } = getJointOffset(joint, from.body);
+      const anchorId = joint.bodies[from.body.id][0];
 
-        jointData = jointDatas[joint.id] = {
-          pos: {
-            x: to.body.position.x + dx,
-            y: to.body.position.y + dy,
-          },
-          bodies: [],
-        };
-      }
-
-      jointData.bodies.push(to.body);
+      jointData.push([anchorId, to.body]);
     }
   }
 
-  for (let { bodies, pos } of valuesIterator(jointDatas)) {
-    bodies = R.uniq(bodies);
+  for (let bodies of valuesIterator(jointDatas)) {
+    bodies = R.uniqBy((a) => a[1], bodies);
 
     if (bodies.length < 2) continue;
 
-    const newId = nextId();
+    const joint = createJoint(scene);
 
-    const joint = (scene.partJoints[newId] = {
-      id: newId,
-      bodies: {},
-      constraints: [],
-    });
-
-    for (const body of bodies) {
-      joint.bodies[body.id] = body;
-      body.collisionFilter.joints[joint.id] = joint;
-      body.gameObject.onConnect(pos.x, pos.y);
+    for (const [anchorId, body] of bodies) {
+      joint.bodies[body.id] = [anchorId, body];
     }
 
-    reconnect(scene, joint, pos);
+    reconnect(scene, joint);
   }
 };
 
@@ -325,35 +279,19 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
  * @param {Phaser.Scene} scene
  * @return {SerialPhysics}
  */
-export const serializePhysics = (scene, tryConstraints = true) => {
+export const serializePhysics = (scene) => {
   const joints = [];
 
   for (const joint of valuesIterator(scene.partJoints)) {
-    const pos = getJointPos(joint, tryConstraints);
-    if (!pos) {
-      console.warn('Cannot find joint pos!', joint);
-      continue;
-    }
+    const bodies = Object.values(joint.bodies);
 
-    console.log(
-      pos,
-      Object.values(joint.bodies).map((b) => [...b.gameObject.anchors()]),
-    );
-
-    const jointData = { ...pos, connections: [] };
-    joints.push(jointData);
-
-    for (const body of valuesIterator(joint.bodies)) {
-      // TODO: not resilient
-      const anchor = body.gameObject.getHoveredAnchor(pos.x, pos.y, 2);
-      if (!anchor) {
-        console.warn('Cannot find anchor!', body.gameObject, pos);
-        continue;
-      }
-
-      jointData.connections.push({
-        objId: body.gameObject.id,
-        anchorId: anchor.id,
+    // how would it have <= 1 body???
+    if (bodies.length > 1) {
+      joints.push({
+        connections: bodies.map(([anchorId, body]) => ({
+          objId: body.gameObject.id,
+          anchorId,
+        })),
       });
     }
   }
@@ -371,27 +309,19 @@ export const deserializePhysics = (scene, data) => {
     objMap[obj.id] = obj;
   }
 
-  for (const { connections, x, y } of data.joints) {
-    const newId = nextId();
-
-    const joint = (scene.partJoints[newId] = {
-      id: newId,
-      bodies: {},
-      constraints: [],
-    });
+  for (const { connections } of data.joints) {
+    const joint = createJoint(scene);
 
     for (const { objId, anchorId } of connections) {
-      const obj = objMap[objId];
-      if (!obj) continue;
+      const body = objMap[objId]?.body;
+      if (!body) {
+        console.warn('Missing object!', objId);
+        continue;
+      }
 
-      const body = obj.body;
-      const anchor = obj.getAnchorById(anchorId);
-
-      joint.bodies[body.id] = body;
-      body.collisionFilter.joints[joint.id] = joint;
-      body.gameObject.onConnect(anchor.x, anchor.y);
+      joint.bodies[body.id] = [anchorId, body];
     }
 
-    reconnect(scene, joint, { x, y });
+    reconnect(scene, joint);
   }
 };

@@ -47,49 +47,40 @@ export default class DragTool extends Tool {
         sobj.id = p.id;
         return sobj;
       });
-      const physData = serializePhysics(this.scene, false);
+      const physData = serializePhysics(this.scene);
       this.scene.parts.clear(true, true);
       for (const sobj of sobjs) {
         const obj = fromJSON(this.scene, sobj);
-        obj?.enablePhysics();
-        if (obj) this.scene.parts.add(obj);
-        else console.warn('failed to recompute in afterPlace', sobj);
+        if (obj) {
+          obj.enablePhysics();
+          this.scene.parts.add(obj);
+        } else console.warn('failed to recompute in afterPlace', sobj);
       }
       deserializePhysics(this.scene, physData);
     };
 
-    const hoverDist = constrain(10 / this.scene.cameras.main.zoom, 6, 24);
-
     const dragging = (anchorJoint.obj
-      ? [anchorJoint.obj.body]
+      ? [[anchorJoint.id, anchorJoint.obj.body]]
       : Object.values(anchorJoint.joint.bodies)
-    )
-      .map((body) => {
-        const obj = body.gameObject;
+    ).map(([anchorId, body]) => {
+      const obj = body.gameObject;
 
-        if (obj instanceof Line) {
-          // TODO: not resilient
-          const anchor = obj.getHoveredAnchor(x, y, hoverDist);
-          if (!anchor) {
-            console.warn('Cannot find dragging anchor!', obj, x, y);
-            return null;
-          }
-
-          return {
-            setPosFn: anchor.id === 0 ? 'setStart' : 'setEnd',
-            afterUpdate,
-            obj,
-            dx: 0,
-            dy: 0,
-          };
-        }
+      if (obj instanceof Line) {
         return {
+          setPosFn: anchorId === 0 ? 'setStart' : 'setEnd',
+          afterUpdate,
           obj,
-          dx: obj.x - x,
-          dy: obj.y - y,
+          dx: 0,
+          dy: 0,
         };
-      })
-      .filter(Boolean);
+      }
+
+      return {
+        obj,
+        dx: obj.x - x,
+        dy: obj.y - y,
+      };
+    });
 
     this.scene.activeDrag = {
       afterPlace,
