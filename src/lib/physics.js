@@ -138,7 +138,8 @@ export const reconnect = (scene, joint, point = null) => {
     if (bodyB.id !== bodyA.id) {
       const c = scene.matter.add.constraint(bodyA, bodyB, 0, 0.8, {
         render: {
-          visible: false,
+          lineColor: 0xff0000,
+          visible: !!scene.matter.config.debug,
         },
         pointA: {
           x: x - bodyA.position.x,
@@ -316,7 +317,7 @@ export const deserializePhysics = (scene, data) => {
     for (const { objId, anchorId } of connections) {
       const body = objMap[objId]?.body;
       if (!body) {
-        console.warn('Missing object!', objId);
+        console.warn('Missing object!', objId, objMap);
         continue;
       }
 

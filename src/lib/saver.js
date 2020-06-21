@@ -168,13 +168,16 @@ export class MapSaver {
     const scene = group.scene;
     if (!scene) return;
 
+    const isPlayScene = !!scene.ui;
+    if (isPlayScene && scene.running) return;
+
     const objs = group.getChildren().map((obj) => {
       const json = obj.toJSON();
       json.id = obj.id;
       return json;
     });
 
-    const physics = scene.ui ? serializePhysics(scene) : null;
+    const physics = isPlayScene ? serializePhysics(scene) : null;
 
     const data = {
       user_id: userId,

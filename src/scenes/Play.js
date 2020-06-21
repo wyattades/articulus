@@ -122,6 +122,8 @@ export default class Play extends Phaser.Scene {
 
   createListeners() {
     this.input.keyboard.on('keydown-SPACE', () => {
+      this.buildSaver.queueSave(this.parts);
+
       this.setRunning(!this.running);
     });
 

@@ -75,6 +75,8 @@ export default class Line extends Part {
   }
 
   toJSON() {
+    this.recomputeEnds();
+
     return {
       type: this.constructor.type,
       x1: this.x1,

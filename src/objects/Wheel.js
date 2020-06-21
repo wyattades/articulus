@@ -132,9 +132,10 @@ export default class Wheel extends Part {
   }
 
   *anchors() {
-    yield { x: this.x, y: this.y, id: 0 };
+    let i = 0;
 
-    let i = 1;
+    yield { x: this.x, y: this.y, id: i++ };
+
     for (const [dx, dy] of circle4Points(this.radius, this.rotation))
       yield { x: this.x + dx, y: this.y + dy, id: i++ };
   }

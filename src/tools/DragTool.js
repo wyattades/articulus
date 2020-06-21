@@ -1,5 +1,5 @@
 import Tool from './Tool';
-import { getTopObject, constrain } from '../lib/utils';
+import { getTopObject } from '../lib/utils';
 import {
   getConnectedObjects,
   serializePhysics,
