@@ -24,11 +24,6 @@ export default class Wheel extends Part {
     this.gfx.fillStyle(this.fillColor);
     this.gfx.fillCircle(0, 0, this.radius);
     this.gfx.strokeCircle(0, 0, this.radius);
-
-    this.renderConnector(0, 0);
-    for (const [dx, dy] of circle4Points(this.radius)) {
-      this.renderConnector(dx, dy);
-    }
   }
 
   toJSON() {

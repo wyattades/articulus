@@ -57,11 +57,18 @@ export default class Part extends Phaser.GameObjects.Sprite {
     return bounds;
   }
 
-  renderConnector(x, y) {
+  renderConnectors() {
     this.gfx.lineStyle(1, 0xffffff);
     this.gfx.fillStyle(0xcccccc, 1);
-    this.gfx.fillCircle(x, y, Part.CONNECTOR_RADIUS);
-    this.gfx.strokeCircle(x, y, Part.CONNECTOR_RADIUS);
+
+    for (const { x, y } of this.anchors()) {
+      const p = { x: x - this.x, y: y - this.y };
+
+      Phaser.Math.RotateAround(p, 0, 0, -this.rotation);
+
+      this.gfx.fillCircle(p.x, p.y, Part.CONNECTOR_RADIUS);
+      this.gfx.strokeCircle(p.x, p.y, Part.CONNECTOR_RADIUS);
+    }
   }
 
   render() {}
@@ -85,6 +92,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
     }
 
     this.render();
+    this.renderConnectors();
 
     this.gfx.setPosition(this.x, this.y);
     if (this.rotation != null) this.gfx.setRotation(this.rotation);
@@ -108,6 +116,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
 
       this.gfx.translateCanvas(displayWh, displayHh);
       this.render();
+      this.renderConnectors();
       this.gfx.generateTexture(key, displayWh * 2, displayHh * 2);
 
       this.gfx.destroy();
@@ -195,10 +204,6 @@ export default class Part extends Phaser.GameObjects.Sprite {
     return obj;
   }
 
-  *anchors() {
-    yield { x: this.x, y: this.y, id: 0 };
-  }
-
   getConnectedObjects(anchorId = null, includeSelf = false) {
     const anchorObjs =
       anchorId == null
@@ -225,6 +230,8 @@ export default class Part extends Phaser.GameObjects.Sprite {
 
     return anchorObjs || [];
   }
+
+  *anchors() {}
 
   getAnchorById(id) {
     let i = 0;

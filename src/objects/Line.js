@@ -78,9 +78,6 @@ export default class Line extends Part {
       this.length,
       this.size,
     );
-
-    this.renderConnector(-this.length / 2, 0);
-    this.renderConnector(this.length / 2, 0);
   }
 
   toJSON() {
