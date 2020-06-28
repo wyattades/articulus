@@ -57,7 +57,7 @@ const db = new (class DB {
 
 const isNum = (x) => typeof x === 'number' && !Number.isNaN(x);
 
-export const fromJSON = (scene, json) => {
+export const fromJSON = (scene, json, enablePhysics = false) => {
   if (json?.id == null) return null;
 
   const Klass = OBJECTS[json.type] || SHAPE_TYPE_CLASSES[json.type];
@@ -68,6 +68,9 @@ export const fromJSON = (scene, json) => {
   if (!obj || !isNum(obj.x) || !isNum(obj.y)) return null;
 
   obj.id = json.id;
+
+  if (enablePhysics) obj.enablePhysics();
+  obj.saveRender(); // must be after enablePhysics
 
   return obj;
 };
@@ -121,10 +124,9 @@ export class BuildSaver {
 
   static loadPlayParts({ objs, physics }, group) {
     for (const sobj of objs) {
-      const obj = fromJSON(group.scene, sobj);
+      const obj = fromJSON(group.scene, sobj, true);
       if (!obj) continue;
 
-      obj.enablePhysics();
       group.add(obj);
     }
 
@@ -244,10 +246,9 @@ export class MapSaver {
    */
   static loadPlayParts({ objs }, group) {
     for (const sobj of objs) {
-      const obj = fromJSON(group.scene, sobj);
+      const obj = fromJSON(group.scene, sobj, true);
       if (!obj) continue;
 
-      obj.enablePhysics();
       group.add(obj);
     }
   }

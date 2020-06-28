@@ -188,7 +188,6 @@ export default class Controls extends Phaser.GameObjects.Group {
     this.updateChildren();
   }
 
-  // NOOPs
+  // NOOP
   saveRender() {}
-  rerender() {}
 }

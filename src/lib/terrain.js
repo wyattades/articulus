@@ -129,7 +129,4 @@ export class Terrain extends Phaser.GameObjects.Graphics {
     // TODO: inject body correctly with matter.add.gameObject ?
     this._body = body;
   }
-
-  // NOOP
-  saveRender() {}
 }

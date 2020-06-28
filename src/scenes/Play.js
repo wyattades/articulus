@@ -175,16 +175,8 @@ export default class Play extends Phaser.Scene {
 
     // GROUPS
 
-    this.parts = this.add.group({
-      createCallback(obj) {
-        obj.saveRender();
-      },
-    });
-    this.terrainGroup = this.add.group({
-      createCallback(obj) {
-        obj.saveRender();
-      },
-    });
+    this.parts = this.add.group();
+    this.terrainGroup = this.add.group();
 
     this.buildSaver
       .load()

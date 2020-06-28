@@ -46,11 +46,9 @@ export default class DragTool extends Tool {
       const physData = serializePhysics(this.scene);
       this.scene.parts.clear(true, true);
       for (const sobj of sobjs) {
-        const obj = fromJSON(this.scene, sobj);
-        if (obj) {
-          obj.enablePhysics();
-          this.scene.parts.add(obj);
-        } else console.warn('failed to recompute in afterPlace', sobj);
+        const obj = fromJSON(this.scene, sobj, true);
+        if (obj) this.scene.parts.add(obj);
+        else console.warn('failed to recompute in afterPlace', sobj);
       }
       deserializePhysics(this.scene, physData);
     };

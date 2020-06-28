@@ -147,6 +147,8 @@ export default class UI extends Phaser.Scene {
 
             clonePhysics(this.play, this.play.selected, newObjs);
 
+            for (const obj of newObjs) obj.saveRender();
+
             this.play.events.emit('setSelected', newObjs);
 
             this.play.refreshCameraFollower();

@@ -84,11 +84,7 @@ export default class Editor extends Phaser.Scene {
     );
     this.enableSnapping(!!settingsSaver.get('snapping'));
 
-    this.parts = this.add.group({
-      createCallback(obj) {
-        obj.saveRender();
-      },
-    });
+    this.parts = this.add.group();
     this.mapSaver
       .load()
       .then((mapData) => MapSaver.loadEditorParts(mapData, this.parts));

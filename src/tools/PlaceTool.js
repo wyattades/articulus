@@ -50,12 +50,11 @@ export default class PlaceTool extends Tool {
         }
 
         obj.enablePhysics();
+        obj.saveRender(); // must be after enablePhysics
 
         for (const [anchorJoint, anchorId] of this.getConnections(drawObj)) {
           stiffConnect(this.scene, anchorJoint, obj, anchorId);
         }
-
-        obj.saveRender();
       }
 
       drawObj.startAnchorJoint = undefined;
