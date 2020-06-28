@@ -26,6 +26,9 @@ export const adjustBrightness = (color, n) =>
 
 let _id = 1;
 export const nextId = () => _id++;
+export const setNextId = (val) => {
+  if (val > _id) _id = val;
+};
 
 const charSample = [
   ...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',

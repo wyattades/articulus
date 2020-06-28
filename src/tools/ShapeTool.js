@@ -14,8 +14,8 @@ export default class ShapeTool extends BoxTool {
   handleCreateBox(_intersected) {
     if (this.shape) {
       if (
-        this.shape.width > MIN_SHAPE_SIZE &&
-        this.shape.height > MIN_SHAPE_SIZE
+        this.shape.width >= MIN_SHAPE_SIZE &&
+        this.shape.height >= MIN_SHAPE_SIZE
       ) {
         this.scene.parts.add(this.shape);
       } else this.shape.destroy();
@@ -39,7 +39,8 @@ export default class ShapeTool extends BoxTool {
 
     this.shape.setPosition(s.x + sw / 2, s.y + sh / 2);
     this.shape.setSize(sw, sh);
-    this.shape.render();
+
+    this.shape.rerender();
   }
 }
 
@@ -62,6 +63,7 @@ export class EllipseTool extends ShapeTool {
 
     this.shape.setPosition(ip.x, ip.y);
     this.shape.setSize(sw * 2, sh * 2);
-    this.shape.render();
+
+    this.shape.rerender();
   }
 }

@@ -29,7 +29,6 @@ export class Rectangle extends Part {
   height = 1;
   originX = 0.5;
   originY = 0.5;
-  type = 'rect';
   static type = 'rect';
 
   setSize(width, height) {
@@ -38,11 +37,20 @@ export class Rectangle extends Part {
   }
 
   render() {
-    this.clear();
-    this.fillStyle(this.fillColor, this.fillOpacity);
-    this.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
-    this.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-    this.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    this.gfx.fillStyle(this.fillColor, this.fillOpacity);
+    this.gfx.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
+    this.gfx.fillRect(
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height,
+    );
+    this.gfx.strokeRect(
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height,
+    );
   }
 
   get geom() {
@@ -83,15 +91,13 @@ export class Rectangle extends Part {
 }
 
 export class Ellipse extends Rectangle {
-  type = 'ellipse';
   static type = 'ellipse';
 
   render() {
-    this.clear();
-    this.fillStyle(this.fillColor, this.fillOpacity);
-    this.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
-    this.fillEllipse(0, 0, this.width, this.height);
-    this.strokeEllipse(0, 0, this.width, this.height);
+    this.gfx.fillStyle(this.fillColor, this.fillOpacity);
+    this.gfx.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
+    this.gfx.fillEllipse(0, 0, this.width, this.height);
+    this.gfx.strokeEllipse(0, 0, this.width, this.height);
   }
 
   get geom() {

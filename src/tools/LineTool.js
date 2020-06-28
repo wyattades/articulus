@@ -9,7 +9,7 @@ export default class LineTool extends PlaceTool {
     const cursor = this.scene.cursor;
 
     const start = drawObj.startAnchorJoint;
-    const end = cursor.visible && cursor.getData('connectAnchorJoint');
+    const end = cursor?.visible && cursor.getData('connectAnchorJoint');
 
     const ignore = [];
 
@@ -36,11 +36,7 @@ export default class LineTool extends PlaceTool {
     )
       return false;
 
-    if (
-      drawObj.obj.length < Line.MIN_LENGTH ||
-      intersectsOtherSolid(this.scene, drawObj.obj, ignore)
-    )
-      return false;
+    if (intersectsOtherSolid(this.scene, drawObj.obj, ignore)) return false;
 
     return true;
   }
@@ -50,7 +46,7 @@ export default class LineTool extends PlaceTool {
     const { startAnchorJoint } = drawObj;
 
     const start = startAnchorJoint;
-    const end = cursor.visible && cursor.getData('connectAnchorJoint');
+    const end = cursor?.visible && cursor.getData('connectAnchorJoint');
 
     if (start) yield [start, 0];
     if (end) yield [end, 1];
@@ -59,7 +55,6 @@ export default class LineTool extends PlaceTool {
   handleObjDrag(x, y) {
     const obj = this.drawObj.obj;
     obj.setEnd(x, y);
-    obj.clear();
-    obj.render();
+    obj.rerender();
   }
 }

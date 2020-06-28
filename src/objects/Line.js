@@ -12,8 +12,8 @@ export default class Line extends Part {
   constructor(scene, x1, y1, x2, y2, lineWidth = 10) {
     super(scene, x1, y1);
 
-    this.size = lineWidth;
-    this.length = 1;
+    this.length = this.width = 1;
+    this.size = this.height = lineWidth;
 
     this.x1 = x1;
     this.y1 = y1;
@@ -33,7 +33,10 @@ export default class Line extends Part {
   recalculateGeom() {
     const { x1, y1, x2, y2 } = this;
 
-    this.length = Math.max(1, Phaser.Math.Distance.Between(x1, y1, x2, y2));
+    this.length = this.width = Math.max(
+      1,
+      Phaser.Math.Distance.Between(x1, y1, x2, y2),
+    );
 
     this.setRotation(Phaser.Math.Angle.Between(x1, y1, x2, y2));
 
@@ -66,10 +69,15 @@ export default class Line extends Part {
   }
 
   render() {
-    this.fillStyle(this.fillColor);
-    this.lineStyle(this.strokeWidth, this.strokeColor, 1);
-    this.fillRect(-this.length / 2, -this.size / 2, this.length, this.size);
-    this.strokeRect(-this.length / 2, -this.size / 2, this.length, this.size);
+    this.gfx.fillStyle(this.fillColor);
+    this.gfx.lineStyle(this.strokeWidth, this.strokeColor, 1);
+    this.gfx.fillRect(-this.length / 2, -this.size / 2, this.length, this.size);
+    this.gfx.strokeRect(
+      -this.length / 2,
+      -this.size / 2,
+      this.length,
+      this.size,
+    );
 
     this.renderConnector(-this.length / 2, 0);
     this.renderConnector(this.length / 2, 0);

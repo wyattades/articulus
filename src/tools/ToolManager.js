@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 import { TOOLS } from '.';
-import { intersectsGeoms, EventManager } from '../lib/utils';
+import { EventManager } from '../lib/utils';
 
 export default class ToolManager {
   tools = []; // active tools
@@ -38,7 +38,8 @@ export default class ToolManager {
     const types = [...this.topTypes];
     if (toolType === 'select') {
       types.push('drag', 'select');
-      types.unshift('controls');
+
+      if (this.scene.ui.editor) types.unshift('controls');
     } else if (toolType) types.push(toolType);
 
     this.tools = types.map(

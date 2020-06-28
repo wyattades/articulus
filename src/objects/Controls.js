@@ -20,29 +20,36 @@ export default class Controls extends Phaser.GameObjects.Group {
 
   static getBounds(objs) {
     const MAX = 999999;
-    let minX = MAX,
-      minY = MAX,
-      maxX = -MAX,
-      maxY = -MAX;
+    let left = MAX,
+      top = MAX,
+      right = -MAX,
+      bottom = -MAX;
 
     for (const obj of objs) {
       const objX = obj.x - obj.width / 2;
       const objY = obj.y - obj.height / 2;
 
-      if (objX < minX) minX = objX;
-      if (objY < minY) minY = objY;
-      if (objX + obj.width > maxX) maxX = objX + obj.width;
-      if (objY + obj.height > maxY) maxY = objY + obj.height;
+      if (objX < left) left = objX;
+      if (objY < top) top = objY;
+      if (objX + obj.width > right) right = objX + obj.width;
+      if (objY + obj.height > bottom) bottom = objY + obj.height;
     }
 
-    return { minX, minY, maxX, maxY };
+    return {
+      left,
+      top,
+      right,
+      bottom,
+      width: right - left,
+      height: bottom - top,
+    };
   }
 
   updateFromBounds(objs) {
     const b = Controls.getBounds(objs);
 
-    this.setPosition(b.minX, b.minY, true);
-    this.setSize(b.maxX - b.minX, b.maxY - b.minY, true);
+    this.setPosition(b.left, b.top, true);
+    this.setSize(b.width, b.height, true);
     this.updateChildren();
   }
 
@@ -51,7 +58,7 @@ export default class Controls extends Phaser.GameObjects.Group {
    * @param {Phaser.GameObjects.GameObject[]} selected
    */
   setSelected(selected) {
-    if (selected && selected.length > 0) {
+    if (selected?.length) {
       this.updateFromBounds(selected);
 
       this.setVisible(true);
@@ -136,5 +143,7 @@ export default class Controls extends Phaser.GameObjects.Group {
     this.updateChildren();
   }
 
-  render() {}
+  // NOOPs
+  saveRender() {}
+  rerender() {}
 }

@@ -34,7 +34,9 @@ export default class BoxTool extends Tool {
     const { x, y, width, height } = this.box;
     this.shape.setPosition(x, y);
     this.shape.setSize(width, height);
-    if (this.shape.render) this.shape.render();
+    if (this.shape.rerender) {
+      this.shape.rerender();
+    }
   }
 
   createShape() {

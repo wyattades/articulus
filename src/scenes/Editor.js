@@ -30,7 +30,7 @@ export default class Editor extends Phaser.Scene {
 
     this.input.keyboard.on('keydown-BACKSPACE', (e) => {
       e.preventDefault();
-      for (const obj of this.selected || []) this.parts.remove(obj, true, true);
+      for (const obj of this.selected || []) obj.destroy();
       this.events.emit('setSelected', []);
     });
   }
@@ -84,14 +84,11 @@ export default class Editor extends Phaser.Scene {
     );
     this.enableSnapping(!!settingsSaver.get('snapping'));
 
-    // TODO: necessary?
-    this.cursor = this.add
-      .circle(0, 0, 6, 0xeeeeee)
-      .setStrokeStyle(1, 0xbbbbbb)
-      .setVisible(false)
-      .setDepth(1000);
-
-    this.parts = this.add.group();
+    this.parts = this.add.group({
+      createCallback(obj) {
+        obj.saveRender();
+      },
+    });
     this.mapSaver
       .load()
       .then((mapData) => MapSaver.loadEditorParts(mapData, this.parts));

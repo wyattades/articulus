@@ -123,7 +123,6 @@ export default class EditorUI extends Phaser.Scene {
             const newObjs = this.editor.selected.map((obj) => {
               const newObj = obj.clone();
               newObj.setPosition(obj.x + offset, obj.y + offset);
-              newObj.render();
               this.editor.parts.add(newObj);
 
               return newObj;

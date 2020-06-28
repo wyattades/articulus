@@ -12,18 +12,20 @@ export default class Wheel extends Part {
   appliedTorque = 0.1;
   strokeWidth = 2;
   activeSpinDir = 0;
+  repeatableTexture = true;
 
   constructor(scene, x, y, radius = 30) {
     super(scene, x, y);
 
     this.radius = radius;
+    this.width = this.height = radius * 2;
   }
 
   render() {
-    this.lineStyle(this.strokeWidth, this.strokeColor);
-    this.fillStyle(this.fillColor);
-    this.fillCircle(0, 0, this.radius);
-    this.strokeCircle(0, 0, this.radius);
+    this.gfx.lineStyle(this.strokeWidth, this.strokeColor);
+    this.gfx.fillStyle(this.fillColor);
+    this.gfx.fillCircle(0, 0, this.radius);
+    this.gfx.strokeCircle(0, 0, this.radius);
 
     this.renderConnector(0, 0);
     for (const [dx, dy] of circle4Points(this.radius)) {

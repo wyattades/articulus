@@ -27,7 +27,8 @@
     "history": "^4.10.1",
     "path-to-regexp": "^6.1.0",
     "phaser": "^3.22.0",
-    "ramda": "^0.26.1"
+    "ramda": "^0.26.1",
+    "stats.js": "^0.17.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",

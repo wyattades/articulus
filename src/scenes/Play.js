@@ -172,8 +172,16 @@ export default class Play extends Phaser.Scene {
 
     // GROUPS
 
-    this.parts = this.add.group();
-    this.terrainGroup = this.add.group();
+    this.parts = this.add.group({
+      createCallback(obj) {
+        obj.saveRender();
+      },
+    });
+    this.terrainGroup = this.add.group({
+      createCallback(obj) {
+        obj.saveRender();
+      },
+    });
 
     this.buildSaver
       .load()
@@ -244,6 +252,9 @@ export default class Play extends Phaser.Scene {
   }
 
   update(_, delta) {
+    this.ui.stats?.end();
+    this.ui.stats?.begin();
+
     const CAMERA_SPEED = (0.4 * delta) / this.cameras.main.zoom;
     const { left, right, up, down } = this.cursors;
     if (left.isDown && !right.isDown) {

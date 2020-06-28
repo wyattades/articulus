@@ -55,6 +55,8 @@ const db = new (class DB {
   }
 })();
 
+const isNum = (x) => typeof x === 'number' && !Number.isNaN(x);
+
 export const fromJSON = (scene, json) => {
   if (json?.id == null) return null;
 
@@ -63,10 +65,10 @@ export const fromJSON = (scene, json) => {
 
   const obj = Klass.fromJSON(scene, json);
 
-  if (obj?.x == null || Number.isNaN(obj.x)) return null;
+  if (!obj || !isNum(obj.x) || !isNum(obj.y)) return null;
 
   obj.id = json.id;
-  obj.render();
+
   return obj;
 };
 

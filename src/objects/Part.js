@@ -1,20 +1,22 @@
 import Phaser from 'phaser';
 
-import { adjustBrightness, nextId } from '../lib/utils';
+import { adjustBrightness, nextId, setNextId } from '../lib/utils';
 import { deleteConnections } from '../lib/physics';
 
-export default class Part extends Phaser.GameObjects.Graphics {
+const buffer = 20;
+
+export default class Part extends Phaser.GameObjects.Sprite {
   static CONNECTOR_RADIUS = 6;
   static zIndex = 0;
 
   fillColor = 0xffffff;
   strokeColor = 0xffffff;
   strokeWidth = 0;
-  id = nextId();
 
   constructor(scene, x, y) {
-    super(scene, { x, y });
+    super(scene, x, y);
     scene.add.existing(this);
+
     if (this.constructor.zIndex !== 0) this.setDepth(this.constructor.zIndex);
   }
 
@@ -22,6 +24,15 @@ export default class Part extends Phaser.GameObjects.Graphics {
   body;
 
   static type = 'base_part';
+
+  _id = nextId();
+  set id(val) {
+    this._id = val;
+    setNextId(val + 1);
+  }
+  get id() {
+    return this._id;
+  }
 
   set color(color) {
     this.fillColor = color;
@@ -42,13 +53,67 @@ export default class Part extends Phaser.GameObjects.Graphics {
   }
 
   renderConnector(x, y) {
-    this.lineStyle(1, 0xffffff);
-    this.fillStyle(0xcccccc, 1);
-    this.fillCircle(x, y, Part.CONNECTOR_RADIUS);
-    this.strokeCircle(x, y, Part.CONNECTOR_RADIUS);
+    this.gfx.lineStyle(1, 0xffffff);
+    this.gfx.fillStyle(0xcccccc, 1);
+    this.gfx.fillCircle(x, y, Part.CONNECTOR_RADIUS);
+    this.gfx.strokeCircle(x, y, Part.CONNECTOR_RADIUS);
   }
 
   render() {}
+
+  textureKey() {
+    return `texture:${this.constructor.type}:${this.width}:${this.height}:${
+      this._selected ? 1 : 0
+    }`;
+  }
+
+  rerender() {
+    if (this.texture.key !== '__DEFAULT') {
+      this.setTexture();
+    }
+
+    if (this.gfx) {
+      this.gfx.clear();
+    } else {
+      this.gfx = new Phaser.GameObjects.Graphics(this.scene).setActive(false);
+      this.scene.add.existing(this.gfx);
+    }
+
+    this.render();
+
+    this.gfx.setPosition(this.x, this.y);
+    if (this.rotation != null) this.gfx.setRotation(this.rotation);
+  }
+
+  saveRender() {
+    const w = this.width,
+      h = this.height;
+
+    if (!w || !h) return;
+
+    const key = this.textureKey();
+
+    const displayWh = w / 2 + buffer;
+    const displayHh = h / 2 + buffer;
+
+    if (this.gfx) this.gfx.destroy();
+
+    if (!(key in this.scene.sys.textures.list)) {
+      this.gfx = new Phaser.GameObjects.Graphics(this.scene);
+
+      this.gfx.translateCanvas(displayWh, displayHh);
+      this.render();
+      this.gfx.generateTexture(key, displayWh * 2, displayHh * 2);
+
+      this.gfx.destroy();
+      this.gfx = null;
+    }
+
+    this.texture = this.scene.sys.textures.get(key);
+    this.setFrame(0, false, false);
+
+    this.setDisplayOrigin(displayWh, displayHh);
+  }
 
   _selected = false;
   setHighlight(isSelected) {
@@ -59,8 +124,7 @@ export default class Part extends Phaser.GameObjects.Graphics {
     if (isSelected) this.strokeWidth += 2;
     else this.strokeWidth -= 2;
 
-    this.clear();
-    this.render();
+    this.saveRender();
   }
 
   get physicsShape() {
@@ -155,6 +219,11 @@ export default class Part extends Phaser.GameObjects.Graphics {
     if (this.body) {
       deleteConnections(this.scene, this.body);
       this.scene.matter.world.remove(this.body);
+    }
+
+    if (this.gfx) {
+      this.gfx.destroy();
+      this.gfx = null;
     }
 
     const scene = this.scene;

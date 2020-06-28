@@ -11,9 +11,9 @@ export default class PlaceTool extends Tool {
   canPlaceObject(drawObj) {
     const cursor = this.scene.cursor;
 
-    const anchorJoint = cursor.getData('connectAnchorJoint');
+    const anchorJoint = cursor?.visible && cursor.getData('connectAnchorJoint');
 
-    if (cursor.visible && anchorJoint) {
+    if (anchorJoint) {
       if (anchorJoint.obj) {
         if (anchorJoint.obj instanceof Wheel) return false;
       } else if (
@@ -31,9 +31,9 @@ export default class PlaceTool extends Tool {
   *getConnections(_drawObj) {
     const cursor = this.scene.cursor;
 
-    const anchorJoint = cursor.getData('connectAnchorJoint');
+    const anchorJoint = cursor?.visible && cursor.getData('connectAnchorJoint');
 
-    if (cursor.visible && anchorJoint) yield [anchorJoint, 0];
+    if (anchorJoint) yield [anchorJoint, 0];
   }
 
   activateObject(destroy = false) {
@@ -54,6 +54,8 @@ export default class PlaceTool extends Tool {
         for (const [anchorJoint, anchorId] of this.getConnections(drawObj)) {
           stiffConnect(this.scene, anchorJoint, obj, anchorId);
         }
+
+        obj.saveRender();
       }
 
       drawObj.startAnchorJoint = undefined;
@@ -75,12 +77,12 @@ export default class PlaceTool extends Tool {
       // TODO: using `toolKey` for the object key is kinda dirty
       /** @type {import('../objects/Part').default} */
       const obj = new OBJECTS[this.toolKey](this.scene, x, y);
-      obj.render();
       this.drawObj = { obj };
       this.scene.parts.add(obj);
 
-      const anchorJoint = cursor.getData('connectAnchorJoint');
-      if (cursor.visible && anchorJoint) {
+      const anchorJoint =
+        cursor?.visible && cursor.getData('connectAnchorJoint');
+      if (anchorJoint) {
         this.drawObj.startAnchorJoint = anchorJoint;
       }
     }

@@ -3,6 +3,7 @@ import * as R from 'ramda';
 
 import BoxTool from './BoxTool';
 import { EventManager } from '../lib/utils';
+import { Part } from '../objects';
 
 export default class SelectTool extends BoxTool {
   shiftKey = this.scene.input.keyboard.addKey(
@@ -25,11 +26,11 @@ export default class SelectTool extends BoxTool {
 
   setSelected = (selected) => {
     for (const child of R.difference(this.scene.selected, selected)) {
-      child.setHighlight(false);
+      if (child.scene) child.setHighlight(false);
     }
 
     for (const child of R.difference(selected, this.scene.selected)) {
-      child.setHighlight(true);
+      if (child.scene) child.setHighlight(true);
     }
 
     // Move somewhere else?

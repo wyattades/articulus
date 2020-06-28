@@ -30,29 +30,28 @@ export default class ControlsTool extends Tool {
     this.controls.setSelected(selected);
   };
 
+  onDrag = (_controls, x, y) => {
+    this.controls.setPosition(x, y);
+    for (const { obj, cdx, cdy } of this.selectedDragging) {
+      obj.setPosition(x + cdx, y + cdy);
+    }
+  };
+
   setDragging = (activeDrag) => {
     if (!activeDrag?.dragging) return;
 
     const { dragging, x, y } = activeDrag;
-    if (
-      this.scene.selected &&
-      this.scene.selected.indexOf(dragging[0].obj) !== -1
-    ) {
+    if (this.scene.selected?.includes(dragging[0].obj)) {
       for (const data of dragging) {
         data.cdx = data.obj.x - this.controls.x;
         data.cdy = data.obj.y - this.controls.y;
       }
+      this.selectedDragging = dragging;
 
       activeDrag.dragging = [
         {
+          customUpdate: this.onDrag,
           obj: this.controls,
-          afterUpdate(_obj, x, y) {
-            for (const { obj, cdx, cdy } of dragging) {
-              obj.setPosition(x + cdx, y + cdy);
-            }
-          },
-          ix: x,
-          iy: y,
           dx: this.controls.x - x,
           dy: this.controls.y - y,
         },
@@ -61,13 +60,13 @@ export default class ControlsTool extends Tool {
   };
 
   handlePointerDown(x, y) {
-    if (!this.controls.getChildren()[0].visible) return;
+    const c = this.controls;
+
+    if (!c.edgeObjs[0].visible) return;
 
     const bounds = new Phaser.Geom.Rectangle();
-    for (const obj of this.controls.edgeObjs) {
+    for (const obj of c.edgeObjs) {
       if (obj.getBounds(bounds).contains(x, y)) {
-        const c = this.controls;
-
         this.controlDragging = {
           obj,
           dx: obj.x - x,
@@ -114,7 +113,7 @@ export default class ControlsTool extends Tool {
       obj.setPosition(bounds.x, bounds.y);
       obj.setSize(bounds.width, bounds.height);
 
-      obj.render();
+      obj.rerender();
     }
   }
 

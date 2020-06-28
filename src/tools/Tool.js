@@ -15,6 +15,7 @@ export default class Tool {
    */
   refreshCursor(x, y) {
     const cursor = this.scene.cursor;
+    if (!cursor) return null;
 
     const anchorJoint = getHoveredJoint(
       this.scene,

@@ -74,6 +74,12 @@ export default class UI extends Phaser.Scene {
         this.input.activePointer.worldX,
         this.input.activePointer.worldY,
       );
+
+      import('stats.js').then(({ default: Stats }) => {
+        this.stats = new Stats();
+        this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+        document.body.appendChild(this.stats.dom);
+      });
     }
 
     this.toolButtons = createUIButtons(
@@ -133,7 +139,6 @@ export default class UI extends Phaser.Scene {
               const newObj = obj.clone();
               // TODO: let user click where they want to "paste" the duplicates
               newObj.setPosition(obj.x + bounds.width + 40, obj.y);
-              newObj.render();
               this.play.parts.add(newObj);
 
               return newObj;
