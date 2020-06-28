@@ -252,8 +252,7 @@ export default class Play extends Phaser.Scene {
   }
 
   update(_, delta) {
-    this.ui.stats?.end();
-    this.ui.stats?.begin();
+    this.ui.stats?.update();
 
     const CAMERA_SPEED = (0.4 * delta) / this.cameras.main.zoom;
     const { left, right, up, down } = this.cursors;
