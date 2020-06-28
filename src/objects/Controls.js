@@ -2,7 +2,27 @@ import Phaser from 'phaser';
 
 import theme from '../styles/theme';
 
+const ROTATOR_OFFSET = 20;
+
+const canvasStyle = document.querySelector('canvas').style;
+const pointerOut = () => {
+  canvasStyle.cursor = 'auto';
+};
+const addHoverCursor = (obj, cursor) => {
+  obj
+    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
+      canvasStyle.cursor = cursor;
+    })
+    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, pointerOut);
+};
+
 export default class Controls extends Phaser.GameObjects.Group {
+  x = 0;
+  y = 0;
+  width = 1;
+  height = 1;
+  rotation = 0;
+
   /**
    * @param {Phaser.Scene} scene
    */
@@ -12,11 +32,6 @@ export default class Controls extends Phaser.GameObjects.Group {
     this.initChildren();
     this.setVisible(false);
   }
-
-  width = 1;
-  height = 1;
-  // originX = 0;
-  // originY = 0;
 
   static getBounds(objs) {
     const MAX = 999999;
@@ -75,9 +90,42 @@ export default class Controls extends Phaser.GameObjects.Group {
       );
     }
 
+    this.rotateObj.setPosition(
+      this.x + this.width / 2,
+      this.y - ROTATOR_OFFSET,
+    );
+
     this.borderObj.clear();
     this.borderObj.lineStyle(1, theme.white, 1);
-    this.borderObj.strokeRect(this.x, this.y, this.width, this.height);
+    this.borderObj.strokeRect(
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height,
+    );
+    this.borderObj.lineBetween(
+      0,
+      -this.height / 2,
+      0,
+      -this.height / 2 - ROTATOR_OFFSET,
+    );
+
+    this.borderObj.setPosition(
+      this.x + this.width / 2,
+      this.y + this.height / 2,
+    );
+  }
+
+  updateChildrenRotation() {
+    // for (const obj of this.getChildren()) {
+    //   obj.setRotation(this.rotation);
+    // }
+  }
+
+  setRotation(r) {
+    this.rotation = r;
+    this.updateChildrenRotation();
+    return this;
   }
 
   setSize(w, h, noUpdate = false) {
@@ -107,17 +155,18 @@ export default class Controls extends Phaser.GameObjects.Group {
   }
 
   initChildren() {
-    const { scene, width: w, height: h } = this;
+    const SIZE = 12;
 
-    this.borderObj = scene.add.graphics();
+    this.borderObj = this.scene.add.graphics();
     this.add(this.borderObj);
 
-    const canvasStyle = this.scene.game.canvas.style;
-    const pointerOut = () => {
-      canvasStyle.cursor = 'auto';
-    };
+    this.rotateObj = this.scene.add
+      .rectangle(0, 0, SIZE, SIZE, theme.grey)
+      .setOrigin(0.5, 0.5)
+      .setInteractive();
+    addHoverCursor(this.rotateObj, 'pointer');
+    this.add(this.rotateObj);
 
-    const SIZE = 12;
     this.edgeObjs = [];
     for (const [ox, oy, resizeAttr] of [
       [1, 1, 'nw-resize'],
@@ -125,16 +174,12 @@ export default class Controls extends Phaser.GameObjects.Group {
       [1, 0, 'sw-resize'],
       [0, 0, 'se-resize'],
     ]) {
-      const obj = scene.add
-        .rectangle(w * (1 - ox), h * (1 - oy), SIZE, SIZE, theme.grey)
+      const obj = this.scene.add
+        .rectangle(0, 0, SIZE, SIZE, theme.grey)
         .setOrigin(ox, oy)
         .setInteractive();
 
-      obj
-        .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
-          canvasStyle.cursor = resizeAttr;
-        })
-        .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, pointerOut);
+      addHoverCursor(obj, resizeAttr);
 
       this.edgeObjs.push(obj);
       this.add(obj);

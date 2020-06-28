@@ -78,6 +78,7 @@ export default class ControlsTool extends Tool {
           invH: 1 / c.height, // inverse initial control width
 
           iSelected: this.scene.selected.map((s) => ({
+            obj: s,
             x: s.x,
             y: s.y,
             right: s.x + s.width,
@@ -87,6 +88,14 @@ export default class ControlsTool extends Tool {
 
         return false;
       }
+    }
+
+    if (c.rotateObj.getBounds(bounds).contains(x, y)) {
+      this.controlRotating = {
+        sr: c.rotation,
+      };
+
+      return false;
     }
   }
 
@@ -99,11 +108,10 @@ export default class ControlsTool extends Tool {
 
     const bounds = (this._bounds = this._bounds || new Phaser.Geom.Rectangle());
 
-    for (let i = 0, obj, s; i < iSelected.length; i++) {
-      s = iSelected[i];
-      obj = this.scene.selected[i];
+    for (const s of iSelected) {
+      const { obj } = s;
 
-      obj.getBounds(bounds);
+      // obj.getBounds(bounds);
 
       bounds.x = ox - scaleX * (ox - s.x);
       bounds.y = oy - scaleY * (oy - s.y);
@@ -117,7 +125,14 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  handlePointerMove(x, y, _pointer) {
+  updateSelectedRotation() {
+    // const { rotation } = this.controls;
+    // for (const obj of this.scene.selected) {
+    //   obj.setRotation(rotation);
+    // }
+  }
+
+  handlePointerMove(x, y) {
     if (this.controlDragging) {
       this.controlDragging.moved = true;
       const { obj, dx, dy, ox, oy } = this.controlDragging;
@@ -137,13 +152,31 @@ export default class ControlsTool extends Tool {
 
       return false;
     }
+
+    if (this.controlRotating) {
+      const r =
+        Math.atan2(
+          y - this.controls.y - this.controls.height / 2,
+          x - this.controls.x - this.controls.width / 2,
+        ) +
+        Math.PI / 2;
+
+      this.controls.setRotation(r);
+
+      this.updateSelectedRotation();
+
+      return false;
+    }
   }
 
   handlePointerUp(_x, _y, _pointer) {
     if (this.controlDragging) {
       // const moved = this.controlDragging.moved;
+      for (const { obj } of this.controlDragging.iSelected) obj.saveRender();
       this.controlDragging = null;
       // if (moved) return false;
     }
+
+    if (this.controlRotating) this.controlRotating = null;
   }
 }
