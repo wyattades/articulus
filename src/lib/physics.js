@@ -10,6 +10,8 @@ import {
   valuesIterator,
 } from './utils';
 
+const JOINT_STIFFNESS = 0.5;
+
 /**
  * @type {import('@types/matter-js')}
  */
@@ -136,7 +138,7 @@ export const reconnect = (scene, joint, point = null) => {
     bodyB.gameObject.onConnect(anchorId);
 
     if (bodyB.id !== bodyA.id) {
-      const c = scene.matter.add.constraint(bodyA, bodyB, 0, 0.8, {
+      const c = scene.matter.add.constraint(bodyA, bodyB, 0, JOINT_STIFFNESS, {
         render: {
           lineColor: 0xff0000,
           visible: !!scene.matter.config.debug,

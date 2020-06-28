@@ -6,10 +6,8 @@ import { circle4Points } from '../lib/utils';
 
 export default class Wheel extends Part {
   static type = 'wheel';
-  static MAX_SPEED = 0.15;
 
   spinDir = 0;
-  appliedTorque = 0.1;
   strokeWidth = 2;
   activeSpinDir = 0;
   repeatableTexture = true;
@@ -58,8 +56,14 @@ export default class Wheel extends Part {
     };
   }
 
+  // physics options:
+  appliedTorque = 0.1;
+  maxSpeed = 0.15;
+
+  /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
   get physicsOptions() {
     return {
+      density: 0.0005,
       friction: 0.8,
     };
   }
@@ -74,11 +78,8 @@ export default class Wheel extends Part {
 
   capSpeed = () => {
     const vel = this.body.angularVelocity;
-    if (Math.abs(vel) > Wheel.MAX_SPEED)
-      Matter.Body.setAngularVelocity(
-        this.body,
-        Math.sign(vel) * Wheel.MAX_SPEED,
-      );
+    if (Math.abs(vel) > this.maxSpeed)
+      Matter.Body.setAngularVelocity(this.body, Math.sign(vel) * this.maxSpeed);
   };
 
   onConnect(anchorId) {

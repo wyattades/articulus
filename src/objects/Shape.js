@@ -62,8 +62,10 @@ export class Rectangle extends Part {
     );
   }
 
+  /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
   get physicsOptions() {
     return {
+      density: 0.1,
       isStatic: true,
     };
   }
@@ -78,13 +80,6 @@ export class Rectangle extends Part {
       angle: this.rotation,
       ...(this.physicsOptions || {}),
     });
-
-    // FIXME: needed to override because `noFilter` prevents
-    //        Water Lines from colliding with Shapes
-    // const cf = this.body.collisionFilter;
-    // cf.joints = {};
-    // cf.id = this.body.id;
-    // if (this.noCollide) cf.noCollide = true;
 
     return this;
   }

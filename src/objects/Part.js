@@ -131,6 +131,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
     return {};
   }
 
+  /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
   get physicsOptions() {
     return null;
   }
@@ -146,14 +147,14 @@ export default class Part extends Phaser.GameObjects.Sprite {
         this.id,
         this.body.id,
       );
-      // deleteConnections(this.scene, this.body);
-      // this.scene.matter.world.remove(this.body);
     }
 
+    // NOTE: this changes this.origin
     this.scene.matter.add.gameObject(this, {
-      ...(this.physicsOptions || {}),
       shape: this.physicsShape,
       angle: this.rotation,
+      density: 0.001,
+      ...(this.physicsOptions || {}),
     });
 
     const cf = this.body.collisionFilter;

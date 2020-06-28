@@ -42,6 +42,7 @@ export default class Play extends Phaser.Scene {
 
   setRunning(running) {
     this.running = running;
+
     if (running) {
       this.refreshCameraFollower(() => {
         this.matter.resume();
@@ -59,6 +60,8 @@ export default class Play extends Phaser.Scene {
     }
 
     this.ui.stateText.setText(running ? 'Running' : 'Paused');
+
+    this.events.emit('setSelected', []);
   }
 
   refreshCameraFollower(cb) {
