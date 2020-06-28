@@ -227,8 +227,8 @@ export const deleteConnections = (scene, body) => {
     if (bodies.length <= 1) {
       delete scene.partJoints[jId]; // is this safe?
       for (const [anchorId, b] of bodies) {
-        b.gameObject.onDisconnect(anchorId);
         delete b.collisionFilter.joints[jId];
+        b.gameObject.onDisconnect(anchorId);
       }
     }
   }

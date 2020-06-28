@@ -77,6 +77,7 @@ export default class PlaceTool extends Tool {
       /** @type {import('../objects/Part').default} */
       const obj = new OBJECTS[this.toolKey](this.scene, x, y);
       this.drawObj = { obj };
+      obj.saveRender();
       this.scene.parts.add(obj);
 
       const anchorJoint =

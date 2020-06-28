@@ -105,7 +105,7 @@ export default class Wheel extends Part {
   }
 
   onDisconnect(anchorId) {
-    if (anchorId === 0) {
+    if (anchorId === 0 && this.getConnectedObjects(0).length === 0) {
       this.stopSpinning();
     }
   }

@@ -1,6 +1,11 @@
 import Phaser from 'phaser';
 
-import { adjustBrightness, nextId, setNextId } from '../lib/utils';
+import {
+  adjustBrightness,
+  nextId,
+  setNextId,
+  valuesIterator,
+} from '../lib/utils';
 import { deleteConnections } from '../lib/physics';
 
 const buffer = 20;
@@ -149,7 +154,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
       );
     }
 
-    // NOTE: this changes this.origin
+    // NOTE: this changes this.origin (I think)
     this.scene.matter.add.gameObject(this, {
       shape: this.physicsShape,
       angle: this.rotation,
@@ -194,6 +199,33 @@ export default class Part extends Phaser.GameObjects.Sprite {
     yield { x: this.x, y: this.y, id: 0 };
   }
 
+  getConnectedObjects(anchorId = null, includeSelf = false) {
+    const anchorObjs =
+      anchorId == null
+        ? Array.from({ length: this.anchorCount }, () => [])
+        : null;
+
+    for (const joint of valuesIterator(this.body.collisionFilter.joints)) {
+      const aId = joint.bodies[this.body.id]?.[0];
+      if (aId == null || (anchorId != null && anchorId !== aId)) continue;
+
+      const objs = Object.values(joint.bodies).map((r) => r[1].gameObject);
+
+      if (!includeSelf) {
+        const i = objs.indexOf(this);
+        if (i >= 0) objs.splice(i, 1);
+      }
+
+      if (anchorId == null) {
+        anchorObjs[aId] = objs;
+      } else {
+        return objs;
+      }
+    }
+
+    return anchorObjs || [];
+  }
+
   getAnchorById(id) {
     let i = 0;
     for (const anchor of this.anchors()) if (i++ === id) return anchor;
@@ -210,6 +242,12 @@ export default class Part extends Phaser.GameObjects.Sprite {
         return anchor;
 
     return null;
+  }
+
+  get anchorCount() {
+    if (this._anchorCount != null) return this._anchorCount;
+
+    return (this._anchorCount = [...this.anchors()].length);
   }
 
   onConnect() {}
