@@ -10,7 +10,6 @@ export default class Wheel extends Part {
   spinDir = 0;
   strokeWidth = 2;
   activeSpinDir = 0;
-  repeatableTexture = true;
 
   constructor(scene, x, y, radius = 30) {
     super(scene, x, y);

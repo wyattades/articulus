@@ -61,10 +61,12 @@ export default class Part extends Phaser.GameObjects.Sprite {
     this.gfx.lineStyle(1, 0xffffff);
     this.gfx.fillStyle(0xcccccc, 1);
 
-    for (const { x, y } of this.anchors()) {
-      const p = { x: x - this.x, y: y - this.y };
+    const p = {};
+    for (const a of this.anchors()) {
+      p.x = a.x - this.x;
+      p.y = a.y - this.y;
 
-      Phaser.Math.RotateAround(p, 0, 0, -this.rotation);
+      Phaser.Math.Rotate(p, -this.rotation);
 
       this.gfx.fillCircle(p.x, p.y, Part.CONNECTOR_RADIUS);
       this.gfx.strokeCircle(p.x, p.y, Part.CONNECTOR_RADIUS);
@@ -87,8 +89,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
     if (this.gfx) {
       this.gfx.clear();
     } else {
-      this.gfx = new Phaser.GameObjects.Graphics(this.scene).setActive(false);
-      this.scene.add.existing(this.gfx);
+      this.gfx = this.scene.add.graphics().setActive(false);
     }
 
     this.render();
@@ -111,7 +112,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
 
     if (this.gfx) this.gfx.destroy();
 
-    if (!(key in this.scene.sys.textures.list)) {
+    if (!this.scene.sys.textures.exists(key)) {
       this.gfx = new Phaser.GameObjects.Graphics(this.scene);
 
       this.gfx.translateCanvas(displayWh, displayHh);
