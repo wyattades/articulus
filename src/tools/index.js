@@ -14,6 +14,7 @@ export const PLAY_TOOL_TYPES = [
   'forward_wheel',
   'back_wheel',
   'neutral_wheel',
+  'thruster',
   'select',
   'delete',
 ];
@@ -52,6 +53,11 @@ export const TOOLS = {
   neutral_wheel: {
     label: 'Neutral Wheel',
     color: theme.blueLight,
+    ToolClass: PlaceTool,
+  },
+  thruster: {
+    label: 'Thruster',
+    color: theme.grey,
     ToolClass: PlaceTool,
   },
   select: {

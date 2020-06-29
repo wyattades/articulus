@@ -1,9 +1,10 @@
 import Part from './Part';
 import Line from './Line';
 import Wheel from './Wheel';
+import Thruster from './Thruster';
 import theme from '../styles/theme';
 
-export { Part, Line, Wheel };
+export { Part, Line, Wheel, Thruster };
 
 export class Water extends Line {
   static type = 'water';
@@ -40,4 +41,5 @@ export const OBJECTS = {
   neutral_wheel: NeutralWheel,
   wood: Wood,
   water: Water,
+  thruster: Thruster,
 };
