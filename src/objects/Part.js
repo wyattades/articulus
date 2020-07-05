@@ -302,6 +302,6 @@ export default class Part extends Phaser.GameObjects.Sprite {
     const scene = this.scene;
     super.destroy();
 
-    if (scene && scene.followingPart === this) scene.refreshCameraFollower?.();
+    if (scene?.cameras?.main?._follow === this) scene.refreshCameraFollower?.();
   }
 }

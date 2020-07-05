@@ -1,7 +1,7 @@
 import { debounce } from 'lodash';
 
 import { Subject } from './async';
-import { base48 } from './utils';
+import { base48, validPoint } from './utils';
 import { OBJECTS } from '../objects';
 import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
 import { serializePhysics, deserializePhysics } from './physics';
@@ -56,8 +56,6 @@ const db = new (class DB {
   }
 })();
 
-const isNum = (x) => typeof x === 'number' && !Number.isNaN(x);
-
 export const fromJSON = (scene, json, enablePhysics = false) => {
   if (json?.id == null) return null;
 
@@ -66,7 +64,7 @@ export const fromJSON = (scene, json, enablePhysics = false) => {
 
   const obj = Klass.fromJSON(scene, json);
 
-  if (!obj || !isNum(obj.x) || !isNum(obj.y)) return null;
+  if (!validPoint(obj)) return null;
 
   obj.id = json.id;
 

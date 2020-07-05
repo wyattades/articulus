@@ -15,6 +15,10 @@ export const colorInverse = (num) => {
   return red * 0.299 + green * 0.587 + blue * 0.114 > 186 ? 0x000000 : 0xffffff;
 };
 
+export const isNum = (x) => typeof x === 'number' && !Number.isNaN(x);
+
+export const validPoint = (p) => p != null && isNum(p.x) && isNum(p.y);
+
 export const constrain = (v, min, max) => (v < min ? min : v > max ? max : v);
 
 const shifts = [0, 8, 16];

@@ -225,7 +225,6 @@ export const deleteConnections = (scene, body) => {
     const bodies = Object.values(joint.bodies);
 
     if (bodies.length <= 1) {
-      delete scene.partJoints[jId]; // is this safe?
       for (const [anchorId, b] of bodies) {
         delete b.collisionFilter.joints[jId];
         b.gameObject.onDisconnect(anchorId);
@@ -332,7 +331,7 @@ export const deserializePhysics = (scene, data) => {
     for (const { objId, anchorId } of connections) {
       const body = objMap[objId]?.body;
       if (!body) {
-        console.warn('Missing object!', objId, objMap);
+        console.warn('deserializePhysics: Missing object/body!', objId, objMap);
         continue;
       }
 

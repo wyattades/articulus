@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import * as R from 'ramda';
 
 import { PLAY_TOOL_TYPES } from '../tools';
 import { Terrain } from '../lib/terrain';
@@ -7,19 +8,14 @@ import { BuildSaver, MapSaver } from '../lib/saver';
 import theme from '../styles/theme';
 import ToolManager from '../tools/ToolManager';
 import { MAX_PARTS } from '../const';
+import { validPoint } from '../lib/utils';
 
 export default class Play extends Phaser.Scene {
-  // Whether scene is running or not
-  running = false;
-
   /** @type import('./UI').default */
   ui;
 
   // used by multiple tools e.g. SelectTool
   selected;
-
-  // `Part` that the camera is following
-  followingPart = null;
 
   constructor() {
     super({
@@ -34,11 +30,15 @@ export default class Play extends Phaser.Scene {
 
     this.ui = this.scene.get('UI');
     this.selected = [];
-    this.partJoints = {};
+  }
+
+  // Whether scene is running or not
+  get running() {
+    return this.matter.world.enabled;
   }
 
   setRunning(running) {
-    this.running = running;
+    if (this.cameras.main.panEffect.isRunning) return;
 
     if (running) {
       this.refreshCameraFollower(() => {
@@ -54,7 +54,6 @@ export default class Play extends Phaser.Scene {
       });
     } else {
       this.matter.pause();
-      this.followingPart = null;
       this.cameras.main.stopFollow();
 
       for (const part of this.parts.getChildren()) part.pause();
@@ -71,9 +70,9 @@ export default class Play extends Phaser.Scene {
 
     camera.panEffect.reset();
     camera.stopFollow();
-    this.followingPart = null;
 
-    const follow = this.parts.getLast(true);
+    const follow = R.findLast(validPoint, this.parts.getChildren());
+
     if (follow) {
       const dist = Phaser.Math.Distance.Between(
         camera.scrollX,
@@ -92,8 +91,8 @@ export default class Play extends Phaser.Scene {
           if (progress === 1) {
             cb?.();
 
-            this.followingPart = follow;
-            if (this.running) camera.startFollow(follow, false, 0.08, 0.08);
+            if (this.running && validPoint(follow))
+              camera.startFollow(follow, false, 0.08, 0.08);
           }
         },
       );
