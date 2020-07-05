@@ -18,9 +18,6 @@ export default class Play extends Phaser.Scene {
   // used by multiple tools e.g. SelectTool
   selected;
 
-  // used in lib/physics
-  partJoints;
-
   // `Part` that the camera is following
   followingPart = null;
 

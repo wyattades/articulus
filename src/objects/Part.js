@@ -268,7 +268,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
   addParticles(texture, frame, emitters) {
     if (!this.particles) this.particles = [];
     const p = this.scene.add.particles(texture, frame, emitters);
-    p.pause();
+    if (!this.scene.running) p.pause();
     this.particles.push(p);
     return p;
   }

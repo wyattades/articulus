@@ -179,13 +179,13 @@ Matter.Detector.canCollide = (filterA, filterB) => {
   return oldCanCollide(filterA, filterB);
 };
 
-const createJoint = (scene) => {
+const createJoint = () => {
   const newId = nextId();
-  const joint = (scene.partJoints[newId] = {
+  const joint = {
     id: newId,
     bodies: {},
     constraints: [],
-  });
+  };
   return joint;
 };
 
@@ -198,7 +198,7 @@ const createJoint = (scene) => {
  */
 export const stiffConnect = (scene, anchorJoint, obj, anchorId) => {
   const newBodies = [[anchorId, obj.body]];
-  let joint = anchorJoint.joint || createJoint(scene);
+  let joint = anchorJoint.joint || createJoint();
   if (anchorJoint.obj) {
     newBodies.push([anchorJoint.id, anchorJoint.obj.body]);
   }
@@ -267,7 +267,7 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
 
     if (bodies.length < 2) continue;
 
-    const joint = createJoint(scene);
+    const joint = createJoint();
 
     for (const [anchorId, body] of bodies) {
       joint.bodies[body.id] = [anchorId, body];
@@ -284,30 +284,36 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
  * @return {SerialPhysics}
  */
 export const serializePhysics = (scene) => {
-  const joints = [];
+  const jointMap = {};
   const bodyMap = {};
   for (const part of scene.parts.getChildren()) {
-    if (part.body) bodyMap[part.body.id] = part.body;
-    else console.warn('Missing body!', part);
+    if (part.body) {
+      bodyMap[part.body.id] = part.body;
+      for (const j of valuesIterator(part.body.collisionFilter.joints)) {
+        jointMap[j.id] = j;
+      }
+    } else console.warn('serializePhysics: Missing body!', part);
   }
 
-  for (const joint of valuesIterator(scene.partJoints)) {
+  const sJoints = [];
+
+  for (const joint of valuesIterator(jointMap)) {
     const bodies = Object.values(joint.bodies).filter(
       (a) => a[1].id in bodyMap,
     );
 
     // how would it have <= 1 body???
     if (bodies.length > 1) {
-      joints.push({
+      sJoints.push({
         connections: bodies.map(([anchorId, body]) => ({
           objId: body.gameObject.id,
           anchorId,
         })),
       });
-    }
+    } else console.warn('serializePhysics: bad joint', joint);
   }
 
-  return { joints };
+  return { joints: sJoints };
 };
 
 /**
@@ -321,7 +327,7 @@ export const deserializePhysics = (scene, data) => {
   }
 
   for (const { connections } of data.joints) {
-    const joint = createJoint(scene);
+    const joint = createJoint();
 
     for (const { objId, anchorId } of connections) {
       const body = objMap[objId]?.body;

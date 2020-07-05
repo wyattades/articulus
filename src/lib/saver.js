@@ -9,7 +9,7 @@ import { serializePhysics, deserializePhysics } from './physics';
 /** @type {typeof import('faunadb').query} */
 let q;
 
-const addExtras = (q) => {
+const withExtras = (q) => {
   q.FindOrCreate = (collection, id, data) => {
     if (id != null)
       return q.Let(
@@ -24,6 +24,8 @@ const addExtras = (q) => {
       );
     else return q.Create(q.Collection(collection), { data });
   };
+
+  return q;
 };
 
 const db = new (class DB {
@@ -44,8 +46,7 @@ const db = new (class DB {
 
     this.fauna = await import('faunadb');
 
-    q = this.fauna.query;
-    addExtras(q);
+    q = withExtras(this.fauna.query);
 
     this.client = new this.fauna.Client({
       secret: process.env.FAUNA_CLIENT_KEY,
