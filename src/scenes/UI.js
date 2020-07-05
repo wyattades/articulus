@@ -74,14 +74,21 @@ export default class UI extends Phaser.Scene {
         this.input.activePointer.worldX,
         this.input.activePointer.worldY,
       );
-
-      import('stats.js').then(({ default: Stats }) => {
-        this.stats = new Stats();
-        this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-
-        document.body.appendChild(this.stats.dom);
-      });
     }
+
+    // show FPS stats at the top right
+    import('stats.js').then(({ default: Stats }) => {
+      this.stats = new Stats();
+      this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+
+      this.stats.dom.style.right = 0;
+      this.stats.dom.style.left = 'auto';
+      document.body.appendChild(this.stats.dom);
+    });
+    this.events.on('shutdown', () => {
+      this.stats.dom.remove();
+      this.stats = null;
+    });
 
     this.toolButtons = createUIButtons(
       this,
