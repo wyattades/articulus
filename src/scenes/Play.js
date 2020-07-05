@@ -41,6 +41,8 @@ export default class Play extends Phaser.Scene {
     if (this.cameras.main.panEffect.isRunning) return;
 
     if (running) {
+      this.buildSaver.save(this.parts);
+
       this.refreshCameraFollower(() => {
         this.matter.resume();
 

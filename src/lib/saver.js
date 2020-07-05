@@ -167,12 +167,10 @@ export class BuildSaver {
    * @param {Phaser.GameObjects.Group} group
    */
   async save(group) {
-    await db.init();
+    this.queueSave.cancel();
 
     const scene = group.scene;
-    if (!scene) return;
-
-    if (scene.running) return;
+    if (!scene || scene.running) return;
 
     const objs = group.getChildren().map((obj) => {
       const json = obj.toJSON();
@@ -188,6 +186,7 @@ export class BuildSaver {
       physics,
     };
 
+    await db.init();
     const res = await db.query(q.FindOrCreate('builds', this.id, data));
 
     this.id = res.ref.id;
