@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Matter } from './physics';
+import { config } from '../const';
 
 // const retry = (fn, maxAttempts = 16) => {
 //   let err;
@@ -115,6 +116,7 @@ export class Terrain extends Phaser.GameObjects.Graphics {
 
   enablePhysics(x, y, points) {
     const body = this.scene.matter.add.fromVertices(0, 0, points, {
+      density: config.physics.landDensity,
       isStatic: true,
     });
 
@@ -125,6 +127,11 @@ export class Terrain extends Phaser.GameObjects.Graphics {
       x: Math.abs(centerOfMass.x) + x,
       y: Math.abs(centerOfMass.y) + y,
     });
+
+    // this.scene.matter.add.gameObject(this, {
+    //   vertices: points,
+    //   isStatic: true,
+    // });
 
     // TODO: inject body correctly with matter.add.gameObject ?
     this._body = body;

@@ -169,7 +169,6 @@ export default class Part extends Phaser.GameObjects.Sprite {
     this.scene.matter.add.gameObject(this, {
       shape: this.physicsShape,
       angle: this.rotation,
-      density: 0.001,
       ...(this.physicsOptions || {}),
     });
 

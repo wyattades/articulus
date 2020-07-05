@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import Part from './Part';
+import { config } from '../const';
 
 export default class Line extends Part {
   static zIndex = 1;
@@ -104,6 +105,12 @@ export default class Line extends Part {
       y: this.y,
       width: this.length,
       height: this.size,
+    };
+  }
+
+  get physicsOptions() {
+    return {
+      density: config.line.density,
     };
   }
 

@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import Part from './Part';
 import { circle4Points, valuesIterator } from '../lib/utils';
 import { Matter } from '../lib/physics';
+import { config } from '../const';
 
 const anyNonemptyArrayValue = (objOfArrays) => {
   for (const val of valuesIterator(objOfArrays))
@@ -29,7 +30,7 @@ export default class Thruster extends Part {
   height = 40;
 
   thrustDir = 0;
-  thrustForce = 0.008;
+  thrustForce = config.thruster.thrustForce;
 
   constructor(scene, x, y) {
     super(scene, x, y);

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import Part from './Part';
+import { config } from '../const';
 
 const getEllipsePoints = (w, h, numPoints) => {
   const a = w / 2,
@@ -65,7 +66,7 @@ export class Rectangle extends Part {
   /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
   get physicsOptions() {
     return {
-      density: 0.1,
+      density: config.physics.landDensity,
       isStatic: true,
     };
   }

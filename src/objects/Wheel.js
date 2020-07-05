@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { Matter } from '../lib/physics';
 import Part from './Part';
 import { circle4Points } from '../lib/utils';
+import { config } from '../const';
 
 export default class Wheel extends Part {
   static type = 'wheel';
@@ -51,14 +52,14 @@ export default class Wheel extends Part {
   }
 
   // physics options:
-  appliedTorque = 0.2;
-  maxSpeed = 0.15;
+  appliedTorque = config.wheel.appliedTorque;
+  maxSpeed = config.wheel.maxSpeed;
 
   /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
   get physicsOptions() {
     return {
-      density: 0.0005,
-      friction: 0.8,
+      density: config.wheel.density,
+      friction: config.wheel.friction,
     };
   }
 
