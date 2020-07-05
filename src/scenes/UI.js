@@ -48,7 +48,7 @@ export default class UI extends Phaser.Scene {
     });
 
     if (this.pointerPosText)
-      this.input.on('pointermove', ({ worldX, worldY }) =>
+      this.play.input.on('pointermove', ({ worldX, worldY }) =>
         this.updatePointer(worldX, worldY),
       );
   }
@@ -69,11 +69,6 @@ export default class UI extends Phaser.Scene {
         .dom(this.scale.width - 10, this.scale.height - 10, 'div')
         .setClassName('ui-text')
         .setOrigin(1, 1);
-
-      this.updatePointer(
-        this.input.activePointer.worldX,
-        this.input.activePointer.worldY,
-      );
     }
 
     // show FPS stats at the top right
