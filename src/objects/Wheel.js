@@ -51,7 +51,7 @@ export default class Wheel extends Part {
   }
 
   // physics options:
-  appliedTorque = 0.1;
+  appliedTorque = 0.2;
   maxSpeed = 0.15;
 
   /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
