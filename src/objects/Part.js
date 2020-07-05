@@ -17,6 +17,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
   fillColor = 0xffffff;
   strokeColor = 0xffffff;
   strokeWidth = 0;
+  particles = null;
 
   constructor(scene, x, y) {
     super(scene, x, y);
@@ -258,9 +259,30 @@ export default class Part extends Phaser.GameObjects.Sprite {
     return (this._anchorCount = [...this.anchors()].length);
   }
 
+  /**
+   * @param {String} texture
+   * @param {string | number | object} [frame]
+   * @param {Phaser.Types.GameObjects.Particles.ParticleEmitterConfig | Phaser.Types.GameObjects.Particles.ParticleEmitterConfig[]} [emitters]
+   * @return {Phaser.GameObjects.Particles.ParticleEmitterManager}
+   */
+  addParticles(texture, frame, emitters) {
+    if (!this.particles) this.particles = [];
+    const p = this.scene.add.particles(texture, frame, emitters);
+    p.pause();
+    this.particles.push(p);
+    return p;
+  }
+
   onConnect() {}
 
   onDisconnect() {}
+
+  pause() {
+    if (this.particles) for (const p of this.particles) p.pause();
+  }
+  resume() {
+    if (this.particles) for (const p of this.particles) p.resume();
+  }
 
   destroy() {
     if (this.body) {
@@ -271,6 +293,10 @@ export default class Part extends Phaser.GameObjects.Sprite {
     if (this.gfx) {
       this.gfx.destroy();
       this.gfx = null;
+    }
+
+    if (this.particles) {
+      for (const p of this.particles) p.destroy();
     }
 
     const scene = this.scene;

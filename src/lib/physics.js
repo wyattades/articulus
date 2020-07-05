@@ -285,9 +285,16 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
  */
 export const serializePhysics = (scene) => {
   const joints = [];
+  const bodyMap = {};
+  for (const part of scene.parts.getChildren()) {
+    if (part.body) bodyMap[part.body.id] = part.body;
+    else console.warn('Missing body!', part);
+  }
 
   for (const joint of valuesIterator(scene.partJoints)) {
-    const bodies = Object.values(joint.bodies);
+    const bodies = Object.values(joint.bodies).filter(
+      (a) => a[1].id in bodyMap,
+    );
 
     // how would it have <= 1 body???
     if (bodies.length > 1) {

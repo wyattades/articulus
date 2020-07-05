@@ -52,11 +52,15 @@ export default class Play extends Phaser.Scene {
         // this.tm.tools.find((tool) =>
         //   tool.refreshCursor ? tool.refreshCursor() || true : false,
         // );
+
+        for (const part of this.parts.getChildren()) part.resume();
       });
     } else {
       this.matter.pause();
       this.followingPart = null;
       this.cameras.main.stopFollow();
+
+      for (const part of this.parts.getChildren()) part.pause();
     }
 
     this.ui.stateText.setText(running ? 'Running' : 'Paused');

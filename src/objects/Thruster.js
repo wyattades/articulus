@@ -10,6 +10,15 @@ const anyNonemptyArrayValue = (objOfArrays) => {
   return false;
 };
 
+// const genTexture = (key, render, gfx = null, force = false) => {
+//   if (force || !this.scene.sys.textures.exists(key)) {
+//     if (gfx) gfx.clear();
+//     else gfx = new Phaser.GameObjects.Graphics(this.scene);
+//     render(gfx);
+//     gfx.destroy();
+//   }
+// };
+
 export default class Thruster extends Part {
   static type = 'thruster';
 
@@ -24,6 +33,42 @@ export default class Thruster extends Part {
 
   constructor(scene, x, y) {
     super(scene, x, y);
+
+    const particleTextureKey = 'particles:cloud';
+    if (!this.scene.sys.textures.exists(particleTextureKey)) {
+      const gfx = new Phaser.GameObjects.Graphics(this.scene);
+      gfx.fillStyle(0xffeeee);
+      gfx.fillCircle(10, 10, 8);
+      gfx.generateTexture(particleTextureKey, 20, 20);
+      gfx.destroy();
+    }
+
+    const colors = [0xffffff, 0xeeeeee, 0xdddddd];
+
+    this.emitter = this.addParticles(particleTextureKey, 0, {
+      follow: this,
+      x: {
+        onEmit: () => Math.cos(this.rotation + Math.PI / 2) * 30,
+      },
+      y: {
+        onEmit: () => Math.sin(this.rotation + Math.PI / 2) * 30,
+      },
+
+      lifespan: 800,
+      speed: { min: 200, max: 600 },
+      angle: {
+        onEmit: () => this.angle + 90 + Phaser.Math.RND.between(-20, 20),
+      },
+
+      // gravityY: 300,
+      scale: {
+        start: 1.0,
+        end: 0.0,
+      },
+      // quantity: 2,
+      tint: { onEmit: () => Phaser.Utils.Array.GetRandom(colors) },
+      // blendMode: 'ADD',
+    }).emitters.first;
   }
 
   render() {
@@ -106,36 +151,34 @@ export default class Thruster extends Part {
       'beforeUpdate',
       this.applyThrust,
     );
+
+    this.emitter.stop();
+  }
+
+  startThrust() {
+    this.thrustDir = -1;
+
+    Matter.Events.on(
+      this.scene.matter.world.engine,
+      'beforeUpdate',
+      this.applyThrust,
+    );
+
+    this.emitter.start();
   }
 
   onConnect(_anchorId) {
     if (this.thrustDir === 0) {
       this.stopThrust();
-
-      this.thrustDir = -1;
-
-      Matter.Events.on(
-        this.scene.matter.world.engine,
-        'beforeUpdate',
-        this.applyThrust,
-      );
-
-      // this.activeSpinDir = this.spinDir;
-      // Matter.Events.on(
-      //   this.scene.matter.world.engine,
-      //   'beforeUpdate',
-      //   this.applyTorque,
-      // );
-      // Matter.Events.on(
-      //   this.scene.matter.world.engine,
-      //   'afterUpdate',
-      //   this.capSpeed,
-      // );
+      this.startThrust();
     }
   }
 
   onDisconnect(_anchorId) {
-    if (this.thrustDir && !anyNonemptyArrayValue(this.getConnectedObjects())) {
+    if (
+      this.thrustDir !== 0 &&
+      !anyNonemptyArrayValue(this.getConnectedObjects())
+    ) {
       this.stopThrust();
     }
   }
