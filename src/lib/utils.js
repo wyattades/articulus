@@ -48,7 +48,7 @@ export function* circle4Points(radius, startRotation = 0) {
   yield [-sin, cos];
 }
 
-const genIntersectMatrix = () => {
+const INTERSECT_MATRIX = (() => {
   const POINT_THICKNESS = 6;
 
   const { PointToLine } = Phaser.Geom.Intersects;
@@ -65,12 +65,20 @@ const genIntersectMatrix = () => {
     Intersects[`PointTo${name}`] = ContainsPoint;
 
   // Geom `constructor.name` indexed by Geom `type`
-  const TYPES = ['Circle', 'Ellipse', 'Line', 'Point', 'Polygon', 'Rectangle'];
+  const TYPES = [
+    'Circle',
+    'Ellipse',
+    'Line',
+    'Point',
+    'Polygon',
+    'Rectangle',
+  ].reduce((arr, name) => {
+    arr[new Phaser.Geom[name]().type] = name;
+    return arr;
+  }, []);
 
   return TYPES.map((a) => TYPES.map((b) => Intersects[`${a}To${b}`]));
-};
-
-const INTERSECT_MATRIX = genIntersectMatrix();
+})();
 
 export const intersectsGeoms = (g1, g2) => {
   let fn;
