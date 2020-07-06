@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+
 import { Matter } from './physics';
 import { config } from '../const';
 
@@ -88,52 +89,65 @@ export class Terrain extends Phaser.GameObjects.Graphics {
   /**
    * @param {Phaser.Scene} scene
    */
-  constructor(scene) {
-    const { points, width, height, midY } = randMap(100, 1000, 40);
-
-    const x = -width / 2 + scene.scale.width / 2,
-      y = scene.scale.height - midY - 100;
-
-    super(scene, { x, y: 0 });
+  constructor(scene, x, y) {
+    super(scene, { x, y });
     scene.add.existing(this);
 
+    this.__prevSetPos = this.setPosition;
+    this.setPosition = this.__setPosition;
+
+    const { points, width, height, midY } = randMap(100, 1000, 40);
+    this.midY = midY;
     this.width = width;
     this.height = height;
 
     this.fillStyle(0x876846);
     this.lineStyle(16, 0x5bad4a);
 
+    this.fillCircle(0, 0, 8);
+
     this.beginPath();
-    this.moveTo(points[0].x, points[0].y + y);
-    for (const p of points) this.lineTo(p.x, p.y + y);
+    this.moveTo(points[0].x, points[0].y);
+    for (const p of points) this.lineTo(p.x, p.y);
     this.closePath();
 
     this.fillPath();
     this.strokePath();
 
-    this.enablePhysics(x, y, points);
+    this.enablePhysics(points);
   }
 
-  enablePhysics(x, y, points) {
-    const body = this.scene.matter.add.fromVertices(0, 0, points, {
-      density: config.physics.landDensity,
-      isStatic: true,
-    });
+  get geom() {
+    return new Phaser.Geom.Rectangle(this.x, this.y, this.width, this.height);
+  }
+
+  // move __body when this obj moves
+  __setPosition(x, y) {
+    this.__prevSetPos(x, y);
+
+    const body = this.__body;
 
     // Get offset of center of mass and set the terrain to its correct position
     // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
     const centerOfMass = Matter.Vector.sub(body.bounds.min, body.position);
     Matter.Body.setPosition(body, {
-      x: Math.abs(centerOfMass.x) + x,
-      y: Math.abs(centerOfMass.y) + y,
+      x: this.x + Math.abs(centerOfMass.x),
+      y: this.y + Math.abs(centerOfMass.y),
     });
 
-    // this.scene.matter.add.gameObject(this, {
-    //   vertices: points,
-    //   isStatic: true,
-    // });
+    return this;
+  }
 
-    // TODO: inject body correctly with matter.add.gameObject ?
-    this._body = body;
+  enablePhysics(points) {
+    const body = this.scene.matter.add.fromVertices(0, 0, points, {
+      density: config.physics.landDensity,
+      isStatic: true,
+    });
+
+    // TODO: inject body correctly with matter.add.gameObject so
+    // we don't have to do this nor override setPosition
+    this.__body = body;
+
+    this.setPosition(this.x, this.y);
   }
 }

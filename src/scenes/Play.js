@@ -143,7 +143,7 @@ export default class Play extends Phaser.Scene {
 
       this.matter.config.debug = debug;
 
-      this.restart(true);
+      this.restart();
     });
 
     Matter.Events.on(this.matter.world.localWorld, 'afterAdd', ({ object }) => {
@@ -154,18 +154,18 @@ export default class Play extends Phaser.Scene {
     });
   }
 
-  restart(all) {
+  restart() {
     this.matter.world.destroy();
     this.scene.restart();
-    if (all) {
-      this.ui.scene.restart();
-    }
+    this.ui.scene.restart();
   }
 
   create() {
     // CAMERA
 
-    this.cameras.main.setBackgroundColor(theme.blueSky);
+    const camera = this.cameras.main;
+    camera.setBackgroundColor(theme.blueSky);
+    camera.setScroll(-camera.width / 2, -camera.height / 2);
 
     // CURSOR
 
@@ -190,35 +190,32 @@ export default class Play extends Phaser.Scene {
 
     // WORLD
 
-    const bounds = new Phaser.Geom.Rectangle();
+    let bounds;
 
     if (this.mapSaver) {
       this.mapSaver
         .load()
         .then((mapData) => MapSaver.loadPlayParts(mapData, this.terrainGroup));
 
-      bounds.setTo(-1000, -1000, 3000, 3000);
+      bounds = new Phaser.Geom.Rectangle(-1000, -1000, 3000, 3000);
     } else {
       const terrain = new Terrain(this);
       this.terrainGroup.add(terrain);
 
-      // TODO: the height doesn't seem to be quite correct here
-      bounds.setTo(
-        terrain.x,
+      // we want world-pos 0,0 to be 300px above the y-pos of the center of the terrain
+      terrain.setPosition(-terrain.width / 2, -terrain.midY + 300);
+
+      bounds = new Phaser.Geom.Rectangle(
+        -terrain.width / 2,
         -terrain.height,
         terrain.width,
-        terrain.height * 2,
+        terrain.y + 2 * terrain.height,
       );
     }
 
     // outline of world boundary
     this.add
-      .rectangle(
-        bounds.x + bounds.width / 2,
-        bounds.y + bounds.height / 2,
-        bounds.width,
-        bounds.height,
-      )
+      .rectangle(bounds.centerX, bounds.centerY, bounds.width, bounds.height)
       .setStrokeStyle(2, 0xffffff, 0.9)
       .setDepth(-1);
 
@@ -251,17 +248,18 @@ export default class Play extends Phaser.Scene {
   update(_, delta) {
     this.ui.stats?.update();
 
-    const CAMERA_SPEED = (0.4 * delta) / this.cameras.main.zoom;
+    const camera = this.cameras.main;
+    const CAMERA_SPEED = (0.4 * delta) / camera.zoom;
     const { left, right, up, down } = this.cursors;
     if (left.isDown && !right.isDown) {
-      this.cameras.main.scrollX -= CAMERA_SPEED;
+      camera.scrollX -= CAMERA_SPEED;
     } else if (right.isDown && !left.isDown) {
-      this.cameras.main.scrollX += CAMERA_SPEED;
+      camera.scrollX += CAMERA_SPEED;
     }
     if (up.isDown && !down.isDown) {
-      this.cameras.main.scrollY -= CAMERA_SPEED;
+      camera.scrollY -= CAMERA_SPEED;
     } else if (down.isDown && !up.isDown) {
-      this.cameras.main.scrollY += CAMERA_SPEED;
+      camera.scrollY += CAMERA_SPEED;
     }
   }
 }
