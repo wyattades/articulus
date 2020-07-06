@@ -16,7 +16,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "yarn && NODE_ENV=development webpack-dev-server",
-    "build": "NODE_ENV=production webpack",
+    "build": "NODE_ENV=production webpack && cp dist/index.html dist/404.html",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
