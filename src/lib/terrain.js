@@ -104,8 +104,6 @@ export class Terrain extends Phaser.GameObjects.Graphics {
     this.fillStyle(0x876846);
     this.lineStyle(16, 0x5bad4a);
 
-    this.fillCircle(0, 0, 8);
-
     this.beginPath();
     this.moveTo(points[0].x, points[0].y);
     for (const p of points) this.lineTo(p.x, p.y);

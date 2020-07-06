@@ -93,8 +93,20 @@ export default class Play extends Phaser.Scene {
           if (progress === 1) {
             cb?.();
 
-            if (this.running && validPoint(follow))
+            if (this.running && validPoint(follow)) {
               camera.startFollow(follow, false, 0.08, 0.08);
+
+              // super stupid failure case just in case somethin is NaN once physics kicks in
+              const prevX = camera.scrollX,
+                prevY = camera.scrollY;
+              setTimeout(() => {
+                if (!validPoint(follow) || !follow.scene) {
+                  console.warn('Invalid follow after resume!');
+                  camera.stopFollow();
+                  camera.setScroll(prevX, prevY);
+                }
+              });
+            }
           }
         },
       );
@@ -226,6 +238,7 @@ export default class Play extends Phaser.Scene {
       bounds.y,
       bounds.width,
       bounds.height,
+      128,
     );
 
     // INPUTS

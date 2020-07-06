@@ -68,7 +68,10 @@ export default class Thruster extends Part {
       },
       // quantity: 2,
       tint: { onEmit: () => Phaser.Utils.Array.GetRandom(colors) },
+      alpha: { min: 0.5, max: 0.8 },
       // blendMode: 'ADD',
+
+      on: false,
     }).emitters.first;
   }
 
@@ -131,13 +134,13 @@ export default class Thruster extends Part {
 
   applyThrust = () => {
     const a = this.rotation - Math.PI / 2;
+    const norm = Matter.Vector.create(Math.cos(a), Math.sin(a));
 
-    const force = Matter.Vector.create(
-      Math.cos(a) * this.thrustForce,
-      Math.sin(a) * this.thrustForce,
+    Matter.Body.applyForce(
+      this.body,
+      Matter.Vector.add(this.body.position, Matter.Vector.mult(norm, 20)),
+      Matter.Vector.mult(norm, this.thrustForce),
     );
-
-    Matter.Body.applyForce(this.body, this.body.position, force);
   };
 
   stopThrust() {
@@ -192,9 +195,15 @@ export default class Thruster extends Part {
   *anchors() {
     let i = 0,
       j = 0;
-    for (const [dx, dy] of circle4Points(10, this.rotation)) {
-      if (j++ % 2 === 1) yield { x: this.x + dx, y: this.y + dy, id: i++ };
-    }
+
+    yield { x: this.x, y: this.y, id: i++ };
+
+    const a = this.rotation + Math.PI / 2;
+    const offset = 20;
+    const sx = Math.cos(a) * offset;
+    const sy = Math.sin(a) * offset;
+
+    yield { x: this.x + sx, y: this.y + sy, id: i++ };
 
     // yield { x: this.x + cx, y: this.y - cy, id: 0 };
     // yield { x: this.x - cx, y: this.y + cy, id: 1 };

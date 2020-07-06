@@ -51,6 +51,7 @@ export default class PlaceTool extends Tool {
 
         obj.enablePhysics();
         obj.saveRender(); // must be after enablePhysics
+        this.scene.parts.add(obj);
 
         for (const [anchorJoint, anchorId] of this.getConnections(drawObj)) {
           stiffConnect(this.scene, anchorJoint, obj, anchorId);
@@ -78,7 +79,6 @@ export default class PlaceTool extends Tool {
       const obj = new OBJECTS[this.toolKey](this.scene, x, y);
       this.drawObj = { obj };
       obj.saveRender();
-      this.scene.parts.add(obj);
 
       const anchorJoint =
         cursor?.visible && cursor.getData('connectAnchorJoint');
