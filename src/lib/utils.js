@@ -17,7 +17,13 @@ export const colorInverse = (num) => {
 
 export const isNum = (x) => typeof x === 'number' && !Number.isNaN(x);
 
-export const validPoint = (p) => p != null && isNum(p.x) && isNum(p.y);
+export const validPoint = (p) => {
+  try {
+    return p != null && isNum(p.x) && isNum(p.y);
+  } catch (_) {
+    return false;
+  }
+};
 
 export const constrain = (v, min, max) => (v < min ? min : v > max ? max : v);
 
