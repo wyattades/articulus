@@ -9,6 +9,7 @@ import theme from '../styles/theme';
 import ToolManager from '../tools/ToolManager';
 import { MAX_PARTS } from '../const';
 import { validPoint } from '../lib/utils';
+import bgFragShader from '!file-loader!../lib/bg.glsl';
 
 export default class Play extends Phaser.Scene {
   /** @type import('./UI').default */
@@ -118,6 +119,8 @@ export default class Play extends Phaser.Scene {
   preload() {
     // this.load.image('cookie', 'assets/cookie.png');
 
+    this.load.glsl('bg', bgFragShader);
+
     if (this.load.inflight.size > 0) {
       const loadingMsg = (value = 0) =>
         `Loading Assets: ${Number.parseInt(value * 100, 10)}%`;
@@ -176,8 +179,12 @@ export default class Play extends Phaser.Scene {
     // CAMERA
 
     const camera = this.cameras.main;
-    camera.setBackgroundColor(theme.blueSky);
+    // camera.setBackgroundColor(theme.blueSky);
     camera.setScroll(-camera.width / 2, -camera.height / 2);
+
+    // BACKGROUND
+
+    this.bgShader = this.add.shader('bg', 0, 0, 800, 600);
 
     // CURSOR
 
@@ -258,7 +265,8 @@ export default class Play extends Phaser.Scene {
     return false;
   }
 
-  update(_, delta) {
+  pTime = 0;
+  update(t, delta) {
     this.ui.stats?.update();
 
     const camera = this.cameras.main;

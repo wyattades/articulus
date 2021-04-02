@@ -251,3 +251,28 @@ export const getObjectsBounds = (objs) => {
 
   return bounds;
 };
+
+const GLOBAL_STORAGE_PREFIX = 'fc:global:';
+const globals = {};
+export const createGlobal = (name, initialValue, onChange, object = window) => {
+  const storageKey = `${GLOBAL_STORAGE_PREFIX}${name}`;
+
+  try {
+    const v = JSON.parse(window.localStorage.getItem(storageKey));
+    if (v != null) initialValue = v;
+  } catch (_) {}
+
+  globals[name] = initialValue;
+  window.localStorage.setItem(storageKey, JSON.stringify(initialValue));
+
+  Object.defineProperty(object, name, {
+    set(val) {
+      globals[name] = val;
+      window.localStorage.setItem(storageKey, JSON.stringify(val));
+      if (onChange) onChange(val);
+    },
+    get() {
+      return globals[name];
+    },
+  });
+};

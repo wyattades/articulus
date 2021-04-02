@@ -17,7 +17,7 @@ const config = (module.exports = require('webpack-boiler')({
 }));
 
 config.module.rules.push({
-  test: [/\.vert$/, /\.frag$/],
+  test: [/\.vert$/, /\.frag$/, /\.glsl$/],
   use: 'raw-loader',
 });
 

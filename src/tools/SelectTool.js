@@ -21,7 +21,13 @@ export default class SelectTool extends BoxTool {
     this.eventManager = new EventManager()
       .on(scene.events, 'setSelected', this.setSelected)
       .on(scene.input.keyboard, 'keydown-BACKSPACE', this.deleteSelection)
-      .on(scene.input.keyboard, 'keydown-DELETE', this.deleteSelection);
+      .on(scene.input.keyboard, 'keydown-DELETE', this.deleteSelection)
+      .on(this.scene.input.keyboard, 'keydown-Z', () =>
+        this.rotateSelection(-1),
+      )
+      .on(this.scene.input.keyboard, 'keydown-X', () =>
+        this.rotateSelection(1),
+      );
   }
 
   setSelected = (selected) => {
@@ -36,6 +42,14 @@ export default class SelectTool extends BoxTool {
     // Move somewhere else?
     this.scene.selected = selected;
   };
+
+  rotateSelection(dir) {
+    if (this.scene.selected?.length) {
+      for (const obj of this.scene.selected) {
+        obj.rotation += dir * 0.1;
+      }
+    }
+  }
 
   deleteSelection = (e) => {
     e.preventDefault();

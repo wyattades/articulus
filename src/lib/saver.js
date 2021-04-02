@@ -1,60 +1,17 @@
 import { debounce } from 'lodash';
 
-import { Subject } from './async';
 import { base48, validPoint } from './utils';
 import { OBJECTS } from '../objects';
 import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
 import { serializePhysics, deserializePhysics } from './physics';
+import DB from './db';
+import { OfflineCache } from './cache';
 
-/** @type {typeof import('faunadb').query} */
+const db = DB.getGlobalInstance();
 let q;
-
-const withExtras = (q) => {
-  q.FindOrCreate = (collection, id, data) => {
-    if (id != null)
-      return q.Let(
-        { data },
-        q.If(
-          q.Exists(q.Ref(q.Collection(collection), id)),
-          q.Update(q.Ref(q.Collection(collection), id), {
-            data: q.Var('data'),
-          }),
-          q.Create(q.Collection(collection), { data: q.Var('data') }),
-        ),
-      );
-    else return q.Create(q.Collection(collection), { data });
-  };
-
-  return q;
-};
-
-const db = new (class DB {
-  initter = null;
-
-  async query(expr) {
-    try {
-      return this.client.query(expr);
-    } catch (err) {
-      console.error('failed query', err);
-      throw err;
-    }
-  }
-
-  async init() {
-    if (this.initter) return this.initter.toPromise();
-    this.initter = new Subject();
-
-    this.fauna = await import('faunadb');
-
-    q = withExtras(this.fauna.query);
-
-    this.client = new this.fauna.Client({
-      secret: process.env.FAUNA_CLIENT_KEY,
-    });
-
-    this.initter.complete();
-  }
-})();
+db.onLoadQ((_q) => {
+  q = _q;
+});
 
 export const fromJSON = (scene, json, enablePhysics = false) => {
   if (json?.id == null) return null;
@@ -94,32 +51,33 @@ const userId = (() => {
  */
 
 export class BuildSaver {
-  static buildsMetaCache = {};
+  static cache = new OfflineCache('builds');
 
-  static async loadBuildsMeta(limit = 21) {
-    await db.init();
+  // static async loadBuildsMeta(limit = 21) {
+  //   await db.init();
 
-    const res = await db.query(
-      q.Map(
-        q.Paginate(q.Match(q.Index('builds_by_user_id'), userId), {
-          size: limit,
-        }),
-        q.Lambda('ref', q.Get(q.Var('ref'))),
-      ),
-    );
+  //   const res = await BuildSaver.cache.fetch(
+  //     userId,
+  //     () =>
+  //       db.query(
+  //         q.Map(
+  //           q.Paginate(q.Match(q.Index('builds_by_user_id'), userId), {
+  //             size: limit,
+  //           }),
+  //           q.Lambda('ref', q.Get(q.Var('ref'))),
+  //         ),
+  //       ),
+  //     () => [],
+  //   );
 
-    return res.data.map((l) => {
-      const build = {
-        id: l.ref.id,
-        name: l.data.name,
-        image: l.data.image,
-      };
+  //   const builds = res.data.map((l) => ({
+  //     id: l.ref.id,
+  //     name: l.data.name,
+  //     image: l.data.image,
+  //   }));
 
-      MapSaver.buildsMetaCache[build.id] = build;
-
-      return build;
-    });
-  }
+  //   return builds;
+  // }
 
   static loadPlayParts({ objs, physics }, group) {
     for (const sobj of objs) {
@@ -196,17 +154,20 @@ export class BuildSaver {
 }
 
 export class MapSaver {
-  static mapsMetaCache = {};
+  static cache = new OfflineCache();
 
   static async loadMapsMeta() {
+
     await db.init();
 
-    const res = await db.query(
-      q.Map(
+
+    const res = await db.tryQuery(q.Map(
         q.Paginate(q.Match(q.Index('maps_by_user_id'), userId), { size: 21 }),
         q.Lambda('ref', q.Get(q.Var('ref'))),
       ),
     );
+
+    if (!res) return MapSaver.cache.get(res.)
 
     return res.data.map((l) => {
       const meta = {
@@ -214,7 +175,7 @@ export class MapSaver {
         name: l.data.name,
       };
 
-      MapSaver.mapsMetaCache[meta.id] = meta;
+      MapSaver.cache.set(l.ref.id, meta);
 
       return meta;
     });
@@ -227,7 +188,7 @@ export class MapSaver {
     this.id = id;
 
     if (id) {
-      const meta = MapSaver.mapsMetaCache[id];
+      const meta = MapSaver.cache.get(id);
       if (meta) {
         this.name = meta.name;
       }
@@ -267,15 +228,19 @@ export class MapSaver {
   async load() {
     await db.init();
 
-    const { ref, data } = await db.query(
-      q.Get(q.Ref(q.Collection('maps'), this.id)),
-    );
+    const {
+      ref,
+      data: { name, objs },
+    } = await db.query(q.Get(q.Ref(q.Collection('maps'), this.id)));
 
+    MapSaver.cache.set(ref.id, { name, objs }).mapsCache[ref.id];
+
+    ref;
     this.id = ref.id;
-    this.name = data.name;
+    this.name = name;
 
     return {
-      objs: data.objs,
+      objs,
     };
   }
 
