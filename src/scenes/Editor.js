@@ -96,7 +96,7 @@ export default class Editor extends Phaser.Scene {
     this.input.on('pointerup', () => this.saveLevel());
   }
 
-  update(_, delta) {
+  update(_t, delta) {
     const CAMERA_SPEED = (0.4 * delta) / this.cameras.main.zoom;
     const { left, right, up, down } = this.cursors;
     if (left.isDown && !right.isDown) {

@@ -1,6 +1,6 @@
 /// <reference path="../typings/global.d.ts" />
 import Phaser from 'phaser';
-import * as R from 'ramda';
+import _ from 'lodash';
 
 import {
   nextId,
@@ -32,7 +32,7 @@ export const getJointPos = (joint) => {
 
 const allConnectedBodies = (body, res = [], hitIds = {}) => {
   for (const joint of valuesIterator(body.collisionFilter.joints)) {
-    for (const [_, connectedBody] of valuesIterator(joint.bodies)) {
+    for (const [_anchorId, connectedBody] of valuesIterator(joint.bodies)) {
       if (hitIds[connectedBody.id]) continue;
       hitIds[connectedBody.id] = true;
 
@@ -50,7 +50,7 @@ const allConnectedBodies = (body, res = [], hitIds = {}) => {
  * @return {FC.GameObject[]}
  */
 export const getConnectedObjects = (objs, includeSelf = true) => {
-  objs = R.flatten([objs]);
+  objs = _.flatten([objs]);
 
   let bodies = [],
     hitIds = {};
@@ -59,7 +59,7 @@ export const getConnectedObjects = (objs, includeSelf = true) => {
     if (obj.body) allConnectedBodies(obj.body, bodies, hitIds);
 
   const connected = bodies.map((body) => body.gameObject);
-  return includeSelf ? R.union(connected, objs) : R.difference(connected, objs);
+  return (includeSelf ? _.union : _.difference)(connected, objs);
 };
 
 /**
@@ -267,7 +267,7 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
   }
 
   for (let bodies of valuesIterator(jointDatas)) {
-    bodies = R.uniqBy((a) => a[1], bodies);
+    bodies = _.uniqBy(bodies, (a) => a[1]);
 
     if (bodies.length < 2) continue;
 

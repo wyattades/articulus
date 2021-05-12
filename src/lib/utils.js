@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import * as R from 'ramda';
+import _ from 'lodash';
 
 import * as MoreIntersects from 'lib/intersects';
 import theme from 'src/styles/theme';
@@ -20,7 +20,7 @@ export const isNum = (x) => typeof x === 'number' && !Number.isNaN(x);
 export const validPoint = (p) => {
   try {
     return p != null && isNum(p.x) && isNum(p.y);
-  } catch (_) {
+  } catch {
     return false;
   }
 };
@@ -111,7 +111,7 @@ export const intersectsOtherSolid = (scene, obj, ignore = []) => {
 
   ignore.push(obj);
 
-  const parts = R.difference(scene.parts.getChildren(), ignore);
+  const parts = _.difference(scene.parts.getChildren(), ignore);
 
   const geom = obj.geom;
   for (const part of parts)

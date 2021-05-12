@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import * as R from 'ramda';
+import _ from 'lodash';
 
 import { PLAY_TOOL_TYPES } from 'src/tools';
 import { Terrain } from 'lib/terrain';
@@ -73,7 +73,7 @@ export default class Play extends Phaser.Scene {
     camera.panEffect.reset();
     camera.stopFollow();
 
-    const follow = R.findLast(validPoint, this.parts.getChildren());
+    const follow = _.findLast(this.parts.getChildren(), validPoint);
 
     if (follow) {
       const dist = Phaser.Math.Distance.Between(
@@ -89,7 +89,7 @@ export default class Play extends Phaser.Scene {
         Math.min(2000, dist * 0.6),
         Phaser.Math.Easing.Quadratic.InOut,
         false,
-        (_, progress) => {
+        (_camera, progress) => {
           if (progress === 1) {
             cb?.();
 
@@ -258,7 +258,7 @@ export default class Play extends Phaser.Scene {
     return false;
   }
 
-  update(_, delta) {
+  update(_t, delta) {
     this.ui.stats?.update();
 
     const camera = this.cameras.main;

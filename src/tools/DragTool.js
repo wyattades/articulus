@@ -1,4 +1,4 @@
-import * as R from 'ramda';
+import _ from 'lodash';
 
 import { getTopObject, valuesIterator } from 'lib/utils';
 import {
@@ -65,7 +65,7 @@ export default class DragTool extends Tool {
     }
 
     const more = [];
-    for (const [_, __, body] of dragging) {
+    for (const [_1, _2, body] of dragging) {
       const obj = body.gameObject;
       if (!(obj instanceof Line)) {
         for (const joint of valuesIterator(body.collisionFilter.joints)) {
@@ -90,7 +90,7 @@ export default class DragTool extends Tool {
       nobj.rerender();
     };
 
-    dragging = R.uniqBy((a) => a[2], dragging.concat(more)).map(
+    dragging = _.uniqBy([...dragging, ...more], (a) => a[2]).map(
       ([pos, anchorId, body]) => {
         const obj = body.gameObject;
 

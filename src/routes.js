@@ -1,5 +1,5 @@
 import { createBrowserHistory } from 'history';
-import * as R from 'ramda';
+import _ from 'lodash';
 import * as pathToRegexp from 'path-to-regexp';
 
 const history = createBrowserHistory();
@@ -15,10 +15,12 @@ const basePath =
     ? process.env.BASENAME
     : '';
 
-routes = R.map((route) => `${basePath}${route}`, routes);
+routes = _.mapValues(routes, (route) => `${basePath}${route}`);
 
-const compiledRoutes = R.map((route) => pathToRegexp.compile(route), routes);
-const matchedRoutes = R.map((route) => pathToRegexp.match(route), routes);
+const compiledRoutes = _.mapValues(routes, (route) =>
+  pathToRegexp.compile(route),
+);
+const matchedRoutes = _.mapValues(routes, (route) => pathToRegexp.match(route));
 
 const resolvePath = (type, params = {}) => {
   const toPath = compiledRoutes[type];

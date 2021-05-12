@@ -190,7 +190,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
     };
   }
 
-  static fromJSON(scene, { type: _, x, y, ...rest }) {
+  static fromJSON(scene, { type: _t, x, y, ...rest }) {
     const obj = new this(scene, x, y);
 
     for (const k in rest) {

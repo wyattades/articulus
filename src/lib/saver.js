@@ -290,7 +290,7 @@ export const settingsSaver = new (class SettingsSaver {
     try {
       const obj = JSON.parse(localStorage.getItem(SettingsSaver.STORAGE_KEY));
       if (obj && typeof obj === 'object') return obj;
-    } catch (_) {}
+    } catch {}
     return {};
   }
 
@@ -300,7 +300,7 @@ export const settingsSaver = new (class SettingsSaver {
         SettingsSaver.STORAGE_KEY,
         JSON.stringify(this.settings),
       );
-    } catch (_) {}
+    } catch {}
   }
 
   get(key) {

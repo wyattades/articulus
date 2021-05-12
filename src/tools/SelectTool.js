@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import * as R from 'ramda';
+import _ from 'lodash';
 
 import { EventManager } from 'lib/utils';
 
@@ -25,11 +25,11 @@ export default class SelectTool extends BoxTool {
   }
 
   setSelected = (selected) => {
-    for (const child of R.difference(this.scene.selected, selected)) {
+    for (const child of _.difference(this.scene.selected, selected)) {
       if (child.scene) child.setHighlight(false);
     }
 
-    for (const child of R.difference(selected, this.scene.selected)) {
+    for (const child of _.difference(selected, this.scene.selected)) {
       if (child.scene) child.setHighlight(true);
     }
 
@@ -53,13 +53,14 @@ export default class SelectTool extends BoxTool {
     const subtract =
       this.scene.selected &&
       this.scene.selected.length > 0 &&
-      R.union(this.scene.selected, intersected).length ===
+      _.union(this.scene.selected, intersected).length ===
         this.scene.selected.length;
 
     const newSelected = this.shiftKey.isDown
-      ? subtract
-        ? R.difference(this.scene.selected || [], intersected)
-        : R.union(this.scene.selected || [], intersected)
+      ? (subtract ? _.difference : _.union)(
+          this.scene.selected || [],
+          intersected,
+        )
       : intersected;
 
     this.scene.events.emit('setSelected', newSelected);
