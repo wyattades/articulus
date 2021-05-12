@@ -1,4 +1,3 @@
-/// <reference path="../typings/global.d.ts" />
 import Phaser from 'phaser';
 import _ from 'lodash';
 
@@ -12,7 +11,7 @@ import {
 import { config } from 'src/const';
 
 /**
- * @type {import('@types/matter-js')}
+ * @type {typeof import('matter-js')}
  */
 export const Matter = Phaser.Physics.Matter.Matter;
 
@@ -218,7 +217,7 @@ export const stiffConnect = (scene, anchorJoint, obj, anchorId) => {
 /**
  * Delete all of the body's connections
  * @param {Phaser.Scene} scene
- * @param {Matter.Body} body
+ * @param {Matter['Body']} body
  */
 export const deleteConnections = (scene, body) => {
   for (const jId in body.collisionFilter.joints) {
