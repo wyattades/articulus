@@ -1,60 +1,12 @@
 import { debounce } from 'lodash';
+import { createClient } from '@supabase/supabase-js';
 
-import { Subject } from './async';
-import { base48, validPoint } from './utils';
+import { validPoint } from './utils';
 import { OBJECTS } from '../objects';
 import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
 import { serializePhysics, deserializePhysics } from './physics';
 
-/** @type {typeof import('faunadb').query} */
-let q;
-
-const withExtras = (q) => {
-  q.FindOrCreate = (collection, id, data) => {
-    if (id != null)
-      return q.Let(
-        { data },
-        q.If(
-          q.Exists(q.Ref(q.Collection(collection), id)),
-          q.Update(q.Ref(q.Collection(collection), id), {
-            data: q.Var('data'),
-          }),
-          q.Create(q.Collection(collection), { data: q.Var('data') }),
-        ),
-      );
-    else return q.Create(q.Collection(collection), { data });
-  };
-
-  return q;
-};
-
-const db = new (class DB {
-  initter = null;
-
-  async query(expr) {
-    try {
-      return this.client.query(expr);
-    } catch (err) {
-      console.error('failed query', err);
-      throw err;
-    }
-  }
-
-  async init() {
-    if (this.initter) return this.initter.toPromise();
-    this.initter = new Subject();
-
-    this.fauna = await import('faunadb');
-
-    q = withExtras(this.fauna.query);
-
-    this.client = new this.fauna.Client({
-      secret: process.env.FAUNA_CLIENT_KEY,
-    });
-
-    this.initter.complete();
-  }
-})();
+const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 export const fromJSON = (scene, json, enablePhysics = false) => {
   if (json?.id == null) return null;
@@ -74,16 +26,30 @@ export const fromJSON = (scene, json, enablePhysics = false) => {
   return obj;
 };
 
-// TEMP: until I build user system
-const userId = (() => {
+const findOrCreateBy = async (table, data) => {
+  const res = await db.from(table).select('id').match(data).limit(1);
+  if (res.data[0]?.id) return res.data[0];
+
+  const res2 = await db.from(table).insert(data);
+
+  return res2.data[0];
+};
+
+const getUserId = async () => {
   let u = localStorage.getItem('fc:user_id');
   if (typeof u === 'string' && u.length >= 6) return u;
 
-  u = base48(8);
-  localStorage.setItem('fc:user_id', u);
+  let user = null;
+  while (!user) {
+    const username = window.prompt('Enter a username to continue');
 
-  return u;
-})();
+    if (username) user = await findOrCreateBy('users', { username });
+  }
+
+  localStorage.setItem('fc:user_id', user.id);
+
+  return user.id;
+};
 
 /**
  * @typedef { objs: { type: string }[], physics?: {} } MapData
@@ -96,23 +62,20 @@ const userId = (() => {
 export class BuildSaver {
   static buildsMetaCache = {};
 
-  static async loadBuildsMeta(limit = 21) {
-    await db.init();
+  static async loadBuildsMeta(from = 0, to = 21) {
+    const userId = await getUserId();
 
-    const res = await db.query(
-      q.Map(
-        q.Paginate(q.Match(q.Index('builds_by_user_id'), userId), {
-          size: limit,
-        }),
-        q.Lambda('ref', q.Get(q.Var('ref'))),
-      ),
-    );
+    const res = await db
+      .from('builds')
+      .select('id, name')
+      .match({ user_id: userId })
+      .range(from, to);
 
     return res.data.map((l) => {
       const build = {
-        id: l.ref.id,
-        name: l.data.name,
-        image: l.data.image,
+        id: l.id,
+        name: l.name,
+        // image: l.data.image,
       };
 
       MapSaver.buildsMetaCache[build.id] = build;
@@ -135,31 +98,22 @@ export class BuildSaver {
   id = null;
 
   async load() {
-    await db.init();
+    if (!this.id) return null;
 
-    let build;
-    if (this.id) {
-      build = await db.query(q.Get(q.Ref(q.Collection('maps'), this.id)));
-    } else {
-      const res = await db.query(
-        q.Map(
-          q.Paginate(q.Match(q.Index('builds_by_user_id'), userId), {
-            size: 1,
-          }),
-          q.Lambda('ref', q.Get(q.Var('ref'))),
-        ),
-      );
-      build = res.data[0];
-    }
+    let query = db.from('builds').select().limit(1);
+
+    if (this.id) query = query.match({ id: this.id });
+
+    const build = (await query).data[0];
 
     if (!build) return null;
 
-    this.id = build.ref.id;
-    // this.name = build.data.name;
+    this.id = build.id;
+    // this.name = build.name;
 
     return {
-      objs: build.data.objs,
-      physics: build.data.physics,
+      objs: build.objects,
+      physics: build.physics,
     };
   }
 
@@ -180,16 +134,27 @@ export class BuildSaver {
 
     const physics = serializePhysics(scene);
 
+    const userId = await getUserId();
+
     const data = {
       user_id: userId,
-      objs,
-      physics,
+      // name: this.name,
+      data: {
+        objects: objs,
+        physics,
+      },
     };
 
-    await db.init();
-    const res = await db.query(q.FindOrCreate('builds', this.id, data));
+    if (this.id) {
+      await db
+        .from('builds')
+        .update(data, { returning: 'minimal' })
+        .match({ id: this.id });
+    } else {
+      const res = await db.from('builds').insert(data);
 
-    this.id = res.ref.id;
+      this.id = res.data[0].id;
+    }
   }
 
   queueSave = debounce(this.save.bind(this), 1000);
@@ -198,20 +163,19 @@ export class BuildSaver {
 export class MapSaver {
   static mapsMetaCache = {};
 
-  static async loadMapsMeta() {
-    await db.init();
+  static async loadMapsMeta(from = 0, to = 21) {
+    const userId = await getUserId();
 
-    const res = await db.query(
-      q.Map(
-        q.Paginate(q.Match(q.Index('maps_by_user_id'), userId), { size: 21 }),
-        q.Lambda('ref', q.Get(q.Var('ref'))),
-      ),
-    );
+    const res = await db
+      .from('maps')
+      .select('id, name')
+      .match({ user_id: userId })
+      .range(from, to);
 
     return res.data.map((l) => {
       const meta = {
-        id: l.ref.id,
-        name: l.data.name,
+        id: l.id,
+        name: l.name,
       };
 
       MapSaver.mapsMetaCache[meta.id] = meta;
@@ -265,17 +229,19 @@ export class MapSaver {
   }
 
   async load() {
-    await db.init();
+    if (!this.id) return null;
 
-    const { ref, data } = await db.query(
-      q.Get(q.Ref(q.Collection('maps'), this.id)),
-    );
+    const { data: map } = await db
+      .from('maps')
+      .select()
+      .match({ id: this.id })
+      .single();
 
-    this.id = ref.id;
-    this.name = data.name;
+    this.id = map.id;
+    this.name = map.name;
 
     return {
-      objs: data.objs,
+      objs: map.data.objects,
     };
   }
 
@@ -283,8 +249,6 @@ export class MapSaver {
    * @param {Phaser.GameObjects.Group} group
    */
   async save(group) {
-    await db.init();
-
     const scene = group.scene;
     if (!scene) return;
 
@@ -294,15 +258,24 @@ export class MapSaver {
       return json;
     });
 
+    const userId = await getUserId();
+
     const data = {
       user_id: userId,
       name: this.name,
-      objs,
+      data: { objects: objs },
     };
 
-    const res = await db.query(q.FindOrCreate('maps', this.id, data));
+    if (this.id) {
+      await db
+        .from('maps')
+        .update(data, { returning: 'minimal' })
+        .match({ id: this.id });
+    } else {
+      const res = await db.from('maps').insert(data);
 
-    this.id = res.ref.id;
+      this.id = res.data[0].id;
+    }
   }
 
   queueSave = debounce(this.save.bind(this), 1000);

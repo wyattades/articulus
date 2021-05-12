@@ -4,16 +4,16 @@ const { resolve } = require('path');
 const config = (module.exports = require('webpack-boiler')({
   pages: [
     {
-      title: 'Fantastic Contraption',
+      title: 'Articulus',
       template: './src/template.pug',
     },
   ],
   env: {
     CANVAS_RENDERER: false,
     WEBGL_RENDERER: true,
-    FAUNA_CLIENT_KEY: process.env.FAUNA_CLIENT_KEY,
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_KEY: process.env.SUPABASE_KEY,
   },
-  basename: 'fantastic_contraption',
 }));
 
 config.module.rules.push({

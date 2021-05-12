@@ -18,6 +18,7 @@ if (process.env.NODE_ENV === 'development') {
   });
 
   module.hot?.accept('./Game.js', () => {
+    console.log('HOT RELOAD');
     game.destroy();
     game = new Game($canvas, $container);
   });

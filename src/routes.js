@@ -9,7 +9,13 @@ let routes = {
   Play: '/play/:mapKey?',
   Editor: '/edit/:mapKey?',
 };
-routes = R.map((route) => `/${process.env.BASENAME}${route}`, routes);
+
+const basePath =
+  process.env.BASENAME && process.env.BASENAME !== '/'
+    ? process.env.BASENAME
+    : '';
+
+routes = R.map((route) => `${basePath}${route}`, routes);
 
 const compiledRoutes = R.map((route) => pathToRegexp.compile(route), routes);
 const matchedRoutes = R.map((route) => pathToRegexp.match(route), routes);

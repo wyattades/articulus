@@ -39,7 +39,7 @@ export default class Game extends Phaser.Game {
 
     this.unlisten = routes.listen((key, data) => {
       if (key) this._setScene(key, data);
-      else routes.replace('Menu');
+      else routes.replace('Menu'); // 404
     });
 
     const [key, data] = routes.getKeyParams();

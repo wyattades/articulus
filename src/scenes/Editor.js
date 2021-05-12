@@ -87,7 +87,9 @@ export default class Editor extends Phaser.Scene {
     this.parts = this.add.group();
     this.mapSaver
       .load()
-      .then((mapData) => MapSaver.loadEditorParts(mapData, this.parts));
+      .then(
+        (mapData) => mapData && MapSaver.loadEditorParts(mapData, this.parts),
+      );
 
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 

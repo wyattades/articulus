@@ -1,29 +1,29 @@
 {
-  "name": "fantastic_contraption",
+  "name": "articulus",
   "license": "MIT",
   "description": "A sandbox physics game",
   "main": "src/index.js",
   "author": "wyattades",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wyattades/fantastic_contraption.git"
+    "url": "git+https://github.com/wyattades/articulus.git"
   },
   "bugs": {
-    "url": "https://github.com/wyattades/fantastic_contraption/issues"
+    "url": "https://github.com/wyattades/articulus/issues"
   },
-  "homepage": "https://github.com/wyattades/fantastic_contraption#readme",
+  "homepage": "https://github.com/wyattades/articulus#readme",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "yarn && NODE_ENV=development webpack-dev-server",
+    "dev": "yarn && NODE_ENV=development webpack serve --hot-only",
     "build": "NODE_ENV=production webpack && cp dist/index.html dist/404.html",
-    "deploy": "npm run build && gh-pages -d dist"
+    "db:up": "dbmate up",
+    "db:migrate": "dbmate migrate"
   },
   "dependencies": {
     "@types/matter-js": "^0.10.7",
-    "babel-plugin-lodash": "^3.3.4",
     "bulma": "^0.7.5",
-    "faunadb": "^2.11.1",
+    "@supabase/supabase-js": "^1.11.2",
     "history": "^4.10.1",
     "path-to-regexp": "^6.1.0",
     "phaser": "^3.22.0",
@@ -32,16 +32,16 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",
+    "babel-plugin-lodash": "^3.3.4",
     "babel-plugin-ramda": "^2.0.0",
-    "dotenv": "^8.2.0",
+    "dotenv": "^9.0.2",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-config-react": "^1.1.7",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.18.3",
     "eslint-plugin-react-hooks": "^2.3.0",
-    "gh-pages": "^2.1.1",
-    "prettier": "^1.19.1",
-    "webpack-boiler": "^0.4.2"
+    "prettier": "^2.3.0",
+    "webpack-boiler": "^0.5.0"
   }
 }

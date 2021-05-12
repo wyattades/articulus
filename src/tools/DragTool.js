@@ -58,9 +58,9 @@ export default class DragTool extends Tool {
     if (anchorJoint.obj) {
       dragging = [[anchorJoint, anchorJoint.id, anchorJoint.obj.body]];
     } else {
-      dragging = Object.values(
-        anchorJoint.joint.bodies,
-      ).map(([anchorId, body]) => [anchorJoint, anchorId, body]);
+      dragging = Object.values(anchorJoint.joint.bodies).map(
+        ([anchorId, body]) => [anchorJoint, anchorId, body],
+      );
     }
 
     const more = [];
