@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "allowJs": true,
+    "typeRoots": ["./src/typings", "./node_modules/@types"],
+    "paths": {
+      "src/*": ["./src/*"],
+      "lib/*": ["./src/lib/*"]
+    }
+  }
+}
