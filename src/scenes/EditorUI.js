@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 
-import { TOOLS, EDITOR_TOOL_TYPES } from '../tools';
-import { colorInverse, createUIButtons } from '../lib/utils';
-import theme from '../styles/theme';
-import { settingsSaver } from '../lib/saver';
+import { TOOLS, EDITOR_TOOL_TYPES } from 'src/tools';
+import { colorInverse, createUIButtons } from 'lib/utils';
+import theme from 'src/styles/theme';
+import { settingsSaver } from 'lib/saver';
 
 export default class EditorUI extends Phaser.Scene {
   constructor() {

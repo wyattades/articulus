@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import * as R from 'ramda';
 
-import * as MoreIntersects from './intersects';
-import theme from '../styles/theme';
+import * as MoreIntersects from 'lib/intersects';
+import theme from 'src/styles/theme';
 
 /**
  * @param {Number} num

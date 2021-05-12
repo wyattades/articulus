@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 
+import { config } from 'src/const';
+
 import Part from './Part';
-import { config } from '../const';
 
 const getEllipsePoints = (w, h, numPoints) => {
   const a = w / 2,

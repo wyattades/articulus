@@ -1,4 +1,4 @@
-import { getHoveredJoint } from '../lib/physics';
+import { getHoveredJoint } from 'lib/physics';
 
 export default class Tool {
   /**

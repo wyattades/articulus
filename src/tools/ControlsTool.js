@@ -1,9 +1,10 @@
 /* eslint-disable consistent-return */
 import Phaser from 'phaser';
 
-import { EventManager } from '../lib/utils';
+import { EventManager } from 'lib/utils';
+import Controls from 'src/objects/Controls';
+
 import Tool from './Tool';
-import Controls from '../objects/Controls';
 import { MIN_SHAPE_SIZE } from './ShapeTool';
 
 export default class ControlsTool extends Tool {

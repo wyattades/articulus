@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 
+import { valuesIterator } from 'lib/utils';
+import { Matter } from 'lib/physics';
+import { config } from 'src/const';
+
 import Part from './Part';
-import { circle4Points, valuesIterator } from '../lib/utils';
-import { Matter } from '../lib/physics';
-import { config } from '../const';
 
 const anyNonemptyArrayValue = (objOfArrays) => {
   for (const val of valuesIterator(objOfArrays))

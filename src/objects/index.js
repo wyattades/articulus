@@ -1,8 +1,9 @@
+import theme from 'src/styles/theme';
+
 import Part from './Part';
 import Line from './Line';
 import Wheel from './Wheel';
 import Thruster from './Thruster';
-import theme from '../styles/theme';
 
 export { Part, Line, Wheel, Thruster };
 

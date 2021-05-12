@@ -1,7 +1,8 @@
-import { stiffConnect } from '../lib/physics';
-import { Wheel, OBJECTS } from '../objects';
+import { stiffConnect } from 'lib/physics';
+import { Wheel, OBJECTS } from 'src/objects';
+import { intersectsOtherSolid } from 'lib/utils';
+
 import Tool from './Tool';
-import { intersectsOtherSolid } from '../lib/utils';
 
 export default class PlaceTool extends Tool {
   /** @type {{ obj: FC.GameObject, startAnchorJoint?: FC.AnchorJoint }} */

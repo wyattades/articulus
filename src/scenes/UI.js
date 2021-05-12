@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
 
-import { PLAY_TOOL_TYPES, TOOLS } from '../tools';
-import { colorInverse, createUIButtons, getObjectsBounds } from '../lib/utils';
-import theme from '../styles/theme';
-import { clonePhysics } from '../lib/physics';
-import { MAX_PARTS } from '../const';
+import { PLAY_TOOL_TYPES, TOOLS } from 'src/tools';
+import { colorInverse, createUIButtons, getObjectsBounds } from 'lib/utils';
+import theme from 'src/styles/theme';
+import { clonePhysics } from 'lib/physics';
+import { MAX_PARTS } from 'src/const';
 
 export default class UI extends Phaser.Scene {
   constructor() {

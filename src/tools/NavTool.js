@@ -1,5 +1,6 @@
+import { EventManager, constrain } from 'lib/utils';
+
 import Tool from './Tool';
-import { EventManager, constrain } from '../lib/utils';
 
 export default class NavTool extends Tool {
   dragView = null;

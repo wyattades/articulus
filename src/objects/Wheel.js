@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 
-import { Matter } from '../lib/physics';
+import { Matter } from 'lib/physics';
+import { circle4Points } from 'lib/utils';
+import { config } from 'src/const';
+
 import Part from './Part';
-import { circle4Points } from '../lib/utils';
-import { config } from '../const';
 
 export default class Wheel extends Part {
   static type = 'wheel';

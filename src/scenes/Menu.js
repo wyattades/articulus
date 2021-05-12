@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import { MapSaver } from '../lib/saver';
+import { MapSaver } from 'lib/saver';
 
 export default class Menu extends Phaser.Scene {
   constructor() {

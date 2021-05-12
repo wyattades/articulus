@@ -1,12 +1,7 @@
 import Phaser from 'phaser';
 
-import {
-  adjustBrightness,
-  nextId,
-  setNextId,
-  valuesIterator,
-} from '../lib/utils';
-import { deleteConnections } from '../lib/physics';
+import { adjustBrightness, nextId, setNextId, valuesIterator } from 'lib/utils';
+import { deleteConnections } from 'lib/physics';
 
 const buffer = 20;
 

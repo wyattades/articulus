@@ -22,6 +22,8 @@ config.module.rules.push({
 });
 
 config.resolve.alias = {
+  src: resolve(__dirname, 'src'),
+  lib: resolve(__dirname, 'src/lib'),
   ph: resolve(__dirname, 'node_modules/phaser/src'),
   phaser: resolve(__dirname, 'src/phaser.js'),
 };

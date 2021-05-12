@@ -1,11 +1,11 @@
 import Phaser from 'phaser';
 
-import PlayScene from './scenes/Play';
-import UIScene from './scenes/UI';
-import EditorScene from './scenes/Editor';
-import EditorUIScene from './scenes/EditorUI';
-import MenuScene from './scenes/Menu';
-import * as routes from './routes';
+import PlayScene from 'src/scenes/Play';
+import UIScene from 'src/scenes/UI';
+import EditorScene from 'src/scenes/Editor';
+import EditorUIScene from 'src/scenes/EditorUI';
+import MenuScene from 'src/scenes/Menu';
+import * as routes from 'src/routes';
 
 export default class Game extends Phaser.Game {
   constructor(canvas, parent) {

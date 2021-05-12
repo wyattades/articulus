@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
-import { Matter } from './physics';
-import { config } from '../const';
+import { Matter } from 'lib/physics';
+import { config } from 'src/const';
 
 // const retry = (fn, maxAttempts = 16) => {
 //   let err;

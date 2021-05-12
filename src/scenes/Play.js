@@ -1,14 +1,14 @@
 import Phaser from 'phaser';
 import * as R from 'ramda';
 
-import { PLAY_TOOL_TYPES } from '../tools';
-import { Terrain } from '../lib/terrain';
-import { Matter } from '../lib/physics';
-import { BuildSaver, MapSaver } from '../lib/saver';
-import theme from '../styles/theme';
-import ToolManager from '../tools/ToolManager';
-import { MAX_PARTS } from '../const';
-import { validPoint } from '../lib/utils';
+import { PLAY_TOOL_TYPES } from 'src/tools';
+import { Terrain } from 'lib/terrain';
+import { Matter } from 'lib/physics';
+import { BuildSaver, MapSaver } from 'lib/saver';
+import theme from 'src/styles/theme';
+import ToolManager from 'src/tools/ToolManager';
+import { MAX_PARTS } from 'src/const';
+import { validPoint } from 'lib/utils';
 
 export default class Play extends Phaser.Scene {
   /** @type import('./UI').default */

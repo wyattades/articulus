@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 
+import { config } from 'src/const';
+
 import Part from './Part';
-import { config } from '../const';
 
 export default class Line extends Part {
   static zIndex = 1;

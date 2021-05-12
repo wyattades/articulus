@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 
+import { intersectsGeoms, getTopObject } from 'lib/utils';
+
 import Tool from './Tool';
-import { intersectsGeoms, getTopObject } from '../lib/utils';
 
 export default class BoxTool extends Tool {
   fillColor = 0xffffff;

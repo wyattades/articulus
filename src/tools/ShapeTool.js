@@ -1,5 +1,6 @@
+import { Rectangle, Ellipse } from 'src/objects/Shape';
+
 import BoxTool from './BoxTool';
-import { Rectangle, Ellipse } from '../objects/Shape';
 
 export const MIN_SHAPE_SIZE = 10;
 

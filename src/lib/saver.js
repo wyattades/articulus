@@ -1,10 +1,10 @@
 import { debounce } from 'lodash';
 import { createClient } from '@supabase/supabase-js';
 
-import { validPoint } from './utils';
-import { OBJECTS } from '../objects';
-import { SHAPE_TYPE_CLASSES } from '../objects/Shape';
-import { serializePhysics, deserializePhysics } from './physics';
+import { validPoint } from 'lib/utils';
+import { OBJECTS } from 'src/objects';
+import { SHAPE_TYPE_CLASSES } from 'src/objects/Shape';
+import { serializePhysics, deserializePhysics } from 'lib/physics';
 
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 

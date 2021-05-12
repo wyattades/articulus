@@ -1,15 +1,16 @@
 import * as R from 'ramda';
 
-import Tool from './Tool';
-import { getTopObject, valuesIterator } from '../lib/utils';
+import { getTopObject, valuesIterator } from 'lib/utils';
 import {
   getConnectedObjects,
   serializePhysics,
   deserializePhysics,
   getJointPos,
-} from '../lib/physics';
-import { Line } from '../objects';
-import { fromJSON } from '../lib/saver';
+} from 'lib/physics';
+import { Line } from 'src/objects';
+import { fromJSON } from 'lib/saver';
+
+import Tool from './Tool';
 
 export default class DragTool extends Tool {
   setDragging(objects, x, y) {

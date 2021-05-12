@@ -1,5 +1,6 @@
-import Line from '../objects/Line';
-import { intersectsOtherSolid, anySame } from '../lib/utils';
+import Line from 'src/objects/Line';
+import { intersectsOtherSolid, anySame } from 'lib/utils';
+
 import PlaceTool from './PlaceTool';
 
 export default class LineTool extends PlaceTool {

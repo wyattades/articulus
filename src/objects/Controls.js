@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import theme from '../styles/theme';
+import theme from 'src/styles/theme';
 
 const ROTATOR_OFFSET = 20;
 

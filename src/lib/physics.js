@@ -8,8 +8,8 @@ import {
   getFirstValue,
   constrain,
   valuesIterator,
-} from './utils';
-import { config } from '../const';
+} from 'lib/utils';
+import { config } from 'src/const';
 
 /**
  * @type {import('@types/matter-js')}

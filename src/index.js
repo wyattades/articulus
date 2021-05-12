@@ -1,5 +1,6 @@
-import './styles/index.scss';
-import Game from './Game';
+import Game from 'src/Game';
+
+import 'src/styles/index.scss';
 
 // require.context('./static', true);
 

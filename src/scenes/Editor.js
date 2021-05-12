@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 
-import ToolManager from '../tools/ToolManager';
-import { MapSaver, settingsSaver } from '../lib/saver';
-import { EDITOR_TOOL_TYPES } from '../tools';
+import ToolManager from 'src/tools/ToolManager';
+import { MapSaver, settingsSaver } from 'lib/saver';
+import { EDITOR_TOOL_TYPES } from 'src/tools';
 
 export default class Editor extends Phaser.Scene {
   constructor() {

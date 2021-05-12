@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 
+import { EventManager } from 'lib/utils';
+
 import { TOOLS } from '.';
-import { EventManager } from '../lib/utils';
 
 export default class ToolManager {
   tools = []; // active tools

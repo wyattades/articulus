@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 import * as R from 'ramda';
 
+import { EventManager } from 'lib/utils';
+
 import BoxTool from './BoxTool';
-import { EventManager } from '../lib/utils';
-import { Part } from '../objects';
 
 export default class SelectTool extends BoxTool {
   shiftKey = this.scene.input.keyboard.addKey(
