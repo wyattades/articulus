@@ -36,11 +36,14 @@ export class NeutralWheel extends Wheel {
   color = theme.blueLight;
 }
 
-export const OBJECTS = {
-  forward_wheel: ForwardWheel,
-  back_wheel: BackWheel,
-  neutral_wheel: NeutralWheel,
-  wood: Wood,
-  water: Water,
-  thruster: Thruster,
-};
+export const OBJECTS = [
+  ForwardWheel,
+  BackWheel,
+  NeutralWheel,
+  Wood,
+  Water,
+  Thruster,
+].reduce((m, el) => {
+  m[el.type] = el;
+  return m;
+}, {});

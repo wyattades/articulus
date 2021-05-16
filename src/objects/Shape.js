@@ -115,7 +115,7 @@ export class Ellipse extends Rectangle {
   }
 }
 
-export const SHAPE_TYPE_CLASSES = {
-  rect: Rectangle,
-  ellipse: Ellipse,
-};
+export const SHAPE_TYPE_CLASSES = [Rectangle, Ellipse].reduce((m, el) => {
+  m[el.type] = el;
+  return m;
+}, {});
