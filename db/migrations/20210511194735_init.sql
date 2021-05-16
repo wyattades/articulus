@@ -19,6 +19,6 @@ create table builds (
 );
 
 -- migrate:down
+drop table users;
 drop table maps;
-
 drop table builds;
