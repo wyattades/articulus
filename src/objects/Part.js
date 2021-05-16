@@ -291,6 +291,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
 
     if (this.particles) {
       for (const p of this.particles) p.destroy();
+      this.particles = null;
     }
 
     const scene = this.scene;

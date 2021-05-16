@@ -38,8 +38,8 @@ export default class NavTool extends Tool {
   handlePointerDown(x, y, { button, position }) {
     // if (topObject) return;
 
-    // right click
-    if (button === 2) {
+    // right click or middle click
+    if (button === 2 || button === 1) {
       const camera = this.scene.cameras.main;
       const invScale = camera.zoom;
 
@@ -67,7 +67,7 @@ export default class NavTool extends Tool {
   }
 
   handlePointerUp(x, y, { button }) {
-    if (button === 2) {
+    if (button === 2 || button === 1) {
       this.dragView = null;
       return false;
     }
