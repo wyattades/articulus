@@ -28,15 +28,24 @@ export default class Editor extends Phaser.Scene {
   createListeners() {
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    this.input.keyboard.on('keydown-BACKSPACE', (e) => {
-      e.preventDefault();
-      for (const obj of this.selected || []) obj.destroy();
-      this.events.emit('setSelected', []);
+    this.input.keyboard.on('keydown-BACKSPACE', this.deleteSelected);
+    this.input.keyboard.on('keydown-DELETE', this.deleteSelected);
+
+    this.input.keyboard.on('keydown-T', () => {
+      this.game.setScene('Play', {
+        mapKey: this.mapKey,
+      });
     });
   }
 
   iGridSize = 10;
   gridSize;
+
+  deleteSelected = (e) => {
+    e?.preventDefault?.();
+    for (const obj of this.selected || []) obj.destroy();
+    this.events.emit('setSelected', []);
+  };
 
   enableSnapping(enabled) {
     settingsSaver.set('snapping', enabled);

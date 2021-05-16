@@ -35,8 +35,9 @@ const findOrCreateBy = async (table, data) => {
   return res2.data[0];
 };
 
+let userIdPromise;
 const getUserId = async () => {
-  let u = localStorage.getItem('fc:user_id');
+  let u = localStorage.getItem('articulus:user_id');
   if (typeof u === 'string' && u.length >= 6) return u;
 
   let user = null;
@@ -46,7 +47,7 @@ const getUserId = async () => {
     if (username) user = await findOrCreateBy('users', { username });
   }
 
-  localStorage.setItem('fc:user_id', user.id);
+  localStorage.setItem('articulus:user_id', user.id);
 
   return user.id;
 };
@@ -63,7 +64,7 @@ export class BuildSaver {
   static buildsMetaCache = {};
 
   static async loadBuildsMeta(from = 0, to = 21) {
-    const userId = await getUserId();
+    const userId = await (userIdPromise ||= getUserId());
 
     const res = await db
       .from('builds')
@@ -134,7 +135,7 @@ export class BuildSaver {
 
     const physics = serializePhysics(scene);
 
-    const userId = await getUserId();
+    const userId = await (userIdPromise ||= getUserId());
 
     const data = {
       user_id: userId,
@@ -164,7 +165,7 @@ export class MapSaver {
   static mapsMetaCache = {};
 
   static async loadMapsMeta(from = 0, to = 21) {
-    const userId = await getUserId();
+    const userId = await (userIdPromise ||= getUserId());
 
     const res = await db
       .from('maps')
@@ -282,7 +283,7 @@ export class MapSaver {
 }
 
 export const settingsSaver = new (class SettingsSaver {
-  static STORAGE_KEY = 'fc:settings';
+  static STORAGE_KEY = 'articulus:settings';
 
   settings = this.load();
 

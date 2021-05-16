@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { PLAY_TOOL_TYPES } from 'src/tools';
 import { Terrain } from 'lib/terrain';
 import { Matter } from 'lib/physics';
-import { BuildSaver, MapSaver } from 'lib/saver';
+import { BuildSaver, MapSaver, settingsSaver } from 'lib/saver';
 import theme from 'src/styles/theme';
 import ToolManager from 'src/tools/ToolManager';
 import { MAX_PARTS } from 'src/const';
@@ -61,7 +61,7 @@ export default class Play extends Phaser.Scene {
       for (const part of this.parts.getChildren()) part.pause();
     }
 
-    this.ui.stateText.setText(running ? 'Running' : 'Paused');
+    this.ui.pauseButton.setText(running ? 'Pause ⏸︎' : 'Play ⏵︎');
 
     this.events.emit('setSelected', []);
   }
@@ -149,9 +149,15 @@ export default class Play extends Phaser.Scene {
       this.buildSaver.save(this.parts);
     });
 
+    this.input.keyboard.on('keydown-T', () => {
+      this.game.setScene('Editor', {
+        mapKey: this.mapKey,
+      });
+    });
+
     this.input.keyboard.on('keydown-P', () => {
-      const debug = !localStorage.getItem('fc:debug');
-      localStorage.setItem('fc:debug', debug ? '1' : '');
+      const debug = !settingsSaver.get('debug');
+      settingsSaver.set('debug', debug);
 
       this.matter.config.debug = debug;
 

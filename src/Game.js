@@ -6,6 +6,7 @@ import EditorScene from 'src/scenes/Editor';
 import EditorUIScene from 'src/scenes/EditorUI';
 import MenuScene from 'src/scenes/Menu';
 import * as routes from 'src/routes';
+import { settingsSaver } from './lib/saver';
 
 export default class Game extends Phaser.Game {
   constructor(canvas, parent) {
@@ -19,7 +20,7 @@ export default class Game extends Phaser.Game {
         default: 'matter',
         matter: {
           enableSleep: true,
-          debug: !!localStorage.getItem('fc:debug'),
+          debug: !!settingsSaver.get('debug'),
         },
       },
       dom: {

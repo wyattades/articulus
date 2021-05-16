@@ -1,10 +1,16 @@
 import Phaser from 'phaser';
 
 import { PLAY_TOOL_TYPES, TOOLS } from 'src/tools';
-import { colorInverse, createUIButtons, getObjectsBounds } from 'lib/utils';
+import {
+  colorInverse,
+  createUIButton,
+  createUIButtons,
+  getObjectsBounds,
+} from 'lib/utils';
 import theme from 'src/styles/theme';
 import { clonePhysics } from 'lib/physics';
 import { MAX_PARTS } from 'src/const';
+import { settingsSaver } from 'lib/saver';
 
 export default class UI extends Phaser.Scene {
   constructor() {
@@ -13,9 +19,7 @@ export default class UI extends Phaser.Scene {
     });
   }
 
-  init(data) {
-    this.mapKey = data.mapKey;
-
+  init() {
     this.play = this.scene.get('Play');
   }
 
@@ -59,12 +63,7 @@ export default class UI extends Phaser.Scene {
   }
 
   create() {
-    this.stateText = this.add
-      .dom(this.scale.width - 10, 10, 'div')
-      .setClassName('ui-text')
-      .setOrigin(1, 0);
-
-    if (localStorage.getItem('fc:debug')) {
+    if (settingsSaver.get('debug')) {
       this.pointerPosText = this.add
         .dom(this.scale.width - 10, this.scale.height - 10, 'div')
         .setClassName('ui-text')
@@ -99,7 +98,17 @@ export default class UI extends Phaser.Scene {
           onClick: () => this.play.tm.setTool(toolType),
         };
       }),
+      0,
+      0,
     );
+
+    const padding = 10;
+    this.pauseButton = createUIButton(this, this.scale.width / 2, padding, {
+      title: ' ',
+      onClick: () => {
+        this.play.setRunning(!this.play.running);
+      },
+    }).setOrigin(0.5, 0);
 
     createUIButtons(
       this,
@@ -114,12 +123,13 @@ export default class UI extends Phaser.Scene {
           title: 'Edit',
           onClick: () => {
             this.game.setScene('Editor', {
-              mapKey: this.mapKey,
+              mapKey: this.play.mapKey,
             });
           },
         },
       ],
-      true,
+      1,
+      0,
     );
 
     this.objActions = createUIButtons(
@@ -166,8 +176,8 @@ export default class UI extends Phaser.Scene {
           },
         },
       ],
-      false,
-      true,
+      0,
+      1,
     );
     this.enableObjectActions(false);
 

@@ -201,39 +201,41 @@ export class EventManager {
   }
 }
 
+export const createUIButton = (scene, x, y, c) => {
+  const button = scene.add
+    .dom(
+      x,
+      y,
+      'button',
+      `background-color: ${colorIntToHex(
+        c.bgColor ?? theme.white,
+      )}; color: ${colorIntToHex(c.color ?? theme.black)}`,
+      c.title,
+    )
+    .setData(c.data || {})
+    .setClassName('ui-tool-button')
+    .addListener('click');
+  button.on('click', c.onClick);
+  return button;
+};
+
 /**
  * @param {Phaser.Scene} scene
  * @param {object[]} configs
  */
-export const createUIButtons = (
-  scene,
-  configs,
-  right = false,
-  bottom = false,
-) => {
+export const createUIButtons = (scene, configs, xRatio = 0, yRatio = 0) => {
   const padding = 10;
   const bHeight = 50;
-  const buttons = configs.map((c, i) => {
-    const button = scene.add
-      .dom(
-        right ? scene.scale.width - padding : padding,
-        bottom
-          ? scene.scale.height - padding - i * bHeight
-          : padding + i * bHeight,
-        'button',
-        `background-color: ${colorIntToHex(
-          c.bgColor || theme.white,
-        )}; color: ${colorIntToHex(c.color || theme.black)}`,
-        c.title,
-      )
-      .setData(c.data || {})
-      .setClassName('ui-tool-button')
-      .setOrigin(right ? 1 : 0, bottom ? 1 : 0)
-      .addListener('click');
-    button.on('click', c.onClick);
-
-    return button;
-  });
+  const buttons = configs.map((c, i) =>
+    createUIButton(
+      scene,
+      xRatio === 1 ? scene.scale.width - padding : padding,
+      yRatio === 1
+        ? scene.scale.height - padding - i * bHeight
+        : padding + i * bHeight,
+      c,
+    ).setOrigin(xRatio, yRatio),
+  );
 
   return buttons;
 };

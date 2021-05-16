@@ -56,10 +56,12 @@
 
   &:hover {
     cursor: pointer;
+    filter: brightness(93%);
   }
 
+  border: 2px solid transparent;
   &--active {
-    border: 2px solid #b6b6b6;
+    border-color: #b6b6b6;
   }
 }
 

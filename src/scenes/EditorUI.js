@@ -110,7 +110,8 @@ export default class EditorUI extends Phaser.Scene {
           },
         },
       ],
-      true,
+      1,
+      0,
     );
 
     this.objActions = createUIButtons(
@@ -141,8 +142,8 @@ export default class EditorUI extends Phaser.Scene {
           },
         },
       ],
-      false,
-      true,
+      0,
+      1,
     );
     this.enableObjectActions(false);
 
