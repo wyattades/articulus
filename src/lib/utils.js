@@ -242,7 +242,9 @@ export const createUIButtons = (scene, configs, xRatio = 0, yRatio = 0) => {
 
 export const getObjectsBounds = (objs) => {
   const o = objs[0];
-  const bounds = new Phaser.Geom.Rectangle(o?.x, o?.y, 0, 0);
+  if (!o) return null;
+
+  const bounds = new Phaser.Geom.Rectangle(o.x, o.y, 0, 0);
 
   for (const { geom } of objs) {
     if (geom.right > bounds.right) bounds.right = geom.right;
@@ -252,4 +254,17 @@ export const getObjectsBounds = (objs) => {
   }
 
   return bounds;
+};
+
+export const fitCameraToObjs = (camera, objs) => {
+  if (objs.length === 0) return;
+
+  const bounds = getObjectsBounds(objs);
+  if (!bounds) return;
+
+  camera.setScroll(
+    bounds.centerX - camera.width / 2,
+    bounds.centerY - camera.height / 2,
+  );
+  camera.setZoom(camera.width / bounds.width);
 };

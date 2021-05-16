@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import ToolManager from 'src/tools/ToolManager';
 import { MapSaver, settingsSaver } from 'lib/saver';
 import { EDITOR_TOOL_TYPES } from 'src/tools';
+import { fitCameraToObjs, getObjectsBounds } from 'src/lib/utils';
 
 export default class Editor extends Phaser.Scene {
   constructor() {
@@ -94,11 +95,13 @@ export default class Editor extends Phaser.Scene {
     this.enableSnapping(!!settingsSaver.get('snapping'));
 
     this.parts = this.add.group();
-    this.mapSaver
-      .load()
-      .then(
-        (mapData) => mapData && MapSaver.loadEditorParts(mapData, this.parts),
-      );
+    this.mapSaver.load().then((mapData) => {
+      if (mapData) {
+        MapSaver.loadEditorParts(mapData, this.parts);
+
+        fitCameraToObjs(this.cameras.main, this.parts.getChildren());
+      }
+    });
 
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 

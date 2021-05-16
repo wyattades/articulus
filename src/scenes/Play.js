@@ -8,7 +8,7 @@ import { BuildSaver, MapSaver, settingsSaver } from 'lib/saver';
 import theme from 'src/styles/theme';
 import ToolManager from 'src/tools/ToolManager';
 import { MAX_PARTS } from 'src/const';
-import { validPoint } from 'lib/utils';
+import { fitCameraToObjs, validPoint } from 'lib/utils';
 
 export default class Play extends Phaser.Scene {
   /** @type import('./UI').default */
@@ -211,9 +211,11 @@ export default class Play extends Phaser.Scene {
     let bounds;
 
     if (this.mapSaver) {
-      this.mapSaver
-        .load()
-        .then((mapData) => MapSaver.loadPlayParts(mapData, this.terrainGroup));
+      this.mapSaver.load().then((mapData) => {
+        MapSaver.loadPlayParts(mapData, this.terrainGroup);
+
+        fitCameraToObjs(this.cameras.main, this.terrainGroup.getChildren());
+      });
 
       bounds = new Phaser.Geom.Rectangle(-1000, -1000, 3000, 3000);
     } else {

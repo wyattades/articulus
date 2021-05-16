@@ -147,6 +147,7 @@ export default class UI extends Phaser.Scene {
             }
 
             const bounds = getObjectsBounds(this.play.selected);
+            if (!bounds) return;
 
             const newObjs = this.play.selected.map((obj) => {
               const newObj = obj.clone();
