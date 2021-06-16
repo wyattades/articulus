@@ -201,6 +201,9 @@ export class EventManager {
   }
 }
 
+/**
+ * @param {Phaser.Scene} scene
+ */
 export const createUIButton = (scene, x, y, c) => {
   const button = scene.add
     .dom(

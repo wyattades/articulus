@@ -16,8 +16,10 @@ export default class EditorUI extends Phaser.Scene {
     this.editor = this.scene.get('Editor');
   }
 
-  /** @type import('./Editor').default */
+  /** @type {import('./Editor').default} */
   editor;
+  /** @type {Phaser.GameObjects.DOMElement[]} */
+  objActions;
 
   updatePointer(x, y) {
     this.pointerPosText.setText(`x: ${Math.round(x)}, y: ${Math.round(y)}`);
@@ -32,8 +34,7 @@ export default class EditorUI extends Phaser.Scene {
     // );
 
     this.editor.events.on('setSelected', (selected) => {
-      const visible = selected && selected.length > 0;
-      this.enableObjectActions(visible);
+      this.enableObjectActions(selected?.length);
     });
   }
 
@@ -45,9 +46,17 @@ export default class EditorUI extends Phaser.Scene {
       );
   }
 
-  enableObjectActions(enabled) {
+  enableObjectActions(selectedCount) {
     for (const button of this.objActions)
-      button.setVisible(enabled).setActive(enabled);
+      button.setActive(!!selectedCount).setVisible(!!selectedCount);
+
+    if (selectedCount) {
+      // HACK: this messes up the position of the buttons when set while invisible i.e. synchronously, before Phaser renders
+      requestAnimationFrame(() => {
+        this.objActions[0].setText(`Duplicate ${selectedCount} selected`);
+        this.objActions[1].setText(`Delete ${selectedCount} selected`);
+      });
+    }
   }
 
   create() {
@@ -118,7 +127,7 @@ export default class EditorUI extends Phaser.Scene {
       this,
       [
         {
-          title: 'Duplicate',
+          title: 'Duplicate 1 selected',
           onClick: () => {
             const offset = 10;
             const newObjs = this.editor.selected.map((obj) => {
@@ -133,7 +142,7 @@ export default class EditorUI extends Phaser.Scene {
           },
         },
         {
-          title: 'Delete',
+          title: 'Delete 1 selected',
           bgColor: theme.red,
           color: colorInverse(theme.red),
           onClick: () => {
