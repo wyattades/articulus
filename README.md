@@ -8,7 +8,6 @@
 - [Matter](https://brm.io/matter-js) - physics engine
 - [Supabase](https://supabase.io) - PostgreSQL database hosting + api
 - [Next.js](https://nextjs.org) - React & Webpack framework
--
 
 ## TODO
 
@@ -23,7 +22,7 @@
 - user login system
 - high score system
 - Show user that object placement is invalid _while_ placing/dragging object
-- use React for UI? atleast emit more comprehensive user interaction events, and respond to them in a clean way in the UI scenes
+- use React for UI layer (maybe)
 
 ## Work in progress
 

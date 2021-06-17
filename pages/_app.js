@@ -2,6 +2,8 @@ import React from 'react';
 import Head from 'next/head';
 import { DefaultSeo } from 'next-seo';
 
+import Footer from 'components/Footer';
+
 import 'src/styles/index.scss';
 
 const HOST_URL = process.env.HOST_URL;
@@ -67,7 +69,10 @@ const App = ({ Component, pageProps }) => {
         }}
       />
 
-      <Component {...pageProps} />
+      <main>
+        <Component {...pageProps} />
+      </main>
+      <Footer />
     </>
   );
 };
