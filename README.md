@@ -7,7 +7,8 @@
 - [Phaser 3](https://phaser.io) - game engine
 - [Matter](https://brm.io/matter-js) - physics engine
 - [Supabase](https://supabase.io) - PostgreSQL database hosting + api
-- [Bulma](https://bulma.io) - CSS styling
+- [Next.js](https://nextjs.org) - React & Webpack framework
+-
 
 ## TODO
 

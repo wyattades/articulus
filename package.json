@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^1.11.2",
-    "bulma": "^0.7.5",
     "lodash": "^4.17.21",
     "next": "^11.0.0",
     "next-seo": "^4.25.1",
