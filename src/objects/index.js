@@ -9,31 +9,52 @@ export { Part, Line, Wheel, Thruster };
 
 export class Water extends Line {
   static type = 'water';
-  color = theme.blue;
+
   noCollide = true;
+
+  constructor(...a) {
+    super(...a);
+    this.color = theme.blue;
+  }
 }
 
 export class Wood extends Line {
   static type = 'wood';
-  color = theme.brown;
+
+  constructor(...a) {
+    super(...a);
+    this.color = theme.brown;
+  }
 }
 
 export class BackWheel extends Wheel {
   static type = 'back_wheel';
   spinDir = -1;
-  color = theme.pink;
+
+  constructor(...a) {
+    super(...a);
+    this.color = theme.pink;
+  }
 }
 
 export class ForwardWheel extends Wheel {
   static type = 'forward_wheel';
   spinDir = 1;
-  color = theme.yellow;
+
+  constructor(...a) {
+    super(...a);
+    this.color = theme.yellow;
+  }
 }
 
 export class NeutralWheel extends Wheel {
   static type = 'neutral_wheel';
   spinDir = 0;
-  color = theme.blueLight;
+
+  constructor(...a) {
+    super(...a);
+    this.color = theme.blueLight;
+  }
 }
 
 export const OBJECTS = [

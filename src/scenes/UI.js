@@ -85,10 +85,6 @@ export default class UI extends Phaser.Scene {
       this.stats.dom.style.left = 'auto';
       document.body.appendChild(this.stats.dom);
     });
-    this.events.on('shutdown', () => {
-      this.stats?.dom.remove();
-      this.stats = null;
-    });
 
     this.toolButtons = createUIButtons(
       this,
@@ -188,5 +184,10 @@ export default class UI extends Phaser.Scene {
       .setOrigin(0.5, 1.0);
 
     this.createListeners();
+  }
+
+  shutdown() {
+    this.stats?.dom.remove();
+    this.stats = null;
   }
 }

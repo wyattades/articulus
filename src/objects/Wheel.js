@@ -13,7 +13,7 @@ export default class Wheel extends Part {
   strokeWidth = 2;
   activeSpinDir = 0;
 
-  constructor(scene, x, y, radius = 30) {
+  constructor(scene, x, y, radius = 30 * config.gameScale) {
     super(scene, x, y);
 
     this.radius = radius;

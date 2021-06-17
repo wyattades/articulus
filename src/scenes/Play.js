@@ -3,11 +3,10 @@ import _ from 'lodash';
 
 import { PLAY_TOOL_TYPES } from 'src/tools';
 import { Terrain } from 'lib/terrain';
-import { Matter } from 'lib/physics';
 import { BuildSaver, MapSaver, settingsSaver } from 'lib/saver';
 import theme from 'src/styles/theme';
 import ToolManager from 'src/tools/ToolManager';
-import { MAX_PARTS } from 'src/const';
+import { MAX_PARTS, CONNECTOR_RADIUS } from 'src/const';
 import { fitCameraToObjs, validPoint } from 'lib/utils';
 
 export default class Play extends Phaser.Scene {
@@ -189,7 +188,7 @@ export default class Play extends Phaser.Scene {
     // CURSOR
 
     this.cursor = this.add
-      .circle(0, 0, 6, 0xeeeeee)
+      .circle(0, 0, CONNECTOR_RADIUS, 0xeeeeee)
       .setStrokeStyle(1, 0xbbbbbb)
       .setVisible(false)
       .setDepth(1000);
@@ -283,5 +282,10 @@ export default class Play extends Phaser.Scene {
     } else if (down.isDown && !up.isDown) {
       camera.scrollY += CAMERA_SPEED;
     }
+  }
+
+  shutdown() {
+    this.tm?.destroy();
+    this.tm = null;
   }
 }

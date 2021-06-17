@@ -8,7 +8,7 @@ import {
   constrain,
   valuesIterator,
 } from 'lib/utils';
-import { config } from 'src/const';
+import { config, CONNECTOR_RADIUS } from 'src/const';
 
 /**
  * @type {typeof import('matter-js')}
@@ -97,7 +97,11 @@ export const createAnchorJoint = (anchor, objOrJoint) => {
  * @return {FC.AnchorJoint}
  */
 export const getHoveredJoint = (scene, x, y, ignore = null) => {
-  const hoverDist = constrain(10 / scene.cameras.main.zoom, 6, 24);
+  const hoverDist = constrain(
+    (CONNECTOR_RADIUS * 1.75) / scene.cameras.main.zoom,
+    CONNECTOR_RADIUS,
+    CONNECTOR_RADIUS * 2,
+  );
 
   for (const child of scene.parts.getChildren()) {
     if (ignore === child) continue;

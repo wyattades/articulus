@@ -2,11 +2,11 @@ import Phaser from 'phaser';
 
 import { adjustBrightness, nextId, setNextId, valuesIterator } from 'lib/utils';
 import { deleteConnections } from 'lib/physics';
+import { config, CONNECTOR_RADIUS } from 'src/const';
 
-const buffer = 20;
+const texturePadding = 20 * config.gameScale;
 
 export default class Part extends Phaser.GameObjects.Sprite {
-  static CONNECTOR_RADIUS = 6;
   static zIndex = 0;
 
   fillColor = 0xffffff;
@@ -64,8 +64,8 @@ export default class Part extends Phaser.GameObjects.Sprite {
 
       Phaser.Math.Rotate(p, -this.rotation);
 
-      this.gfx.fillCircle(p.x, p.y, Part.CONNECTOR_RADIUS);
-      this.gfx.strokeCircle(p.x, p.y, Part.CONNECTOR_RADIUS);
+      this.gfx.fillCircle(p.x, p.y, CONNECTOR_RADIUS);
+      this.gfx.strokeCircle(p.x, p.y, CONNECTOR_RADIUS);
     }
   }
 
@@ -103,8 +103,8 @@ export default class Part extends Phaser.GameObjects.Sprite {
 
     const key = this.textureKey();
 
-    const displayWh = w / 2 + buffer;
-    const displayHh = h / 2 + buffer;
+    const displayWh = w / 2 + texturePadding;
+    const displayHh = h / 2 + texturePadding;
 
     if (this.gfx) this.gfx.destroy();
 
@@ -121,6 +121,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
     }
 
     this.texture = this.scene.sys.textures.get(key);
+
     this.setFrame(0, false, false);
 
     this.setDisplayOrigin(displayWh, displayHh);
@@ -148,7 +149,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
   }
 
   get geom() {
-    return new Phaser.Geom.Circle(this.x, this.y, Part.CONNECTOR_RADIUS);
+    return new Phaser.Geom.Circle(this.x, this.y, CONNECTOR_RADIUS);
   }
 
   enablePhysics() {

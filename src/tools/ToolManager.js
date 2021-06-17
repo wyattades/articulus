@@ -20,18 +20,16 @@ export default class ToolManager {
 
     this.setTool(initial);
     this.createListeners();
-
-    scene.events.on('shutdown', this.cleanup);
   }
 
   destroyTools() {
     for (const tool of this.tools) tool.destroy();
   }
 
-  cleanup = () => {
+  destroy() {
     this.destroyTools();
     this.eventManager.off();
-  };
+  }
 
   setTool(toolType) {
     this.destroyTools();

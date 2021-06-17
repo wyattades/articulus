@@ -3,7 +3,8 @@ import Phaser from 'phaser';
 import ToolManager from 'src/tools/ToolManager';
 import { MapSaver, settingsSaver } from 'lib/saver';
 import { EDITOR_TOOL_TYPES } from 'src/tools';
-import { fitCameraToObjs, getObjectsBounds } from 'src/lib/utils';
+import { fitCameraToObjs } from 'src/lib/utils';
+import { config } from 'src/const';
 
 export default class Editor extends Phaser.Scene {
   constructor() {
@@ -39,7 +40,7 @@ export default class Editor extends Phaser.Scene {
     });
   }
 
-  iGridSize = 10;
+  iGridSize = 10 * config.gameScale;
   gridSize;
 
   deleteSelected = (e) => {
@@ -81,6 +82,10 @@ export default class Editor extends Phaser.Scene {
   create() {
     this.createListeners();
 
+    this.borderObj = this.add
+      .rectangle(0, 0, this.iGridSize, this.iGridSize)
+      .setStrokeStyle(4, 0xffffff);
+
     this.gridObj = this.add.grid(
       0,
       0,
@@ -121,5 +126,10 @@ export default class Editor extends Phaser.Scene {
     } else if (down.isDown && !up.isDown) {
       this.cameras.main.scrollY += CAMERA_SPEED;
     }
+  }
+
+  shutdown() {
+    this.tm?.destroy();
+    this.tm = null;
   }
 }

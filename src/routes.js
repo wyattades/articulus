@@ -1,21 +1,12 @@
-import { createBrowserHistory } from 'history';
+import Router from 'next/router';
 import _ from 'lodash';
 import * as pathToRegexp from 'path-to-regexp';
 
-const history = createBrowserHistory();
-
-let routes = {
+const routes = {
   Menu: '/',
   Play: '/play/:mapKey?',
   Editor: '/edit/:mapKey?',
 };
-
-const basePath =
-  process.env.BASENAME && process.env.BASENAME !== '/'
-    ? process.env.BASENAME
-    : '';
-
-routes = _.mapValues(routes, (route) => `${basePath}${route}`);
 
 const compiledRoutes = _.mapValues(routes, (route) =>
   pathToRegexp.compile(route),
@@ -30,21 +21,22 @@ const resolvePath = (type, params = {}) => {
       `Route type not found: ${type}, params: ${Object.keys(params)}`,
     );
 
-  return pathname;
+  return Router.pathname + (pathname && pathname !== '/' ? '#' + pathname : '');
 };
 
 /**
  * @param {keyof typeof routes} type
  * @param {object} [params]
  */
-export const push = (type, params) => history.push(resolvePath(type, params));
+export const push = (type, params) =>
+  Router.push(resolvePath(type, params), null, { shallow: true });
 
 /**
  * @param {keyof typeof routes} type
  * @param {object} [params]
  */
 export const replace = (type, params) =>
-  history.replace(resolvePath(type, params));
+  Router.replace(resolvePath(type, params), null, { shallow: true });
 
 const parsePath = (pathname) => {
   for (const key in matchedRoutes) {
@@ -55,9 +47,15 @@ const parsePath = (pathname) => {
   return [];
 };
 
-export const getKeyParams = () => parsePath(history.location.pathname);
+const getHashPathname = (url) =>
+  new URL(url, 'http://a.a').hash.replace('#', '') || '/';
 
-export const listen = (cb) =>
-  history.listen((loc) => {
-    cb(...parsePath(loc.pathname));
-  });
+export const getKeyParams = () => parsePath(getHashPathname(Router.asPath));
+
+export const listen = (cb) => {
+  const handler = (url) => {
+    cb(...parsePath(getHashPathname(url)));
+  };
+  Router.events.on('hashChangeComplete', handler);
+  return () => Router.events.off('hashChangeComplete', handler);
+};

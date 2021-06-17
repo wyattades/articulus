@@ -2,19 +2,25 @@ import Phaser from 'phaser';
 
 import { factoryRotateAround, getObjectsBounds } from 'src/lib/utils';
 import theme from 'src/styles/theme';
+import { config } from 'src/const';
 
-const ROTATOR_OFFSET = 20;
+const ROTATOR_OFFSET = 20 * config.gameScale;
+const ANCHOR_SIZE = 12 * config.gameScale;
 
-const canvasStyle = document.querySelector('canvas').style;
-const pointerOut = () => {
-  canvasStyle.cursor = 'auto';
+let canvas;
+const setCursor = (cursor) => {
+  canvas ||= document.querySelector('canvas');
+  if (canvas) canvas.style.cursor = cursor;
 };
+
 const addHoverCursor = (obj, cursor) => {
   obj
     .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
-      canvasStyle.cursor = cursor;
+      setCursor(cursor);
     })
-    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, pointerOut);
+    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => {
+      setCursor('auto');
+    });
 };
 
 export default class Controls extends Phaser.GameObjects.Group {
@@ -146,14 +152,12 @@ export default class Controls extends Phaser.GameObjects.Group {
   }
 
   initChildren() {
-    const SIZE = 12;
-
     this.borderObj = this.scene.add.graphics();
     this.add(this.borderObj);
     this.borderObj.poffset = { lx: 0, ly: 0, dy: 0, dx: 0 };
 
     this.rotateObj = this.scene.add
-      .rectangle(0, 0, SIZE, SIZE, theme.grey)
+      .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, theme.grey)
       .setOrigin(0.5, 0.5)
       .setInteractive();
     addHoverCursor(this.rotateObj, 'pointer');
@@ -168,7 +172,7 @@ export default class Controls extends Phaser.GameObjects.Group {
       [0, 0, 'se-resize'],
     ]) {
       const obj = this.scene.add
-        .rectangle(0, 0, SIZE, SIZE, theme.grey)
+        .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, theme.grey)
         .setOrigin(ox, oy)
         .setInteractive();
 

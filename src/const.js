@@ -15,4 +15,7 @@ export const config = {
   thruster: {
     thrustForce: 0.008,
   },
+  gameScale: 1.0,
 };
+
+export const CONNECTOR_RADIUS = 6 * config.gameScale;

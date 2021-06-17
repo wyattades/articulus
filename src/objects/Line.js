@@ -6,12 +6,12 @@ import Part from './Part';
 
 export default class Line extends Part {
   static zIndex = 1;
-  static MIN_LENGTH = 20;
+  static MIN_LENGTH = 20 * config.gameScale;
   static type = 'line';
 
   strokeWidth = 2;
 
-  constructor(scene, x1, y1, x2, y2, lineWidth = 10) {
+  constructor(scene, x1, y1, x2, y2, lineWidth = 10 * config.gameScale) {
     super(scene, x1, y1);
 
     this.length = this.width = 1;

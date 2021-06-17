@@ -41,8 +41,21 @@ body {
   }
 }
 
-#game {
+#game-wrapper {
   border: 2px solid black;
+  max-width: 1000px;
+  flex-basis: 1000px;
+  flex-shrink: 0;
+  height: 800px;
+  background: #a7d9ec;
+
+  .status-text {
+    text-align: center;
+    margin-top: 6rem;
+    font-weight: bold;
+    font-size: 3rem;
+    @include monospace;
+  }
 }
 
 #title {

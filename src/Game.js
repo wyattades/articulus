@@ -14,8 +14,11 @@ export default class Game extends Phaser.Game {
       parent,
       canvas,
       type: Phaser.WEBGL,
-      width: 1000,
-      height: 800,
+      width: parent.clientWidth,
+      height: parent.clientHeight,
+      render: {
+        // antialiasGL: true,
+      },
       physics: {
         default: 'matter',
         matter: {
@@ -50,6 +53,12 @@ export default class Game extends Phaser.Game {
 
   destroy() {
     this.unlisten();
+
+    for (const scene of this.scene.getScenes(true)) {
+      scene.shutdown?.();
+      this.scene.stop(scene.scene.key);
+    }
+
     super.destroy();
   }
 
@@ -57,6 +66,7 @@ export default class Game extends Phaser.Game {
     // the order that we stop scenes matters
     // i.e. must stop 'UI' scene before 'Play' (I think)
     for (const scene of this.scene.getScenes(true)) {
+      scene.shutdown?.();
       this.scene.stop(scene.scene.key);
     }
 

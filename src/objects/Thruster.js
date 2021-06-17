@@ -27,8 +27,8 @@ export default class Thruster extends Part {
   strokeWidth = 2;
   fillColor = 0xb1b5da;
   strokeColor = 0x5b668f;
-  width = 20;
-  height = 40;
+  width = 20 * config.gameScale;
+  height = 40 * config.gameScale;
 
   thrustDir = 0;
   thrustForce = config.thruster.thrustForce;
@@ -93,10 +93,10 @@ export default class Thruster extends Part {
       this.height,
     );
     this.gfx.fillRect(
-      -this.width / 2 - 6,
+      -this.width / 2 - 6 * config.gameScale,
       this.height / 2,
-      this.width + 12,
-      10,
+      this.width + 12 * config.gameScale,
+      10 * config.gameScale,
     );
   }
 
@@ -200,7 +200,7 @@ export default class Thruster extends Part {
     yield { x: this.x, y: this.y, id: i++ };
 
     const a = this.rotation + Math.PI / 2;
-    const offset = 20;
+    const offset = 20 * config.gameScale;
     const sx = Math.cos(a) * offset;
     const sy = Math.sin(a) * offset;
 
