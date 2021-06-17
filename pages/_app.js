@@ -30,7 +30,7 @@ const App = ({ Component, pageProps }) => {
         <link rel="manifest" href="/manifest.json" />
       </Head>
       <DefaultSeo
-        title="Articulus Game"
+        title="Articulus - A Physics Sandbox Game"
         description="Connect rigid bodies with joints to build machines and vehicles in this physics sandbox game"
         openGraph={{
           type: 'website',
