@@ -163,13 +163,14 @@ export default class Play extends Phaser.Scene {
 
       this.restart();
     });
+  }
 
-    Matter.Events.on(this.matter.world.localWorld, 'afterAdd', ({ object }) => {
-      if (object.type === 'body' && this.parts.getLength() > MAX_PARTS) {
-        this.ui.flash('MAX ITEM LIMIT EXCEEDED');
-        setTimeout(() => object.gameObject.destroy());
-      }
-    });
+  precheckMaxItems(additionalCount) {
+    if (this.parts.getLength() + additionalCount > MAX_PARTS) {
+      this.ui.flash('MAX ITEM LIMIT EXCEEDED');
+      return true;
+    }
+    return false;
   }
 
   restart() {

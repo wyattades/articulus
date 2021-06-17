@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 
+import { factoryRotateAround, getObjectsBounds } from 'src/lib/utils';
 import theme from 'src/styles/theme';
 
 const ROTATOR_OFFSET = 20;
@@ -33,39 +34,26 @@ export default class Controls extends Phaser.GameObjects.Group {
     this.setVisible(false);
   }
 
-  static getBounds(objs) {
-    const MAX = 999999;
-    let left = MAX,
-      top = MAX,
-      right = -MAX,
-      bottom = -MAX;
-
-    for (const obj of objs) {
-      const objX = obj.x - obj.width / 2;
-      const objY = obj.y - obj.height / 2;
-
-      if (objX < left) left = objX;
-      if (objY < top) top = objY;
-      if (objX + obj.width > right) right = objX + obj.width;
-      if (objY + obj.height > bottom) bottom = objY + obj.height;
-    }
-
-    return {
-      left,
-      top,
-      right,
-      bottom,
-      width: right - left,
-      height: bottom - top,
-    };
-  }
-
+  /**
+   * @param {Phaser.GameObjects.GameObject[]} objs
+   */
   updateFromBounds(objs) {
-    const b = Controls.getBounds(objs);
+    if (objs.length === 1) {
+      const obj = objs[0];
+      this.setPosition(obj.x - obj.width / 2, obj.y - obj.height / 2, true);
+      this.setSize(obj.width, obj.height, true);
+      this.setRotation(obj.rotation, true);
 
-    this.setPosition(b.left, b.top, true);
-    this.setSize(b.width, b.height, true);
-    this.updateChildren();
+      this.updateChildren();
+    } else {
+      const b = getObjectsBounds(objs);
+
+      this.setPosition(b.left, b.top, true);
+      this.setSize(b.width, b.height, true);
+      this.setRotation(0, true);
+
+      this.updateChildren();
+    }
   }
 
   /**
@@ -83,18 +71,6 @@ export default class Controls extends Phaser.GameObjects.Group {
   }
 
   updateChildren() {
-    for (const obj of this.edgeObjs) {
-      obj.setPosition(
-        this.x + (1 - obj.originX) * this.width,
-        this.y + (1 - obj.originY) * this.height,
-      );
-    }
-
-    this.rotateObj.setPosition(
-      this.x + this.width / 2,
-      this.y - ROTATOR_OFFSET,
-    );
-
     this.borderObj.clear();
     this.borderObj.lineStyle(1, theme.white, 1);
     this.borderObj.strokeRect(
@@ -110,21 +86,36 @@ export default class Controls extends Phaser.GameObjects.Group {
       -this.height / 2 - ROTATOR_OFFSET,
     );
 
-    this.borderObj.setPosition(
-      this.x + this.width / 2,
-      this.y + this.height / 2,
-    );
+    this.updateChildrenRotation();
+  }
+
+  rotatePoint(point, center, cos, sin) {
+    const px = this.width * point.poffset.lx + point.poffset.dx,
+      py = this.height * point.poffset.ly + point.poffset.dy;
+    const rotatedX = cos * px - sin * py + center.x;
+    const rotatedY = sin * px + cos * py + center.y;
+
+    point.setPosition(rotatedX, rotatedY);
   }
 
   updateChildrenRotation() {
-    // for (const obj of this.getChildren()) {
-    //   obj.setRotation(this.rotation);
-    // }
+    const center = { x: this.x + this.width / 2, y: this.y + this.height / 2 };
+    const rotateAround = factoryRotateAround(center, this.rotation);
+
+    for (const obj of this.getChildren()) {
+      const p = rotateAround({
+        x: this.width * obj.poffset.lx + obj.poffset.dx + center.x,
+        y: this.height * obj.poffset.ly + obj.poffset.dy + center.y,
+      });
+
+      obj.setPosition(p.x, p.y);
+      obj.setRotation(this.rotation);
+    }
   }
 
-  setRotation(r) {
+  setRotation(r, noUpdate = false) {
     this.rotation = r;
-    this.updateChildrenRotation();
+    if (!noUpdate) this.updateChildrenRotation();
     return this;
   }
 
@@ -159,6 +150,7 @@ export default class Controls extends Phaser.GameObjects.Group {
 
     this.borderObj = this.scene.add.graphics();
     this.add(this.borderObj);
+    this.borderObj.poffset = { lx: 0, ly: 0, dy: 0, dx: 0 };
 
     this.rotateObj = this.scene.add
       .rectangle(0, 0, SIZE, SIZE, theme.grey)
@@ -166,6 +158,7 @@ export default class Controls extends Phaser.GameObjects.Group {
       .setInteractive();
     addHoverCursor(this.rotateObj, 'pointer');
     this.add(this.rotateObj);
+    this.rotateObj.poffset = { lx: 0, ly: -0.5, dy: -ROTATOR_OFFSET, dx: 0 };
 
     this.edgeObjs = [];
     for (const [ox, oy, resizeAttr] of [
@@ -178,6 +171,8 @@ export default class Controls extends Phaser.GameObjects.Group {
         .rectangle(0, 0, SIZE, SIZE, theme.grey)
         .setOrigin(ox, oy)
         .setInteractive();
+
+      obj.poffset = { lx: 0.5 - ox, ly: 0.5 - oy, dx: 0, dy: 0 };
 
       addHoverCursor(obj, resizeAttr);
 

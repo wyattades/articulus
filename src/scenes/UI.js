@@ -9,7 +9,6 @@ import {
 } from 'lib/utils';
 import theme from 'src/styles/theme';
 import { clonePhysics } from 'lib/physics';
-import { MAX_PARTS } from 'src/const';
 import { settingsSaver } from 'lib/saver';
 
 export default class UI extends Phaser.Scene {
@@ -145,13 +144,7 @@ export default class UI extends Phaser.Scene {
         {
           title: 'Duplicate 1 selected',
           onClick: () => {
-            if (
-              this.play.parts.getLength() + this.play.selected.length >
-              MAX_PARTS
-            ) {
-              this.flash('MAX ITEM LIMIT EXCEEDED');
-              return;
-            }
+            if (this.play.precheckMaxItems(this.play.selected.length)) return;
 
             const bounds = getObjectsBounds(this.play.selected);
             if (!bounds) return;
@@ -190,9 +183,9 @@ export default class UI extends Phaser.Scene {
     this.enableObjectActions(false);
 
     this.flashText = this.add
-      .dom(this.scale.width / 2, 0, 'div')
+      .dom(this.scale.width / 2, this.scale.height, 'div')
       .setClassName('ui-flash ui-text')
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5, 1.0);
 
     this.createListeners();
   }

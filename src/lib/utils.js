@@ -243,17 +243,54 @@ export const createUIButtons = (scene, configs, xRatio = 0, yRatio = 0) => {
   return buttons;
 };
 
-export const getObjectsBounds = (objs) => {
+export const factoryRotateAround = (center, angle) => {
+  const cos = Math.cos(angle),
+    sin = Math.sin(angle);
+
+  return (obj) => {
+    const px = obj.x - center.x,
+      py = obj.y - center.y;
+
+    return {
+      x: cos * px - sin * py + center.x,
+      y: sin * px + cos * py + center.y,
+    };
+  };
+};
+
+function* getBoundPoints(rect, angle) {
+  const rotateAround = factoryRotateAround(
+    { x: rect.centerX ?? rect.x, y: rect.centerY ?? rect.y },
+    angle,
+  );
+
+  yield rotateAround({ x: rect.left, y: rect.top });
+  yield rotateAround({ x: rect.left, y: rect.bottom });
+  yield rotateAround({ x: rect.right, y: rect.top });
+  yield rotateAround({ x: rect.right, y: rect.bottom });
+}
+
+export const getObjectsBounds = (objs, getBounds = (o) => o.geom) => {
   const o = objs[0];
   if (!o) return null;
 
   const bounds = new Phaser.Geom.Rectangle(o.x, o.y, 0, 0);
 
-  for (const { geom } of objs) {
-    if (geom.right > bounds.right) bounds.right = geom.right;
-    if (geom.bottom > bounds.bottom) bounds.bottom = geom.bottom;
-    if (geom.left < bounds.left) bounds.left = geom.left;
-    if (geom.top < bounds.top) bounds.top = geom.top;
+  for (const obj of objs) {
+    const r = obj.rotation ?? 0;
+    const b = getBounds(obj);
+
+    for (const p of getBoundPoints(b, r)) {
+      if (p.x > bounds.right) bounds.right = p.x;
+      if (p.y > bounds.bottom) bounds.bottom = p.y;
+      if (p.x < bounds.left) bounds.left = p.x;
+      if (p.y < bounds.top) bounds.top = p.y;
+    }
+
+    // if (b.right > bounds.right) bounds.right = b.right;
+    // if (b.bottom > bounds.bottom) bounds.bottom = b.bottom;
+    // if (b.left < bounds.left) bounds.left = b.left;
+    // if (b.top < bounds.top) bounds.top = b.top;
   }
 
   return bounds;

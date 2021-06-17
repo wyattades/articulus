@@ -45,7 +45,7 @@ export default class PlaceTool extends Tool {
 
       if (destroy) obj.destroy();
       else {
-        if (!this.canPlaceObject(drawObj)) {
+        if (!this.canPlaceObject(drawObj) || this.scene.precheckMaxItems(1)) {
           obj.destroy();
           return drawObj;
         }

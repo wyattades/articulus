@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 import Phaser from 'phaser';
 
-import { EventManager } from 'lib/utils';
+import { EventManager, factoryRotateAround } from 'lib/utils';
 import Controls from 'src/objects/Controls';
 
 import Tool from './Tool';
@@ -94,6 +94,12 @@ export default class ControlsTool extends Tool {
     if (c.rotateObj.getBounds(bounds).contains(x, y)) {
       this.controlRotating = {
         sr: c.rotation,
+        iSelected: this.scene.selected.map((s) => ({
+          obj: s,
+          x: s.x,
+          y: s.y,
+          angle: s.rotation,
+        })),
       };
 
       return false;
@@ -127,10 +133,27 @@ export default class ControlsTool extends Tool {
   }
 
   updateSelectedRotation() {
-    // const { rotation } = this.controls;
-    // for (const obj of this.scene.selected) {
-    //   obj.setRotation(rotation);
-    // }
+    const { rotation } = this.controls;
+    const { iSelected, sr } = this.controlRotating;
+
+    const rotateAround = factoryRotateAround(
+      {
+        x: this.controls.x + this.controls.width / 2,
+        y: this.controls.y + this.controls.height / 2,
+      },
+      rotation,
+    );
+
+    for (const s of iSelected) {
+      const { obj } = s;
+
+      obj.setRotation(s.angle + rotation - sr);
+      if (iSelected.length > 1) {
+        const p = rotateAround(s);
+
+        obj.setPosition(p.x, p.y);
+      }
+    }
   }
 
   handlePointerMove(x, y) {
@@ -155,12 +178,17 @@ export default class ControlsTool extends Tool {
     }
 
     if (this.controlRotating) {
-      const r =
+      let r =
         Math.atan2(
           y - this.controls.y - this.controls.height / 2,
           x - this.controls.x - this.controls.width / 2,
         ) +
         Math.PI / 2;
+
+      if (this.scene.gridSize) {
+        const snap = Math.PI / 16;
+        r = Math.round(r / snap) * snap;
+      }
 
       this.controls.setRotation(r);
 
