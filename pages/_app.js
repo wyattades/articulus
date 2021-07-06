@@ -7,7 +7,6 @@ import Footer from 'components/Footer';
 import 'src/styles/index.scss';
 
 const HOST_URL = process.env.HOST_URL;
-const GA_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS;
 
 const App = ({ Component, pageProps }) => {
   return (
@@ -31,18 +30,13 @@ const App = ({ Component, pageProps }) => {
           href="/favicon-16x16.png"
         />
         <link rel="manifest" href="/manifest.json" />
-        {GA_ID ? (
-          <>
-            <script
-              async
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '${GA_ID}');`,
-              }}
-            />
-          </>
+        {process.env.NODE_ENV === 'production' ? (
+          <script
+            async
+            defer
+            data-website-id="41249c7a-b770-4a8a-98a0-408572b9658e"
+            src="https://sip-umami.vercel.app/umami.js"
+          />
         ) : null}
       </Head>
 
