@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import _ from 'lodash';
+import * as _ from 'lodash-es';
 
 import { EventManager } from 'lib/utils';
 

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import _ from 'lodash';
+import * as _ from 'lodash-es';
 
 import { PLAY_TOOL_TYPES } from 'src/tools';
 import { Terrain } from 'lib/terrain';

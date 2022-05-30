@@ -1,6 +1,6 @@
 const { resolve } = require('path');
 
-/** @type {import('next/dist/next-server/server/config').NextConfig} */
+/** @type {import('next').NextConfig} */
 module.exports = {
   env: {
     HOST_URL: process.env.VERCEL_URL

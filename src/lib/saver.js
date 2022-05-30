@@ -1,4 +1,4 @@
-import { debounce } from 'lodash';
+import * as _ from 'lodash-es';
 import { createClient } from '@supabase/supabase-js';
 
 import { validPoint } from 'lib/utils';
@@ -158,7 +158,7 @@ export class BuildSaver {
     }
   }
 
-  queueSave = debounce(this.save.bind(this), 1000);
+  queueSave = _.debounce(this.save.bind(this), 1000);
 }
 
 export class MapSaver {
@@ -279,7 +279,7 @@ export class MapSaver {
     }
   }
 
-  queueSave = debounce(this.save.bind(this), 1000);
+  queueSave = _.debounce(this.save.bind(this), 1000);
 }
 
 export const settingsSaver = new (class SettingsSaver {
