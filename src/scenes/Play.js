@@ -31,7 +31,7 @@ export default class Play extends Phaser.Scene {
 
   // Whether scene is running or not
   get running() {
-    return this.matter.world.enabled;
+    return !!this.matter.world?.enabled;
   }
 
   setRunning(running) {

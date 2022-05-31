@@ -296,11 +296,24 @@ export const getObjectsBounds = (objs, getBounds = (o) => o.geom) => {
   return bounds;
 };
 
-export const fitCameraToObjs = (camera, objs) => {
+export const fitCameraToObjs = (
+  camera,
+  objs,
+  { padding = 50, minWidth = 800 } = {},
+) => {
   if (objs.length === 0) return;
 
   const bounds = getObjectsBounds(objs);
   if (!bounds) return;
+
+  if (bounds.width < minWidth) padding += (minWidth - bounds.width) / 2;
+
+  if (padding) {
+    bounds.x -= padding;
+    bounds.y -= padding;
+    bounds.width += padding * 2;
+    bounds.height += padding * 2;
+  }
 
   camera.setScroll(
     bounds.centerX - camera.width / 2,
