@@ -1,46 +1,6 @@
 {
-  "env": {
-    "es6": true,
-    "browser": true,
-    "node": true,
-    "amd": true
-  },
-  "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "prettier",
-    "prettier/react"
-  ],
-  "parser": "babel-eslint",
-  "parserOptions": {
-    "sourceType": "module"
-  },
-  "plugins": ["prettier", "react", "react-hooks"],
+  "extends": "@wyattades/eslint-config",
   "rules": {
-    "array-callback-return": 0,
-    "default-case": 0,
-    "jsx-a11y/accessible-emoji": 0,
-    "jsx-a11y/alt-text": 0,
-    "jsx-a11y/anchor-has-content": 0,
-    "jsx-a11y/aria-role": 0,
-    "max-lines": [1, { "max": 750 }],
-    "no-empty": [2, { "allowEmptyCatch": true }],
-    "no-debugger": 1,
-    "no-unused-vars": [
-      1,
-      { "argsIgnorePattern": "^_", "varsIgnorePattern": "(^_|React)" }
-    ],
-    "no-useless-escape": 0,
-    "prettier/prettier": 1,
-    "radix": 0,
-    "react/display-name": 0,
-    "react/prop-types": 0,
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
-  },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
+    "react/jsx-filename-extension": "off"
   }
 }

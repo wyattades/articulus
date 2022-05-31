@@ -14,15 +14,6 @@ module.exports = {
     ignoreDuringBuilds: true,
   },
 
-  async rewrites() {
-    return [
-      {
-        source: '/:any*',
-        destination: '/',
-      },
-    ];
-  },
-
   webpack(config) {
     Object.assign(config.resolve.alias, {
       ph: resolve(__dirname, 'node_modules/phaser/src'),

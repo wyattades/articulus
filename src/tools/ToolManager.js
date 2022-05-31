@@ -9,6 +9,8 @@ export default class ToolManager {
 
   lastPointer = null;
 
+  activeToolType = null;
+
   /**
    * @param {Phaser.Scene} scene
    * @param {string} initial
@@ -38,15 +40,15 @@ export default class ToolManager {
     if (toolType === 'select') {
       types.push('drag', 'select');
 
-      if (this.scene.ui.editor) types.unshift('controls');
+      if (this.scene.constructor.name === 'Editor') types.unshift('controls');
     } else if (toolType) types.push(toolType);
 
     this.tools = types.map(
       (type) => new TOOLS[type].ToolClass(this.scene, type),
     );
 
-    // this.scene.events.emit('setTool', toolType);
-    this.scene.ui.setTool(toolType);
+    this.activeToolType = toolType;
+    this.scene.events.emit('setTool', toolType);
   }
 
   pointerDown = (pointer) => {

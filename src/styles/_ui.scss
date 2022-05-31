@@ -1,13 +1,13 @@
 @keyframes slideInOut {
   0% {
     opacity: 0;
-    top: 1.1rem;
+    transform: translateY(2rem);
     text-shadow: none;
   }
   10%,
   90% {
     opacity: 1;
-    top: -20px;
+    transform: translateY(0px);
   }
   10% {
     text-shadow: -2px 0 #e9cdcd, 0 2px #e9cdcd, 2px 0 #e9cdcd, 0 -2px #e9cdcd;
@@ -17,7 +17,7 @@
   }
   100% {
     opacity: 0;
-    top: 1.1rem;
+    -transform: translateY(2rem);
   }
 }
 
@@ -33,7 +33,8 @@
 }
 
 .ui-flash {
-  top: 1.1rem;
+  overflow: hidden;
+  transform: translateY(2rem);
   line-height: 1;
   &.animate {
     animation: slideInOut 3s;
@@ -65,30 +66,8 @@
   }
 }
 
-.ui-level-select {
-  @include monospace;
-  font-size: 1rem;
-  font-weight: bold;
-
-  // width: 8rem;
-  // height: 6rem;
-  text-align: center;
-  padding: 0.5rem;
-
+.ui-box {
   border: 2px solid white;
   color: white;
-
-  div {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-
-    margin-top: 1rem;
-  }
-
-  button {
-    &:first-child {
-      margin-right: 0.5rem;
-    }
-  }
+  @apply p-4;
 }

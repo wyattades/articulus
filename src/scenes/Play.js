@@ -7,13 +7,12 @@ import { BuildSaver, MapSaver, settingsSaver } from 'lib/saver';
 import theme from 'src/styles/theme';
 import ToolManager from 'src/tools/ToolManager';
 import { MAX_PARTS, CONNECTOR_RADIUS } from 'src/const';
-import { fitCameraToObjs, validPoint } from 'lib/utils';
+import { fitCameraToObjs, getObjectsBounds, validPoint } from 'lib/utils';
+import { clonePhysics } from 'src/lib/physics';
 
 export default class Play extends Phaser.Scene {
-  /** @type import('./UI').default */
-  ui;
-
   // used by multiple tools e.g. SelectTool
+  /** @type {Phaser.GameObjects.GameObject[]} */
   selected;
 
   constructor() {
@@ -27,7 +26,6 @@ export default class Play extends Phaser.Scene {
     this.mapSaver = this.mapKey ? new MapSaver(this.mapKey) : null;
     this.buildSaver = new BuildSaver();
 
-    this.ui = this.scene.get('UI');
     this.selected = [];
   }
 
@@ -60,7 +58,7 @@ export default class Play extends Phaser.Scene {
       for (const part of this.parts.getChildren()) part.pause();
     }
 
-    this.ui.pauseButton.setText(running ? 'Pause ⏸︎' : 'Play ⏵︎');
+    this.events.emit('setRunning', running);
 
     this.events.emit('setSelected', []);
   }
@@ -166,16 +164,44 @@ export default class Play extends Phaser.Scene {
 
   precheckMaxItems(additionalCount) {
     if (this.parts.getLength() + additionalCount > MAX_PARTS) {
-      this.ui.flash('MAX ITEM LIMIT EXCEEDED');
+      this.events.emit('showFlash', 'MAX ITEM LIMIT EXCEEDED');
       return true;
     }
     return false;
   }
 
+  duplicateSelected() {
+    if (this.precheckMaxItems(this.selected.length)) return;
+
+    const bounds = getObjectsBounds(this.selected);
+    if (!bounds) return;
+
+    const newObjs = this.selected.map((obj) => {
+      const newObj = obj.clone();
+      // TODO: let user click where they want to "paste" the duplicates
+      newObj.setPosition(obj.x + bounds.width + 40, obj.y);
+      this.parts.add(newObj);
+
+      return newObj;
+    });
+
+    clonePhysics(this.play, this.selected, newObjs);
+
+    for (const obj of newObjs) obj.saveRender();
+
+    this.events.emit('setSelected', newObjs);
+
+    this.refreshCameraFollower();
+  }
+
+  deleteSelected() {
+    for (const obj of this.selected) obj.destroy();
+    this.events.emit('setSelected', []);
+  }
+
   restart() {
     this.matter.world.destroy();
     this.scene.restart();
-    this.ui.scene.restart();
   }
 
   create() {
@@ -267,7 +293,7 @@ export default class Play extends Phaser.Scene {
   }
 
   update(_t, delta) {
-    this.ui.stats?.update();
+    // stats?.update(); TODO
 
     const camera = this.cameras.main;
     const CAMERA_SPEED = (0.4 * delta) / camera.zoom;

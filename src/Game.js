@@ -1,12 +1,9 @@
 import Phaser from 'phaser';
+import Router from 'next/router';
 
 import PlayScene from 'src/scenes/Play';
-import UIScene from 'src/scenes/UI';
 import EditorScene from 'src/scenes/Editor';
-import EditorUIScene from 'src/scenes/EditorUI';
-import MenuScene from 'src/scenes/Menu';
-import * as routes from 'src/routes';
-import { settingsSaver } from './lib/saver';
+import { settingsSaver } from 'lib/saver';
 
 export default class Game extends Phaser.Game {
   constructor(canvas, parent) {
@@ -16,6 +13,12 @@ export default class Game extends Phaser.Game {
       type: Phaser.WEBGL,
       width: parent.clientWidth,
       height: parent.clientHeight,
+
+      // disableContextMenu: true, we'll do this manually
+
+      scale: {
+        mode: Phaser.Scale.ScaleModes.RESIZE,
+      },
       render: {
         // antialiasGL: true,
       },
@@ -32,28 +35,23 @@ export default class Game extends Phaser.Game {
     });
 
     // TODO: scene lazy-loading?
-    for (const Scene of [
-      MenuScene,
-      EditorUIScene,
-      EditorScene,
-      UIScene,
-      PlayScene,
-    ])
+    for (const Scene of [EditorScene, PlayScene]) {
       this.scene.add(Scene.name, Scene);
+    }
+  }
 
-    this.unlisten = routes.listen((key, data) => {
-      if (key) this._setScene(key, data);
-      else routes.replace('Menu'); // 404
-    });
+  async waitForSceneReady(sceneKey) {
+    let scene = this.scene.getScene(sceneKey);
+    if (scene) return scene;
 
-    const [key, data] = routes.getKeyParams();
-    if (key) this._setScene(key, data);
-    else routes.replace('Menu'); // TODO: show a 404 page?
+    await new Promise((r) => this.events.once(Phaser.Core.Events.POST_STEP, r));
+
+    scene = this.scene.getScene(sceneKey);
+
+    return scene;
   }
 
   destroy() {
-    this.unlisten();
-
     for (const scene of this.scene.getScenes(true)) {
       scene.shutdown?.();
       this.scene.stop(scene.scene.key);
@@ -62,26 +60,14 @@ export default class Game extends Phaser.Game {
     super.destroy();
   }
 
-  _setScene(key, data = {}) {
-    // the order that we stop scenes matters
-    // i.e. must stop 'UI' scene before 'Play' (I think)
-    for (const scene of this.scene.getScenes(true)) {
-      scene.shutdown?.();
-      this.scene.stop(scene.scene.key);
-    }
+  setScene(key, { mapKey } = {}) {
+    const url =
+      {
+        Menu: '/',
+        Editor: mapKey ? `/edit/${mapKey}` : '/edit',
+        Play: mapKey ? `/play/${mapKey}` : '/play',
+      }[key] || '/';
 
-    if (key === 'Play') {
-      this.scene.start('UI', data);
-      this.scene.start('Play', data);
-    } else if (key === 'Editor') {
-      this.scene.start('EditorUI', data);
-      this.scene.start('Editor', data);
-    } else {
-      this.scene.start(key, data);
-    }
-  }
-
-  setScene(key, data) {
-    routes.push(key, data);
+    Router.push(url);
   }
 }

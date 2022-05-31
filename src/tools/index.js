@@ -28,7 +28,7 @@ export const EDITOR_TOOL_TYPES = [
 ];
 
 /**
- * @type {Object.<string, { label: string, className: string, ToolClass: typeof import('./Tool').default }>}
+ * @type {Record<string, { label?: string, color?: number, ToolClass: typeof import('./Tool').default }>}
  */
 export const TOOLS = {
   wood: {

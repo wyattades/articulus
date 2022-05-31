@@ -1,14 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// @import 'https://unpkg.com/normalize.css';
+
 @mixin monospace {
   font-family: 'Courier New', Courier, monospace;
 }
 
-@import 'ui';
-
-html,
-body {
-  padding: 0;
-  margin: 0;
+.monospace {
+  @include monospace;
 }
+
+@import 'ui';
 
 * {
   box-sizing: border-box;
@@ -16,17 +20,14 @@ body {
 
 body {
   background: #82ceed;
-}
-
-main {
-  padding: 2rem;
+  overflow: hidden; // necessary for flash text overflow
 }
 
 #__next {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  // display: flex;
+  // flex-direction: column;
+  // justify-content: space-between;
 }
 
 .container {
@@ -34,40 +35,30 @@ main {
   margin: 0 auto;
 }
 
-.stack {
-  display: flex;
-  & > *:not(:first-child) {
-    margin-left: 2rem;
-  }
-  @media screen and (max-width: 1400px) {
-    display: block;
-    & > * {
-      margin-left: 0 !important;
-      &:not(:first-child) {
-        margin-top: 2rem;
-      }
-    }
+#game-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pointerevents-pass {
+  pointer-events: none;
+  > * {
+    pointer-events: all;
   }
 }
 
-#game-wrapper {
-  border: 2px solid black;
-  max-width: 1000px;
-  flex-basis: 1000px;
-  flex-shrink: 0;
-  height: 800px;
-  background: #a7d9ec;
-
-  .status-text {
-    text-align: center;
-    margin-top: 6rem;
-    font-weight: bold;
-    font-size: 3rem;
-    @include monospace;
-  }
+.ui-wrap {
+  position: relative;
+  height: 100vh;
+  z-index: 1;
+  @extend .pointerevents-pass;
 }
 
 #title {
+  display: inline-flex;
   @include monospace;
   color: white;
   font-size: 2.5rem;
@@ -78,13 +69,14 @@ main {
 }
 
 #directions {
-  max-width: 1000px;
-  border: 2px solid black;
-  padding: 1rem;
-
+  @extend .ui-box;
   @include monospace;
+
   font-size: 1rem;
+  background: #373737;
   color: white;
+
+  @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-4;
 
   h2,
   p,

@@ -1,6 +1,4 @@
-import React from 'react';
-
-const GithubIcon = () => (
+const GithubIcon: React.FC = () => (
   <svg
     aria-label="GitHub"
     style={{
@@ -18,11 +16,12 @@ const GithubIcon = () => (
   </svg>
 );
 
-const Footer = () => {
+export const Footer: React.FC = () => {
   return (
     <div>
       <span>
-        Made with ❤ by <a href="https://wyattades.com">wyattades</a>
+        <strong className="monospace">Articulus</strong> made with ❤ by{' '}
+        <a href="https://wyattades.com">wyattades</a>
       </span>
       <i className="dot" />
       <span>
@@ -50,5 +49,3 @@ const Footer = () => {
     </div>
   );
 };
-
-export default Footer;

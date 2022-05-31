@@ -1,8 +1,8 @@
-import React from 'react';
 import Head from 'next/head';
 import { DefaultSeo } from 'next-seo';
 
-import Footer from 'components/Footer';
+import { GameProvider } from 'components/GameProvider';
+// import { Footer } from 'components/Footer';
 
 import 'src/styles/index.scss';
 
@@ -63,10 +63,11 @@ const App = ({ Component, pageProps }) => {
         }}
       />
 
-      <main>
+      <GameProvider>
         <Component {...pageProps} />
-      </main>
-      <Footer />
+
+        {/* <Footer /> */}
+      </GameProvider>
     </>
   );
 };

@@ -7,6 +7,9 @@ import { fitCameraToObjs } from 'src/lib/utils';
 import { config } from 'src/const';
 
 export default class Editor extends Phaser.Scene {
+  /** @type {Phaser.GameObjects.GameObject[]} */
+  selected;
+
   constructor() {
     super({
       key: 'Editor',
@@ -18,14 +21,8 @@ export default class Editor extends Phaser.Scene {
 
     this.mapSaver = new MapSaver(this.mapKey);
 
-    this.ui = this.scene.get('EditorUI');
+    this.selected = [];
   }
-
-  /** @type import('./EditorUI').default */
-  ui;
-
-  /** @type {Phaser.GameObjects.GameObject[]} */
-  selected = [];
 
   createListeners() {
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -48,6 +45,19 @@ export default class Editor extends Phaser.Scene {
     for (const obj of this.selected || []) obj.destroy();
     this.events.emit('setSelected', []);
   };
+
+  duplicateSelected() {
+    const offset = 10;
+    const newObjs = this.selected.map((obj) => {
+      const newObj = obj.clone();
+      newObj.setPosition(obj.x + offset, obj.y + offset);
+      this.parts.add(newObj);
+
+      return newObj;
+    });
+
+    this.events.emit('setSelected', newObjs);
+  }
 
   enableSnapping(enabled) {
     settingsSaver.set('snapping', enabled);
@@ -82,8 +92,8 @@ export default class Editor extends Phaser.Scene {
   create() {
     this.createListeners();
 
-    this.borderObj = this.add
-      .rectangle(0, 0, this.iGridSize, this.iGridSize)
+    this.add
+      .rectangle(0, 0, this.iGridSize * 300, this.iGridSize * 300)
       .setStrokeStyle(4, 0xffffff);
 
     this.gridObj = this.add.grid(
