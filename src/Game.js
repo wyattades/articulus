@@ -13,14 +13,8 @@ export default class Game extends Phaser.Game {
       type: Phaser.WEBGL,
       width: parent.clientWidth,
       height: parent.clientHeight,
-
-      // disableContextMenu: true, we'll do this manually
-
       scale: {
         mode: Phaser.Scale.ScaleModes.RESIZE,
-      },
-      render: {
-        // antialiasGL: true,
       },
       physics: {
         default: 'matter',
@@ -28,9 +22,6 @@ export default class Game extends Phaser.Game {
           enableSleep: true,
           debug: !!settingsSaver.get('debug'),
         },
-      },
-      dom: {
-        createContainer: true,
       },
     });
 

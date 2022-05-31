@@ -19,15 +19,12 @@
 }
 
 body {
-  background: #82ceed;
+  background: black;
   overflow: hidden; // necessary for flash text overflow
 }
 
 #__next {
   min-height: 100vh;
-  // display: flex;
-  // flex-direction: column;
-  // justify-content: space-between;
 }
 
 .container {
