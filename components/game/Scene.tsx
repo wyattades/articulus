@@ -21,16 +21,19 @@ export const Scene: React.FC<{
   const [scene, setScene] = useState(null);
 
   useEffect(() => {
+    setScene(null);
+
     game.scene.start(sceneKey, data);
 
     game.waitForSceneReady(sceneKey).then(setScene);
 
     return () => {
+      if (game.destroyed) return;
       // @ts-expect-error missing shutdown
       game.scene.getScene(sceneKey)?.shutdown?.();
       game.scene.stop(sceneKey);
     };
-  }, []);
+  }, [game, sceneKey]);
 
   return (
     <SceneCtx.Provider value={scene}>

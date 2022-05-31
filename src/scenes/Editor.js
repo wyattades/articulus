@@ -111,6 +111,7 @@ export default class Editor extends Phaser.Scene {
 
     this.parts = this.add.group();
     this.mapSaver.load().then((mapData) => {
+      if (this.game.destroyed) return;
       if (mapData) {
         MapSaver.loadEditorParts(mapData, this.parts);
 

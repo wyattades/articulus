@@ -49,6 +49,8 @@ export default class Game extends Phaser.Game {
     }
 
     super.destroy();
+
+    this.destroyed = true;
   }
 
   setScene(key, { mapKey } = {}) {
