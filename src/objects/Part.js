@@ -41,7 +41,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
   }
 
   getBounds(bounds) {
-    bounds = bounds || new Phaser.Geom.Rectangle();
+    bounds ||= new Phaser.Geom.Rectangle();
 
     bounds.setTo(
       this.x - (this.originX != null ? this.originX : 0.5) * this.width,
@@ -71,7 +71,19 @@ export default class Part extends Phaser.GameObjects.Sprite {
 
   render() {}
 
+  mutateBounds(bounds) {
+    this.setPosition(bounds.centerX, bounds.centerY);
+    this.setSize(bounds.width, bounds.height);
+  }
+
   textureKey() {
+    if (this.constructor.type === 'polygon')
+      return `texture:${
+        this.constructor.type
+      }:${Phaser.Geom.Polygon.GetNumberArray(this.polygon).join(' ')}:${
+        this._selected ? 1 : 0
+      }`;
+
     return `texture:${this.constructor.type}:${this.width}:${this.height}:${
       this._selected ? 1 : 0
     }`;
@@ -139,6 +151,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
     this.saveRender();
   }
 
+  /** @type {NonNullable<Phaser.Types.Physics.Matter.MatterBodyConfig['shape']>} */
   get physicsShape() {
     return {};
   }
@@ -228,7 +241,9 @@ export default class Part extends Phaser.GameObjects.Sprite {
     return anchorObjs || [];
   }
 
-  *anchors() {}
+  *anchors() {
+    // empty
+  }
 
   getAnchorById(id) {
     let i = 0;

@@ -1,9 +1,9 @@
-import theme from 'src/styles/theme';
+import { COLORS } from 'src/styles/theme';
 
 import DeleteTool from './DeleteTool';
 import LineTool from './LineTool';
 import PlaceTool from './PlaceTool';
-import ShapeTool, { EllipseTool } from './ShapeTool';
+import ShapeTool, { EllipseTool, PolygonTool } from './ShapeTool';
 import SelectTool from './SelectTool';
 import NavTool from './NavTool';
 import DragTool from './DragTool';
@@ -23,6 +23,7 @@ export const PLAY_TOOL_TYPES = [
 export const EDITOR_TOOL_TYPES = [
   'rectangle_shape',
   'ellipse_shape',
+  'polygon_shape',
   'select',
   'delete',
 ];
@@ -33,53 +34,59 @@ export const EDITOR_TOOL_TYPES = [
 export const TOOLS = {
   wood: {
     label: 'Wood Stick',
-    color: theme.brown,
+    color: COLORS.brown,
     ToolClass: LineTool,
   },
   water: {
     label: 'Water Stick',
-    color: theme.blue,
+    color: COLORS.blue,
     ToolClass: LineTool,
   },
   forward_wheel: {
     label: 'Forward Wheel',
-    color: theme.yellow,
+    color: COLORS.yellow,
     ToolClass: PlaceTool,
   },
   back_wheel: {
     label: 'Back Wheel',
-    color: theme.pink,
+    color: COLORS.pink,
     ToolClass: PlaceTool,
   },
   neutral_wheel: {
     label: 'Neutral Wheel',
-    color: theme.blueLight,
+    color: COLORS.blueLight,
     ToolClass: PlaceTool,
   },
   thruster: {
     label: 'Thruster',
-    color: theme.grey,
+    color: COLORS.grey,
     ToolClass: PlaceTool,
   },
   select: {
     label: 'Select',
-    color: theme.white,
+    color: COLORS.white,
     ToolClass: SelectTool,
   },
   delete: {
     label: 'Delete',
-    color: theme.red,
+    color: COLORS.red,
     ToolClass: DeleteTool,
   },
+
   rectangle_shape: {
     label: 'Rectangle',
-    color: theme.white,
+    color: COLORS.toolGreen,
     ToolClass: ShapeTool,
   },
   ellipse_shape: {
     label: 'Ellipse',
-    color: theme.white,
+    color: COLORS.toolGreen,
     ToolClass: EllipseTool,
+  },
+  polygon_shape: {
+    label: 'Polygon',
+    color: COLORS.toolGreen,
+    ToolClass: PolygonTool,
   },
 
   // non-UI tools:

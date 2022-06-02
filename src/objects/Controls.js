@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 import { factoryRotateAround, getObjectsBounds } from 'src/lib/utils';
-import theme from 'src/styles/theme';
+import { COLORS } from 'src/styles/theme';
 import { config } from 'src/const';
 
 const ROTATOR_OFFSET = 20 * config.gameScale;
@@ -46,20 +46,18 @@ export default class Controls extends Phaser.GameObjects.Group {
   updateFromBounds(objs) {
     if (objs.length === 1) {
       const obj = objs[0];
-      this.setPosition(obj.x - obj.width / 2, obj.y - obj.height / 2, true);
+      // TODO: use .originX instead of 0.5? (idk, originX/originY are modified when a texture is created)
+      this.setPosition(obj.x - obj.width * 0.5, obj.y - obj.height * 0.5, true);
       this.setSize(obj.width, obj.height, true);
       this.setRotation(obj.rotation, true);
-
-      this.updateChildren();
     } else {
       const b = getObjectsBounds(objs);
 
       this.setPosition(b.left, b.top, true);
       this.setSize(b.width, b.height, true);
       this.setRotation(0, true);
-
-      this.updateChildren();
     }
+    this.updateChildren();
   }
 
   /**
@@ -78,7 +76,7 @@ export default class Controls extends Phaser.GameObjects.Group {
 
   updateChildren() {
     this.borderObj.clear();
-    this.borderObj.lineStyle(1, theme.white, 1);
+    this.borderObj.lineStyle(1, COLORS.white, 1);
     this.borderObj.strokeRect(
       -this.width / 2,
       -this.height / 2,
@@ -93,15 +91,6 @@ export default class Controls extends Phaser.GameObjects.Group {
     );
 
     this.updateChildrenRotation();
-  }
-
-  rotatePoint(point, center, cos, sin) {
-    const px = this.width * point.poffset.lx + point.poffset.dx,
-      py = this.height * point.poffset.ly + point.poffset.dy;
-    const rotatedX = cos * px - sin * py + center.x;
-    const rotatedY = sin * px + cos * py + center.y;
-
-    point.setPosition(rotatedX, rotatedY);
   }
 
   updateChildrenRotation() {
@@ -140,10 +129,14 @@ export default class Controls extends Phaser.GameObjects.Group {
   }
 
   updateFrom(obj) {
-    // This won't work for non-corner edgeObjs
+    // NOTE: This won't work for non-corner edgeObjs
+
+    // point 1: this object's corner
     const x1 = obj.x;
-    const x2 = this.x + this.width * obj.originX;
     const y1 = obj.y;
+
+    // point 2: the opposite corner from point 1
+    const x2 = this.x + this.width * obj.originX;
     const y2 = this.y + this.height * obj.originY;
 
     this.setPosition(Math.min(x1, x2), Math.min(y1, y2), true);
@@ -157,10 +150,10 @@ export default class Controls extends Phaser.GameObjects.Group {
     this.borderObj.poffset = { lx: 0, ly: 0, dy: 0, dx: 0 };
 
     this.rotateObj = this.scene.add
-      .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, theme.grey)
+      .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, COLORS.grey)
       .setOrigin(0.5, 0.5)
       .setInteractive();
-    addHoverCursor(this.rotateObj, 'pointer');
+    addHoverCursor(this.rotateObj, 'grab');
     this.add(this.rotateObj);
     this.rotateObj.poffset = { lx: 0, ly: -0.5, dy: -ROTATOR_OFFSET, dx: 0 };
 
@@ -172,7 +165,7 @@ export default class Controls extends Phaser.GameObjects.Group {
       [0, 0, 'se-resize'],
     ]) {
       const obj = this.scene.add
-        .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, theme.grey)
+        .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, COLORS.grey)
         .setOrigin(ox, oy)
         .setInteractive();
 

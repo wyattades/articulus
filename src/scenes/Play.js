@@ -4,7 +4,7 @@ import * as _ from 'lodash-es';
 import { PLAY_TOOL_TYPES } from 'src/tools';
 import { Terrain } from 'lib/terrain';
 import { BuildSaver, MapSaver, settingsSaver } from 'lib/saver';
-import theme from 'src/styles/theme';
+import { COLORS } from 'src/styles/theme';
 import ToolManager from 'src/tools/ToolManager';
 import { MAX_PARTS, CONNECTOR_RADIUS } from 'src/const';
 import { fitCameraToObjs, getObjectsBounds, validPoint } from 'lib/utils';
@@ -208,7 +208,7 @@ export default class Play extends Phaser.Scene {
     // CAMERA
 
     const camera = this.cameras.main;
-    camera.setBackgroundColor(theme.blueSky);
+    camera.setBackgroundColor(COLORS.blueSky);
     camera.setScroll(-camera.width / 2, -camera.height / 2);
 
     // CURSOR

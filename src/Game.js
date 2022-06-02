@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+// eslint-disable-next-line import/no-named-as-default
 import Router from 'next/router';
 
 import PlayScene from 'src/scenes/Play';
@@ -29,6 +30,8 @@ export default class Game extends Phaser.Game {
     for (const Scene of [EditorScene, PlayScene]) {
       this.scene.add(Scene.name, Scene);
     }
+
+    console.log('Init Game');
   }
 
   async waitForSceneReady(sceneKey) {

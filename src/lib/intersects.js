@@ -1,5 +1,10 @@
 // CREDIT: https://github.com/davidfig/intersects
 
+import Phaser from 'phaser';
+import Flatten from '@flatten-js/core';
+
+/** @typedef {{ x: number; y: number; width: number; height: number; }} Rect */
+
 const sq = (x) => x * x;
 
 /**
@@ -27,6 +32,7 @@ const boxPoint = (x1, y1, w1, h1, x2, y2) => {
  * @param {number} y1 first point of line
  * @param {number} x2 second point of line
  * @param {number} y2 second point of line
+ * @return {boolean}
  */
 const ellipseLine = (xe, ye, rex, rey, x1, y1, x2, y2) => {
   x1 -= xe;
@@ -53,6 +59,9 @@ const ellipseLine = (xe, ye, rex, rey, x1, y1, x2, y2) => {
 
 /**
  * ellipse-rectangle (axis-oriented rectangle) collision
+ * @param {Rect} ellipse
+ * @param {Rect} rect
+ * @return {boolean}
  */
 export const EllipseToRectangle = (ellipse, rect) => {
   const { x: xe, y: ye, width: we, height: he } = ellipse;
@@ -66,4 +75,110 @@ export const EllipseToRectangle = (ellipse, rect) => {
     ellipseLine(xe, ye, rex, rey, xb, yb, xb, yb + hb) ||
     ellipseLine(xe, ye, rex, rey, xb + wb, yb, xb + wb, yb + hb)
   );
+};
+
+/**
+ * @param {Phaser.Geom.Polygon | number[] | { x: number; y: number }[]} polygon
+ * @returns {[number, number][]}
+ */
+const polygonPoints = (polygon) => {
+  if (!Array.isArray(polygon)) {
+    return polygon.points.map((p) => [p.x, p.y]);
+  } else if (typeof polygon[0] === 'object') {
+    return polygon.map((p) => [p.x, p.y]);
+  } else if (typeof polygon[0] === 'number') {
+    const out = [];
+    for (let i = 0, len = polygon.length / 2; i < len; i += 2)
+      out.push([polygon[i], polygon[i + 1]]);
+    return out;
+  } else {
+    return [];
+  }
+  // if (!Array.isArray(polygon)) {
+  //   return Phaser.Geom.Polygon.GetNumberArray(polygon);
+  // } else if (typeof polygon[0] === 'object') {
+  //   const out = [];
+  //   for (let i = 0; i < polygon.length; i++)
+  //     out.push(polygon[i].x, polygon[i].y);
+  //   return out;
+  // }
+  // return polygon;
+};
+
+/**
+ * polygon-polygon collision
+ * based on http://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
+ * Only works on convex polygons.
+ * @param {number[]} points1 [x1, y1, x2, y2, ... xn, yn] of first polygon
+ * @param {number[]} points2 [x1, y1, x2, y2, ... xn, yn] of second polygon
+ * @return {boolean}
+ */
+// export const PolygonToPolygon = (points1, points2) => {
+//   const a = polygonPoints(points1);
+//   const b = polygonPoints(points2);
+
+//   const polygons = [a, b];
+//   let minA, maxA, projected, minB, maxB, j;
+//   for (let i = 0; i < polygons.length; i++) {
+//     const polygon = polygons[i];
+//     for (let i1 = 0; i1 < polygon.length; i1 += 2) {
+//       const i2 = (i1 + 2) % polygon.length;
+//       const normal = {
+//         x: polygon[i2 + 1] - polygon[i1 + 1],
+//         y: polygon[i1] - polygon[i2],
+//       };
+//       minA = maxA = null;
+//       for (j = 0; j < a.length; j += 2) {
+//         projected = normal.x * a[j] + normal.y * a[j + 1];
+//         if (minA === null || projected < minA) {
+//           minA = projected;
+//         }
+//         if (maxA === null || projected > maxA) {
+//           maxA = projected;
+//         }
+//       }
+//       minB = maxB = null;
+//       for (j = 0; j < b.length; j += 2) {
+//         projected = normal.x * b[j] + normal.y * b[j + 1];
+//         if (minB === null || projected < minB) {
+//           minB = projected;
+//         }
+//         if (maxB === null || projected > maxB) {
+//           maxB = projected;
+//         }
+//       }
+//       if (maxA < minB || maxB < minA) {
+//         return false;
+//       }
+//     }
+//   }
+//   return true;
+// };
+
+// this is a bit memory intensive
+export const PolygonToPolygon = (points1, points2) =>
+  Flatten.Relations.intersect(
+    new Flatten.Polygon(polygonPoints(points1)),
+    new Flatten.Polygon(polygonPoints(points2)),
+  );
+
+/**
+ * polygon-rectangle collision
+ * @param {number[]} points
+ * @param {Rect} rect
+ * @return {boolean}
+ */
+export const PolygonToRectangle = (points, rect) => {
+  const rectPoints = [
+    rect.x,
+    rect.y,
+    rect.x + rect.width,
+    rect.y,
+    rect.x + rect.width,
+    rect.y + rect.height,
+    rect.x,
+    rect.y + rect.height,
+  ];
+
+  return PolygonToPolygon(points, rectPoints);
 };

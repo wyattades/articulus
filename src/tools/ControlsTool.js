@@ -65,9 +65,10 @@ export default class ControlsTool extends Tool {
 
     if (!c.edgeObjs[0].visible) return;
 
-    const bounds = new Phaser.Geom.Rectangle();
+    const tempBounds = (this._bounds ||= new Phaser.Geom.Rectangle());
+
     for (const obj of c.edgeObjs) {
-      if (obj.getBounds(bounds).contains(x, y)) {
+      if (obj.getBounds(tempBounds).contains(x, y)) {
         this.controlDragging = {
           obj,
           dx: obj.x - x,
@@ -80,10 +81,13 @@ export default class ControlsTool extends Tool {
 
           iSelected: this.scene.selected.map((s) => ({
             obj: s,
-            x: s.x,
-            y: s.y,
-            right: s.x + s.width,
-            bottom: s.y + s.height,
+            bounds: new Phaser.Geom.Rectangle(
+              s.x - s.width / 2,
+              s.y - s.height / 2,
+              s.width,
+              s.height,
+            ),
+            points: s.polygon?.points?.map((p) => ({ x: p.x, y: p.y })),
           })),
         };
 
@@ -91,7 +95,7 @@ export default class ControlsTool extends Tool {
       }
     }
 
-    if (c.rotateObj.getBounds(bounds).contains(x, y)) {
+    if (c.rotateObj.getBounds(tempBounds).contains(x, y)) {
       this.controlRotating = {
         sr: c.rotation,
         iSelected: this.scene.selected.map((s) => ({
@@ -113,20 +117,15 @@ export default class ControlsTool extends Tool {
     const scaleX = cw * invW;
     const scaleY = ch * invH;
 
-    const bounds = (this._bounds = this._bounds || new Phaser.Geom.Rectangle());
+    const bounds = (this._bounds ||= new Phaser.Geom.Rectangle());
 
-    for (const s of iSelected) {
-      const { obj } = s;
+    for (const { obj, bounds: iBounds, points: iPoints } of iSelected) {
+      bounds.x = ox - scaleX * (ox - iBounds.x);
+      bounds.y = oy - scaleY * (oy - iBounds.y);
+      bounds.right = ox - scaleX * (ox - iBounds.right);
+      bounds.bottom = oy - scaleY * (oy - iBounds.bottom);
 
-      // obj.getBounds(bounds);
-
-      bounds.x = ox - scaleX * (ox - s.x);
-      bounds.y = oy - scaleY * (oy - s.y);
-      bounds.right = ox - scaleX * (ox - s.right);
-      bounds.bottom = oy - scaleY * (oy - s.bottom);
-
-      obj.setPosition(bounds.x, bounds.y);
-      obj.setSize(bounds.width, bounds.height);
+      obj.mutateBounds(bounds, iBounds, iPoints);
 
       obj.rerender();
     }

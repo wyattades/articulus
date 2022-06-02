@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import * as _ from 'lodash-es';
 
 import * as MoreIntersects from 'lib/intersects';
-import theme from 'src/styles/theme';
 
 /**
  * @param {Number} num
@@ -26,6 +25,14 @@ export const validPoint = (p) => {
 };
 
 export const constrain = (v, min, max) => (v < min ? min : v > max ? max : v);
+
+export const mapNumber = (val, fromA, fromB, toA, toB) =>
+  (val - fromA) * ((toB - toA) / (fromB - fromA)) + toA;
+
+export const factoryMapNumber = (fromA, fromB, toA, toB) => {
+  const ratio = (toB - toA) / (fromB - fromA);
+  return (val) => (val - fromA) * ratio + toA;
+};
 
 const shifts = [0, 8, 16];
 export const adjustBrightness = (color, n) =>
@@ -58,6 +65,14 @@ export function* circle4Points(radius, startRotation = 0) {
   yield [-sin, cos];
 }
 
+const GEOM_NAMES = [
+  'Circle',
+  'Ellipse',
+  'Line',
+  'Point',
+  'Polygon',
+  'Rectangle',
+];
 const INTERSECT_MATRIX = (() => {
   const POINT_THICKNESS = 6;
 
@@ -75,14 +90,7 @@ const INTERSECT_MATRIX = (() => {
     Intersects[`PointTo${name}`] = ContainsPoint;
 
   // Geom `constructor.name` indexed by Geom `type`
-  const TYPES = [
-    'Circle',
-    'Ellipse',
-    'Line',
-    'Point',
-    'Polygon',
-    'Rectangle',
-  ].reduce((arr, name) => {
+  const TYPES = GEOM_NAMES.reduce((arr, name) => {
     arr[new Phaser.Geom[name]().type] = name;
     return arr;
   }, []);
@@ -134,7 +142,6 @@ export const getTopObject = (scene, x, y) => {
 
 export const anySame = (objA, objB) => {
   for (const key in objA) if (key in objB) return true;
-  // for (const key in objB) if (key in objA) return true;
   return false;
 };
 
@@ -200,48 +207,6 @@ export class EventManager {
     return this;
   }
 }
-
-/**
- * @param {Phaser.Scene} scene
- */
-export const createUIButton = (scene, x, y, c) => {
-  const button = scene.add
-    .dom(
-      x,
-      y,
-      'button',
-      `background-color: ${colorIntToHex(
-        c.bgColor ?? theme.white,
-      )}; color: ${colorIntToHex(c.color ?? theme.black)}`,
-      c.title,
-    )
-    .setData(c.data || {})
-    .setClassName('ui-tool-button')
-    .addListener('click');
-  button.on('click', c.onClick);
-  return button;
-};
-
-/**
- * @param {Phaser.Scene} scene
- * @param {object[]} configs
- */
-export const createUIButtons = (scene, configs, xRatio = 0, yRatio = 0) => {
-  const padding = 10;
-  const bHeight = 50;
-  const buttons = configs.map((c, i) =>
-    createUIButton(
-      scene,
-      xRatio === 1 ? scene.scale.width - padding : padding,
-      yRatio === 1
-        ? scene.scale.height - padding - i * bHeight
-        : padding + i * bHeight,
-      c,
-    ).setOrigin(xRatio, yRatio),
-  );
-
-  return buttons;
-};
 
 export const factoryRotateAround = (center, angle) => {
   const cos = Math.cos(angle),

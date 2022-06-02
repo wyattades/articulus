@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef } from 'react';
 import { useAsync } from 'react-use';
 
 import type Game from 'src/Game';
@@ -11,29 +11,29 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   const container = useRef();
   const canvas = useRef();
 
-  const [gameVal, setGame] = useState<Game | null>(null);
-
   const Game = useAsync(() => import('src/Game'), []).value?.default || null;
 
+  const game =
+    useAsync(async () => {
+      if (!Game) return null;
+
+      // this is called twice after hot-reload :(
+      console.log('Mount game');
+
+      return new Game(canvas.current, container.current);
+    }, [Game]).value || null;
+
   useEffect(() => {
-    if (!Game) return;
-
-    const game = new Game(canvas.current, container.current);
-
-    setGame(game);
-
-    return () => {
-      game.destroy();
-    };
-  }, [Game]);
+    if (game) return () => game.destroy();
+  }, [game]);
 
   return (
-    <GameCtx.Provider value={gameVal}>
+    <GameCtx.Provider value={game}>
       <div id="game-container" ref={container}>
         <canvas ref={canvas} />
       </div>
 
-      {gameVal ? (
+      {game ? (
         children
       ) : (
         <p className="ui-text text-xl absolute top-1/2 left-1/2 -translate-1/2">
