@@ -2,8 +2,7 @@ import * as _ from 'lodash-es';
 import { createClient } from '@supabase/supabase-js';
 
 import { validPoint } from 'lib/utils';
-import { OBJECTS } from 'src/objects';
-import { SHAPE_TYPE_CLASSES } from 'src/objects/Shape';
+import { OBJECTS, SHAPE_TYPE_CLASSES } from 'src/objects';
 import { serializePhysics, deserializePhysics } from 'lib/physics';
 
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);

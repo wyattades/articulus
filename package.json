@@ -18,7 +18,9 @@
     "dev": "yarn && NODE_ENV=development next dev",
     "build": "NODE_ENV=production next build",
     "db:up": "dbmate up",
-    "db:migrate": "dbmate migrate"
+    "db:migrate": "dbmate migrate",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@flatten-js/core": "^1.3.4",

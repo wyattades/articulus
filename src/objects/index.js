@@ -4,6 +4,8 @@ import Part from './Part';
 import Line from './Line';
 import Wheel from './Wheel';
 import Thruster from './Thruster';
+import { Ellipse, Rectangle } from './Shape';
+import { Polygon } from './Polygon';
 
 export { Part, Line, Wheel, Thruster };
 
@@ -68,3 +70,11 @@ export const OBJECTS = [
   m[el.type] = el;
   return m;
 }, {});
+
+export const SHAPE_TYPE_CLASSES = [Rectangle, Ellipse, Polygon].reduce(
+  (m, el) => {
+    m[el.type] = el;
+    return m;
+  },
+  {},
+);

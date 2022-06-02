@@ -71,10 +71,10 @@ export default class DragTool extends Tool {
         for (const joint of valuesIterator(body.collisionFilter.joints)) {
           const pos = getJointPos(joint);
           more.push(
-            ...Object.values(joint.bodies).map(([anchorId, body]) => [
+            ...Object.values(joint.bodies).map(([anchorId, body2]) => [
               pos,
               anchorId,
-              body,
+              body2,
             ]),
           );
         }
