@@ -1,7 +1,9 @@
 // CREDIT: https://github.com/davidfig/intersects
 
-import Phaser from 'phaser';
+// import Phaser from 'phaser';
 import Flatten from '@flatten-js/core';
+
+import { validPoint } from './utils';
 
 /** @typedef {{ x: number; y: number; width: number; height: number; }} Rect */
 
@@ -84,11 +86,11 @@ export const EllipseToRectangle = (ellipse, rect) => {
 const polygonPoints = (polygon) => {
   if (!Array.isArray(polygon)) {
     return polygon.points.map((p) => [p.x, p.y]);
-  } else if (typeof polygon[0] === 'object') {
+  } else if (validPoint(polygon[0])) {
     return polygon.map((p) => [p.x, p.y]);
   } else if (typeof polygon[0] === 'number') {
     const out = [];
-    for (let i = 0, len = polygon.length / 2; i < len; i += 2)
+    for (let i = 0, len = polygon.length; i < len; i += 2)
       out.push([polygon[i], polygon[i + 1]]);
     return out;
   } else {
