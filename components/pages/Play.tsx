@@ -119,7 +119,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
                 activeToolType === toolType && 'ui-tool-button--active',
               )}
               style={{
-                background: colorIntToHex(t.color),
+                backgroundColor: colorIntToHex(t.color),
                 color: colorIntToHex(colorInverse(t.color)),
               }}
               onClick={() => playScene.tm.setTool(toolType)}
@@ -171,7 +171,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
             Duplicate {selectedItems.length} selected
           </button>
           <button
-            className="ui-tool-button"
+            className="ui-tool-button ui-tool-button--danger"
             onClick={() => playScene.deleteSelected()}
           >
             Delete {selectedItems.length} selected

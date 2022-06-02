@@ -1,4 +1,4 @@
-import theme from 'src/styles/theme';
+import { COLORS } from 'src/styles/theme';
 
 import Part from './Part';
 import Line from './Line';
@@ -14,7 +14,7 @@ export class Water extends Line {
 
   constructor(...a) {
     super(...a);
-    this.color = theme.blue;
+    this.color = COLORS.blue;
   }
 }
 
@@ -23,7 +23,7 @@ export class Wood extends Line {
 
   constructor(...a) {
     super(...a);
-    this.color = theme.brown;
+    this.color = COLORS.brown;
   }
 }
 
@@ -33,7 +33,7 @@ export class BackWheel extends Wheel {
 
   constructor(...a) {
     super(...a);
-    this.color = theme.pink;
+    this.color = COLORS.pink;
   }
 }
 
@@ -43,7 +43,7 @@ export class ForwardWheel extends Wheel {
 
   constructor(...a) {
     super(...a);
-    this.color = theme.yellow;
+    this.color = COLORS.yellow;
   }
 }
 
@@ -53,7 +53,7 @@ export class NeutralWheel extends Wheel {
 
   constructor(...a) {
     super(...a);
-    this.color = theme.blueLight;
+    this.color = COLORS.blueLight;
   }
 }
 

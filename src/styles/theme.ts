@@ -1,4 +1,4 @@
-const theme = {
+export const COLORS = {
   white: 0xffffff,
   black: 0x000000,
   grey: 0xcccccc,
@@ -9,6 +9,5 @@ const theme = {
   yellow: 0xfff000,
   blueLight: 0x3dd0f5,
   blueSky: 0x82ceed,
+  toolGreen: 0x1a7b0a,
 };
-
-export default theme;

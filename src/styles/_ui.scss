@@ -64,6 +64,10 @@
   &--active {
     border-color: #b6b6b6;
   }
+  &--danger {
+    background: red;
+    color: white;
+  }
 }
 
 .ui-box {
