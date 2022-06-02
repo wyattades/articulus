@@ -79,6 +79,7 @@ export class BuildSaver {
         // image: l.data.image,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       MapSaver.buildsMetaCache[build.id] = build;
 
       return build;

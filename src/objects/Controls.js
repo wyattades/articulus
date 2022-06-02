@@ -4,6 +4,8 @@ import { factoryRotateAround, getObjectsBounds } from 'src/lib/utils';
 import { COLORS } from 'src/styles/theme';
 import { config } from 'src/const';
 
+import Part from './Part';
+
 const ROTATOR_OFFSET = 20 * config.gameScale;
 const ANCHOR_SIZE = 12 * config.gameScale;
 
@@ -41,7 +43,7 @@ export default class Controls extends Phaser.GameObjects.Group {
   }
 
   /**
-   * @param {Phaser.GameObjects.GameObject[]} objs
+   * @param {Part[]} objs
    */
   updateFromBounds(objs) {
     if (objs.length === 1) {
@@ -62,7 +64,7 @@ export default class Controls extends Phaser.GameObjects.Group {
 
   /**
    * Just updates Controls's bounding box and position
-   * @param {Phaser.GameObjects.GameObject[]} selected
+   * @param {Part[]} selected
    */
   setSelected(selected) {
     if (selected?.length) {

@@ -8,7 +8,7 @@ export default class BoxTool extends Tool {
   fillColor = 0xffffff;
   fillOpacity = 0.3;
 
-  /** @type Phaser.Geom.Rectangle */
+  /** @type {Phaser.Geom.Rectangle} */
   box;
 
   allowStartOverlapping = true;

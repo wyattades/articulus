@@ -10,6 +10,9 @@ export default class Editor extends Phaser.Scene {
   /** @type {Phaser.GameObjects.GameObject[]} */
   selected;
 
+  /** @type {Phaser.GameObjects.Shape} */
+  cursor;
+
   constructor() {
     super({
       key: 'Editor',

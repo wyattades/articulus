@@ -15,6 +15,9 @@ export default class Play extends Phaser.Scene {
   /** @type {Phaser.GameObjects.GameObject[]} */
   selected;
 
+  /** @type {Phaser.GameObjects.Shape} */
+  cursor;
+
   constructor() {
     super({
       key: 'Play',

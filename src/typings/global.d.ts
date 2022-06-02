@@ -4,9 +4,11 @@ type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 type Override<T, R> = Omit<T, keyof R> & R;
 
+type Point = { x: number; y: number };
+
 // physics:
 
-declare module FC {
+declare namespace FC {
   // TODO: how to do this properly?
   type Phaser = typeof import('phaser');
   type Matter = typeof import('matter-js');

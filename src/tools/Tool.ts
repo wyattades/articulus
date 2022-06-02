@@ -1,19 +1,16 @@
 import { getHoveredJoint } from 'lib/physics';
+import type PlayScene from 'src/scenes/Play';
+import type EditorScene from 'src/scenes/Editor';
 
 export default class Tool {
-  /**
-   * @param {Phaser.Scene} scene
-   * @param {string} toolKey
-   */
-  constructor(scene, toolKey) {
-    this.scene = scene;
-    this.toolKey = toolKey;
-  }
+  constructor(
+    readonly scene: PlayScene | EditorScene,
+    readonly toolKey: string,
+  ) {}
 
-  /**
-   * @return {{ x: number, y: number, obj: import('../objects/Part').default } | null}
-   */
-  refreshCursor(x, y) {
+  drawObj = null;
+
+  refreshCursor(x: number, y: number) {
     const cursor = this.scene.cursor;
     if (!cursor) return null;
 
@@ -37,11 +34,11 @@ export default class Tool {
     return anchorJoint;
   }
 
-  handlePointerMove(x, y) {}
+  handlePointerMove(x: number, y: number): boolean | void {}
 
-  handlePointerUp(x, y) {}
+  handlePointerUp(x: number, y: number): boolean | void {}
 
-  handlePointerDown(x, y) {}
+  handlePointerDown(x: number, y: number): boolean | void {}
 
   destroy() {}
 }
