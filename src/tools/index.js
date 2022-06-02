@@ -3,11 +3,12 @@ import { COLORS } from 'src/styles/theme';
 import DeleteTool from './DeleteTool';
 import LineTool from './LineTool';
 import PlaceTool from './PlaceTool';
-import ShapeTool, { EllipseTool, PolygonTool } from './ShapeTool';
+import ShapeTool, { EllipseTool } from './ShapeTool';
 import SelectTool from './SelectTool';
 import NavTool from './NavTool';
 import DragTool from './DragTool';
 import ControlsTool from './ControlsTool';
+import PenTool from './PenTool';
 
 export const PLAY_TOOL_TYPES = [
   'wood',
@@ -84,9 +85,9 @@ export const TOOLS = {
     ToolClass: EllipseTool,
   },
   polygon_shape: {
-    label: 'Polygon',
+    label: 'Pen',
     color: COLORS.toolGreen,
-    ToolClass: PolygonTool,
+    ToolClass: PenTool,
   },
 
   // non-UI tools:

@@ -123,10 +123,10 @@ export class Polygon extends Rectangle {
   polygon = new Phaser.Geom.Polygon();
 
   getBounds(bounds) {
-    bounds ||= new Phaser.Geom.Rectangle(0, 0, 1, 1);
+    bounds ||= new Phaser.Geom.Rectangle();
 
     if (this.polygon.points.length === 0) {
-      return bounds;
+      return bounds.setTo(this.x, this.y, 1, 1);
     }
 
     Phaser.Geom.Polygon.GetAABB(this.polygon, bounds);
@@ -137,11 +137,16 @@ export class Polygon extends Rectangle {
     return bounds;
   }
 
-  computeSize() {
-    const b = this.getBounds();
+  localizePoints() {
+    const bounds = Phaser.Geom.Polygon.GetAABB(this.polygon);
 
-    this.width = b.width;
-    this.height = b.height;
+    for (const p of this.polygon.points) {
+      p.x -= bounds.centerX;
+      p.y -= bounds.centerY;
+    }
+
+    this.setPosition(bounds.centerX, bounds.centerY);
+    this.setSize(bounds.width, bounds.height);
   }
 
   mutateBounds(bounds, iBounds, iPoints) {
@@ -198,9 +203,37 @@ export class Polygon extends Rectangle {
     this.gfx.fillPath();
     this.gfx.strokePath();
   }
+
+  toJSON() {
+    return {
+      type: this.constructor.type,
+      x: this.x,
+      y: this.y,
+      rotation: this.rotation,
+      points: Phaser.Geom.Polygon.GetNumberArray(this.polygon),
+    };
+  }
+
+  static fromJSON(scene, { type: _t, x, y, points, ...rest }) {
+    const obj = new this(scene, x, y);
+
+    obj.polygon = new Phaser.Geom.Polygon(points);
+
+    for (const k in rest) {
+      obj[k] = rest[k];
+    }
+
+    const bounds = Phaser.Geom.Polygon.GetAABB(obj.polygon);
+    obj.setSize(bounds.width, bounds.height);
+
+    return obj;
+  }
 }
 
-export const SHAPE_TYPE_CLASSES = [Rectangle, Ellipse].reduce((m, el) => {
-  m[el.type] = el;
-  return m;
-}, {});
+export const SHAPE_TYPE_CLASSES = [Rectangle, Ellipse, Polygon].reduce(
+  (m, el) => {
+    m[el.type] = el;
+    return m;
+  },
+  {},
+);
