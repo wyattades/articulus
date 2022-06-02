@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 
+import { Matter } from 'lib/physics';
 import { config } from 'src/const';
 import { factoryMapNumber } from 'src/lib/utils';
 
@@ -11,7 +12,7 @@ const getEllipsePoints = (w, h, numPoints) => {
 
   const points = [];
 
-  let delta = (2 * Math.PI) / numPoints;
+  const delta = (2 * Math.PI) / numPoints;
   for (let angle = 0; angle < Math.PI * 2; angle += delta) {
     const x = a * Math.cos(angle);
     const y = b * Math.sin(angle);
@@ -79,11 +80,27 @@ export class Rectangle extends Part {
   }
 
   enablePhysics() {
+    const rotation = this.rotation;
+
     this.scene.matter.add.gameObject(this, {
       shape: this.physicsShape,
-      angle: this.rotation,
       ...(this.physicsOptions || {}),
     });
+
+    // Get offset of center of mass and set the body to its correct position
+    // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
+    const centerOfMass = Matter.Vector.sub(
+      Matter.Vector.mult(
+        Matter.Vector.add(this.body.bounds.max, this.body.bounds.min),
+        0.5,
+      ),
+      this.body.position,
+    );
+    const fix = centerOfMass;
+    Matter.Body.setCentre(this.body, fix, true);
+    this.setPosition(this.x - fix.x, this.y - fix.y);
+
+    this.setRotation(rotation);
 
     return this;
   }

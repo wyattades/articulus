@@ -44,8 +44,8 @@ export default class Part extends Phaser.GameObjects.Sprite {
     bounds ||= new Phaser.Geom.Rectangle();
 
     bounds.setTo(
-      this.x - (this.originX != null ? this.originX : 0.5) * this.width,
-      this.y - (this.originY != null ? this.originY : 0.5) * this.height,
+      this.x - this.width * 0.5,
+      this.y - this.height * 0.5,
       this.width || 1,
       this.height || 1,
     );

@@ -235,15 +235,17 @@ function* getBoundPoints(rect, angle) {
   yield rotateAround({ x: rect.right, y: rect.bottom });
 }
 
-export const getObjectsBounds = (objs, getBounds = (o) => o.geom) => {
+export const getObjectsBounds = (objs) => {
   const o = objs[0];
   if (!o) return null;
+
+  const tempBounds = new Phaser.Geom.Rectangle();
 
   const bounds = new Phaser.Geom.Rectangle(o.x, o.y, 0, 0);
 
   for (const obj of objs) {
     const r = obj.rotation ?? 0;
-    const b = getBounds(obj);
+    const b = obj.getBounds(tempBounds);
 
     for (const p of getBoundPoints(b, r)) {
       if (p.x > bounds.right) bounds.right = p.x;
