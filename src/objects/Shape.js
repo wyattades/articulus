@@ -58,15 +58,6 @@ export class Rectangle extends Part {
     );
   }
 
-  get geom() {
-    return new Phaser.Geom.Rectangle(
-      this.x - this.width / 2,
-      this.y - this.height / 2,
-      this.width,
-      this.height,
-    );
-  }
-
   /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
   get physicsOptions() {
     return {
@@ -117,7 +108,19 @@ export class Ellipse extends Rectangle {
   }
 
   get geom() {
-    return new Phaser.Geom.Ellipse(this.x, this.y, this.width, this.height);
+    if (!this.rotation || this.width === this.height) {
+      return new Phaser.Geom.Ellipse(this.x, this.y, this.width, this.height);
+    } else {
+      return new Phaser.Geom.Polygon(
+        getEllipsePoints(this.width, this.height, 16).map((p) => {
+          const r = Phaser.Math.Rotate(p, this.rotation);
+          return {
+            x: r.x + this.x,
+            y: r.y + this.y,
+          };
+        }),
+      );
+    }
   }
 
   get physicsShape() {
@@ -192,10 +195,15 @@ export class Polygon extends Rectangle {
 
   get geom() {
     return new Phaser.Geom.Polygon(
-      this.polygon.points.map((p) => ({
-        x: p.x + this.x,
-        y: p.y + this.y,
-      })),
+      this.polygon.points.map((p) => {
+        const r = this.rotation
+          ? Phaser.Math.Rotate({ x: p.x, y: p.y }, this.rotation)
+          : p;
+        return {
+          x: r.x + this.x,
+          y: r.y + this.y,
+        };
+      }),
     );
   }
 

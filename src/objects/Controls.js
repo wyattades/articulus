@@ -9,19 +9,18 @@ import Part from './Part';
 const ROTATOR_OFFSET = 20 * config.gameScale;
 const ANCHOR_SIZE = 12 * config.gameScale;
 
-let canvas;
-const setCursor = (cursor) => {
-  canvas ||= document.querySelector('canvas');
-  if (canvas) canvas.style.cursor = cursor;
-};
-
+/**
+ * @param {Phaser.GameObjects.Shape} obj
+ * @param {string} cursor
+ */
 const addHoverCursor = (obj, cursor) => {
+  const canvas = obj.scene.game.canvas;
   obj
     .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
-      setCursor(cursor);
+      canvas.style.cursor = cursor;
     })
     .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => {
-      setCursor('auto');
+      canvas.style.cursor = 'auto';
     });
 };
 

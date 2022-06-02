@@ -119,20 +119,6 @@ export default class Thruster extends Part {
     return 'rectangle';
   }
 
-  /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
-  get physicsOptions() {
-    return {};
-  }
-
-  get geom() {
-    return new Phaser.Geom.Rectangle(
-      this.x - this.width / 2,
-      this.y - this.height / 2,
-      this.width,
-      this.height,
-    );
-  }
-
   applyThrust = () => {
     const a = this.rotation - Math.PI / 2;
     const norm = Matter.Vector.create(Math.cos(a), Math.sin(a));

@@ -16,13 +16,13 @@
   - magnets
   - controllable wheels
   - piston
+- dynamic terrain e.g. move along path
 - premade levels
 - add goal e.g. get the thing to the end
 - scoring system (time? object count?)
 - user login system
 - high score system
 - Show user that object placement is invalid _while_ placing/dragging object
-- use React for UI layer (maybe)
 
 ## Work in progress
 
@@ -32,7 +32,8 @@
 
 ## Known bugs
 
-- grid snapping doesn't snap to the correct grid
+- grid snapping is slighly offset (uses object's center point instead of top-left)
+- rotated shapes don't scale properly when resized by user
 
 ## Credits
 

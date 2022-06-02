@@ -65,18 +65,20 @@ export function* circle4Points(radius, startRotation = 0) {
   yield [-sin, cos];
 }
 
-const GEOM_NAMES = [
-  'Circle',
-  'Ellipse',
-  'Line',
-  'Point',
-  'Polygon',
-  'Rectangle',
-];
+const GEOM_TYPES = {
+  Circle: Phaser.Geom.CIRCLE,
+  Ellipse: Phaser.Geom.ELLIPSE,
+  Line: Phaser.Geom.LINE,
+  Point: Phaser.Geom.POINT,
+  Polygon: Phaser.Geom.POLYGON,
+  Rectangle: Phaser.Geom.RECTANGLE,
+};
 const INTERSECT_MATRIX = (() => {
   const POINT_THICKNESS = 6;
 
   const { PointToLine } = Phaser.Geom.Intersects;
+
+  const ContainsPoint = (point, geom) => geom.contains(point.x, point.y);
 
   // All available Geom intersect algorithms
   const Intersects = {
@@ -85,13 +87,11 @@ const INTERSECT_MATRIX = (() => {
     PointToLine: (point, line) => PointToLine(point, line, POINT_THICKNESS),
   };
 
-  const ContainsPoint = (point, geom) => geom.contains(point.x, point.y);
   for (const name of ['Circle', 'Ellipse', 'Polygon', 'Rectangle'])
     Intersects[`PointTo${name}`] = ContainsPoint;
 
-  // Geom `constructor.name` indexed by Geom `type`
-  const TYPES = GEOM_NAMES.reduce((arr, name) => {
-    arr[new Phaser.Geom[name]().type] = name;
+  const TYPES = Object.entries(GEOM_TYPES).reduce((arr, [name, index]) => {
+    arr[index] = name;
     return arr;
   }, []);
 
@@ -109,6 +109,7 @@ export const intersectsGeoms = (g1, g2) => {
     'Missing intersect fn for:',
     g1.constructor.name,
     g2.constructor.name,
+    INTERSECT_MATRIX,
   );
 
   return false;
@@ -223,7 +224,7 @@ export const factoryRotateAround = (center, angle) => {
   };
 };
 
-function* getBoundPoints(rect, angle) {
+function* iterateBoundPoints(rect, angle) {
   const rotateAround = factoryRotateAround(
     { x: rect.centerX ?? rect.x, y: rect.centerY ?? rect.y },
     angle,
@@ -234,6 +235,10 @@ function* getBoundPoints(rect, angle) {
   yield rotateAround({ x: rect.right, y: rect.top });
   yield rotateAround({ x: rect.right, y: rect.bottom });
 }
+
+export const getBoundPoints = (rect, angle) => [
+  ...iterateBoundPoints(rect, angle),
+];
 
 export const getObjectsBounds = (objs) => {
   const o = objs[0];
@@ -247,7 +252,7 @@ export const getObjectsBounds = (objs) => {
     const r = obj.rotation ?? 0;
     const b = obj.getBounds(tempBounds);
 
-    for (const p of getBoundPoints(b, r)) {
+    for (const p of iterateBoundPoints(b, r)) {
       if (p.x > bounds.right) bounds.right = p.x;
       if (p.y > bounds.bottom) bounds.bottom = p.y;
       if (p.x < bounds.left) bounds.left = p.x;

@@ -86,9 +86,16 @@ export const EllipseToRectangle = (ellipse, rect) => {
 const polygonPoints = (polygon) => {
   if (!Array.isArray(polygon)) {
     return polygon.points.map((p) => [p.x, p.y]);
-  } else if (validPoint(polygon[0])) {
+  }
+
+  const first = polygon[0];
+  if (first == null) return [];
+
+  if (Array.isArray(first) && first.length === 2) {
+    return polygon;
+  } else if (validPoint(first)) {
     return polygon.map((p) => [p.x, p.y]);
-  } else if (typeof polygon[0] === 'number') {
+  } else if (typeof first === 'number') {
     const out = [];
     for (let i = 0, len = polygon.length; i < len; i += 2)
       out.push([polygon[i], polygon[i + 1]]);
@@ -172,14 +179,10 @@ export const PolygonToPolygon = (points1, points2) =>
  */
 export const PolygonToRectangle = (points, rect) => {
   const rectPoints = [
-    rect.x,
-    rect.y,
-    rect.x + rect.width,
-    rect.y,
-    rect.x + rect.width,
-    rect.y + rect.height,
-    rect.x,
-    rect.y + rect.height,
+    [rect.x, rect.y],
+    [rect.x + rect.width, rect.y],
+    [rect.x + rect.width, rect.y + rect.height],
+    [rect.x, rect.y + rect.height],
   ];
 
   return PolygonToPolygon(points, rectPoints);

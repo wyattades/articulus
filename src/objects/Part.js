@@ -1,6 +1,12 @@
 import Phaser from 'phaser';
 
-import { adjustBrightness, nextId, setNextId, valuesIterator } from 'lib/utils';
+import {
+  adjustBrightness,
+  getBoundPoints,
+  nextId,
+  setNextId,
+  valuesIterator,
+} from 'lib/utils';
 import { deleteConnections } from 'lib/physics';
 import { config, CONNECTOR_RADIUS } from 'src/const';
 
@@ -151,6 +157,20 @@ export default class Part extends Phaser.GameObjects.Sprite {
     this.saveRender();
   }
 
+  get geom() {
+    const rect = new Phaser.Geom.Rectangle(
+      this.x - this.width / 2,
+      this.y - this.height / 2,
+      this.width,
+      this.height,
+    );
+    if (!this.rotation) {
+      return rect;
+    } else {
+      return new Phaser.Geom.Polygon(getBoundPoints(rect, this.rotation));
+    }
+  }
+
   /** @type {NonNullable<Phaser.Types.Physics.Matter.MatterBodyConfig['shape']>} */
   get physicsShape() {
     return {};
@@ -159,10 +179,6 @@ export default class Part extends Phaser.GameObjects.Sprite {
   /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
   get physicsOptions() {
     return null;
-  }
-
-  get geom() {
-    return new Phaser.Geom.Circle(this.x, this.y, CONNECTOR_RADIUS);
   }
 
   enablePhysics() {
