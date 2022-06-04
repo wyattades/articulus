@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 import Phaser from 'phaser';
 
-import { EventManager, factoryRotateAround } from 'lib/utils';
+import { constrain, EventManager, factoryRotateAround } from 'lib/utils';
 import Controls from 'src/objects/Controls';
 
 import Tool from './Tool';
@@ -69,19 +69,37 @@ export default class ControlsTool extends Tool {
 
     for (const obj of c.edgeObjs) {
       if (obj.getBounds(tempBounds).contains(x, y)) {
+        const oppCorner = Phaser.Math.Rotate(
+          {
+            x: obj.originX === 1 ? c.width : -c.width,
+            y: obj.originY === 1 ? c.height : -c.height,
+          },
+          c.rotation,
+        );
+
         this.controlDragging = {
           obj,
-          dx: obj.x - x,
-          dy: obj.y - y,
 
-          ox: obj.x + (obj.originX === 1 ? c.width : -c.width),
-          oy: obj.y + (obj.originY === 1 ? c.height : -c.height),
+          // delta of click position on edgeObj
+          startDelta: {
+            x: obj.x - x,
+            y: obj.y - y,
+          },
+
+          // opposite corner from edgeObj
+          oppCorner: {
+            x: obj.x + oppCorner.x,
+            y: obj.y + oppCorner.y,
+          },
+
           invW: 1 / c.width, // inverse initial control height
           invH: 1 / c.height, // inverse initial control width
 
           iSelected: this.scene.selected.map((s) => ({
             obj: s,
             bounds: new Phaser.Geom.Rectangle(
+              // s.x,
+              // s.y,
               s.x - s.width / 2,
               s.y - s.height / 2,
               s.width,
@@ -110,9 +128,16 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  updateSelected() {
-    const { ox, oy, invW, invH, iSelected } = this.controlDragging;
+  // TODO: fix for rotated objects
+  updateSelected(draggedPos) {
+    const { oppCorner, invW, invH, iSelected } = this.controlDragging;
     const { width: cw, height: ch } = this.controls;
+
+    const center = oppCorner;
+    // const center = {
+    //   x: (draggedPos.x + oppCorner.x) * 0.5,
+    //   y: (draggedPos.y + oppCorner.y) * 0.5,
+    // };
 
     const scaleX = cw * invW;
     const scaleY = ch * invH;
@@ -120,10 +145,10 @@ export default class ControlsTool extends Tool {
     const bounds = (this._bounds ||= new Phaser.Geom.Rectangle());
 
     for (const { obj, bounds: iBounds, points: iPoints } of iSelected) {
-      bounds.x = ox - scaleX * (ox - iBounds.x);
-      bounds.y = oy - scaleY * (oy - iBounds.y);
-      bounds.right = ox - scaleX * (ox - iBounds.right);
-      bounds.bottom = oy - scaleY * (oy - iBounds.bottom);
+      bounds.x = center.x - scaleX * (center.x - iBounds.x);
+      bounds.y = center.y - scaleY * (center.y - iBounds.y);
+      bounds.right = center.x - scaleX * (center.x - iBounds.right);
+      bounds.bottom = center.y - scaleY * (center.y - iBounds.bottom);
 
       obj.mutateBounds(bounds, iBounds, iPoints);
 
@@ -158,20 +183,32 @@ export default class ControlsTool extends Tool {
   handlePointerMove(x, y) {
     if (this.controlDragging) {
       this.controlDragging.moved = true;
-      const { obj, dx, dy, ox, oy } = this.controlDragging;
+      const { obj, startDelta, oppCorner } = this.controlDragging;
+      const { rotation } = this.controls;
 
-      const newPos = { x: x + dx, y: y + dy };
+      const newPos = { x: x + startDelta.x, y: y + startDelta.y };
       this.scene.snapToGrid(newPos);
-      obj.setPosition(newPos.x, newPos.y);
+
+      Phaser.Math.RotateAround(newPos, oppCorner.x, oppCorner.y, -rotation);
 
       const minSize = MIN_SHAPE_SIZE;
-      if (obj.originX === 0 && obj.x < ox + minSize) obj.x = ox + minSize;
-      else if (obj.originX === 1 && obj.x > ox - minSize) obj.x = ox - minSize;
-      if (obj.originY === 0 && obj.y < oy + minSize) obj.y = oy + minSize;
-      else if (obj.originY === 1 && obj.y > oy - minSize) obj.y = oy - minSize;
 
-      this.controls.updateFrom(obj);
-      this.updateSelected();
+      newPos.x = constrain(
+        newPos.x,
+        obj.originX === 0 ? oppCorner.x + minSize : null,
+        obj.originX === 1 ? oppCorner.x - minSize : null,
+      );
+      newPos.y = constrain(
+        newPos.y,
+        obj.originY === 0 ? oppCorner.y + minSize : null,
+        obj.originY === 1 ? oppCorner.y - minSize : null,
+      );
+
+      Phaser.Math.RotateAround(newPos, oppCorner.x, oppCorner.y, rotation);
+
+      obj.setPosition(newPos.x, newPos.y);
+      this.controls.updateFromCorners(oppCorner, obj);
+      this.updateSelected(newPos);
 
       return false;
     }

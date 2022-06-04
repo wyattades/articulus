@@ -24,7 +24,8 @@ export const validPoint = (p) => {
   }
 };
 
-export const constrain = (v, min, max) => (v < min ? min : v > max ? max : v);
+export const constrain = (v, min, max) =>
+  min != null && v < min ? min : max != null && v > max ? max : v;
 
 export const mapNumber = (val, fromA, fromB, toA, toB) =>
   (val - fromA) * ((toB - toA) / (fromB - fromA)) + toA;
@@ -231,9 +232,9 @@ function* iterateBoundPoints(rect, angle) {
   );
 
   yield rotateAround({ x: rect.left, y: rect.top });
-  yield rotateAround({ x: rect.left, y: rect.bottom });
   yield rotateAround({ x: rect.right, y: rect.top });
   yield rotateAround({ x: rect.right, y: rect.bottom });
+  yield rotateAround({ x: rect.left, y: rect.bottom });
 }
 
 export const getBoundPoints = (rect, angle) => [
