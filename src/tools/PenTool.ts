@@ -1,7 +1,7 @@
 import Flatten from '@flatten-js/core';
 
 import { EventManager } from 'src/lib/utils';
-import { Polygon } from 'src/objects/Shape';
+import { Polygon } from 'src/objects/Polygon';
 
 import Tool from './Tool';
 
