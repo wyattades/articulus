@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { factoryRotateAround, getObjectsBounds } from 'src/lib/utils';
 import { COLORS } from 'src/styles/theme';
 import { config } from 'src/const';
+import { RotatedRect } from 'src/lib/rotatedRect';
 
 import Part from './Part';
 
@@ -134,79 +135,16 @@ export default class Controls extends Phaser.GameObjects.Group {
    * @param {Phaser.GameObjects.Shape} obj
    */
   updateFromCorners(oppCorner, obj) {
-    // NOTE: This won't work for non-corner edgeObjs
-
-    // center of rectangle
-    const center = {
-      x: (obj.x + oppCorner.x) * 0.5,
-      y: (obj.y + oppCorner.y) * 0.5,
-    };
-
-    // point 1: this object's corner = obj
-    // point 2: the opposite corner from point 1 = oppCorner
-    const a = Phaser.Math.RotateAround(
-      { x: obj.x, y: obj.y },
-      this.x,
-      this.y,
-      -this.rotation,
-    );
-    const b = Phaser.Math.RotateAround(
-      { x: oppCorner.x, y: oppCorner.y },
-      this.x,
-      this.y,
-      -this.rotation,
-    );
-    const newW = Math.abs(a.x - b.x);
-    const newH = Math.abs(a.y - b.y);
-
-    const oppPoint = (oppX, oppY) => {
-      const w = !oppX ? 0 : obj.originX === 1 ? -newW : newW;
-      const h = !oppY ? 0 : obj.originY === 1 ? -newH : newH;
-      return Phaser.Math.RotateAround(
-        { x: oppCorner.x + w, y: oppCorner.y + h },
-        oppCorner.x,
-        oppCorner.y,
-        this.rotation,
-      );
-    };
-
-    // point 3: opposite x, same y
-    const ox = oppPoint(true, false);
-    // point 4: same x, opposite y
-    const oy = oppPoint(false, true);
-
-    (this.scene.deb_1 ||= this.scene.add
-      .circle(0, 0, 4, 0xff00ff)
-      .setDepth(1000)).setPosition(obj.x, obj.y);
-    (this.scene.deb_2 ||= this.scene.add
-      .circle(0, 0, 4, 0xff0000)
-      .setDepth(1000)).setPosition(oppCorner.x, oppCorner.y);
-    (this.scene.deb_3 ||= this.scene.add
-      .circle(0, 0, 4, 0xffff00)
-      .setDepth(1000)).setPosition(ox.x, ox.y);
-    (this.scene.deb_4 ||= this.scene.add
-      .circle(0, 0, 4, 0x0000ff)
-      .setDepth(1000)).setPosition(oy.x, oy.y);
-
-    // top-left corner:
-    const tl =
-      obj.originX === 1 && obj.originY === 1
-        ? obj
-        : obj.originX === 0 && obj.originY === 0
-        ? oppCorner
-        : obj.originX === 1
-        ? ox
-        : oy;
-
-    const pos = Phaser.Math.RotateAround(
-      { x: tl.x, y: tl.y },
-      center.x,
-      center.y,
-      -this.rotation,
+    const rect = RotatedRect.fromCorners(
+      oppCorner,
+      obj,
+      obj.originX,
+      obj.originY,
+      this.rotation,
     );
 
-    this.setPosition(pos.x, pos.y, true);
-    this.setSize(newW, newH, true);
+    this.setPosition(rect.x, rect.y, true);
+    this.setSize(rect.width, rect.height, true);
     this.updateChildren();
   }
 

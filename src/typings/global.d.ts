@@ -5,6 +5,7 @@ type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 type Override<T, R> = Omit<T, keyof R> & R;
 
 type Point = { x: number; y: number };
+type Vector2 = { x: number; y: number };
 
 // physics:
 

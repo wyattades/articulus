@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import * as _ from 'lodash-es';
 
 import * as MoreIntersects from 'lib/intersects';
+import { GEOM_TYPES } from 'lib/geom';
 
 /**
  * @param {Number} num
@@ -66,14 +67,6 @@ export function* circle4Points(radius, startRotation = 0) {
   yield [-sin, cos];
 }
 
-const GEOM_TYPES = {
-  Circle: Phaser.Geom.CIRCLE,
-  Ellipse: Phaser.Geom.ELLIPSE,
-  Line: Phaser.Geom.LINE,
-  Point: Phaser.Geom.POINT,
-  Polygon: Phaser.Geom.POLYGON,
-  Rectangle: Phaser.Geom.RECTANGLE,
-};
 const INTERSECT_MATRIX = (() => {
   const POINT_THICKNESS = 6;
 
@@ -91,8 +84,9 @@ const INTERSECT_MATRIX = (() => {
   for (const name of ['Circle', 'Ellipse', 'Polygon', 'Rectangle'])
     Intersects[`PointTo${name}`] = ContainsPoint;
 
-  const TYPES = Object.entries(GEOM_TYPES).reduce((arr, [name, index]) => {
-    arr[index] = name;
+  const TYPES = Object.entries(GEOM_TYPES).reduce((arr, [type, klass]) => {
+    arr[Number(type)] = klass.name;
+    console.log(type, Number(type), klass.name);
     return arr;
   }, []);
 
