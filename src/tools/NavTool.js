@@ -32,7 +32,7 @@ export default class NavTool extends Tool {
       // ctrl-scroll & pinch-to-zoom
 
       camera.setZoom(
-        constrain(camera.zoom - dirY * 0.1 * camera.zoom, 0.2, 10),
+        constrain(camera.zoom + dirY * 0.1 * camera.zoom, 0.2, 10),
       );
     } else {
       // scroll & shift-scroll
@@ -40,8 +40,8 @@ export default class NavTool extends Tool {
       const scale = (1 / camera.zoom) * 10;
 
       camera.setScroll(
-        constrain(camera.scrollX - dirX * scale, -l, l),
-        constrain(camera.scrollY - dirY * scale, -l, l),
+        constrain(camera.scrollX + dirX * scale, -l, l),
+        constrain(camera.scrollY + dirY * scale, -l, l),
       );
     }
   };
