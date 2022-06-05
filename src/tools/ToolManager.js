@@ -2,9 +2,10 @@ import Phaser from 'phaser';
 
 import { EventManager } from 'lib/utils';
 
-import { TOOLS } from '.';
+import { TOOLS, Tool } from '.';
 
 export default class ToolManager {
+  /** @type {Tool[]} */
   tools = []; // active tools
 
   lastPointer = null;
@@ -31,6 +32,10 @@ export default class ToolManager {
   destroy() {
     this.destroyTools();
     this.eventManager.off();
+  }
+
+  getTool(toolType) {
+    return this.tools.find((t) => t.toolKey === toolType);
   }
 
   setTool(toolType) {

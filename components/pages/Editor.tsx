@@ -4,13 +4,15 @@ import clsx from 'clsx';
 import { useGame } from 'components/GameProvider';
 import { colorInverse, colorIntToHex } from 'src/lib/utils';
 import { EDITOR_TOOL_TYPES, TOOLS } from 'src/tools';
+import type PenTool from 'src/tools/PenTool';
 import { useScene } from 'components/game/Scene';
 import { useSubscribe } from 'hooks/useSubscribe';
 import { PointerPos } from 'components/PointerPos';
 import { settingsSaver } from 'src/lib/saver';
 import EditorScene from 'src/scenes/Editor';
+import { FlashText } from 'components/FlashText';
 
-const EditUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
+const EditUI: React.FC<{ mapKey?: string }> = () => {
   const game = useGame();
   const editScene = useScene<EditorScene>();
 
@@ -26,6 +28,13 @@ const EditUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
     () => editScene.selected,
   );
 
+  const pendingPolygon = useSubscribe(
+    editScene.events,
+    ['polygon:start', 'polygon:end'],
+    false,
+    () => !!(editScene.tm.getTool('polygon_shape') as PenTool | null)?.pending,
+  );
+
   const saveLevel = async () => {
     let mapName = editScene.mapSaver.name;
     if (!mapName) {
@@ -39,6 +48,8 @@ const EditUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
 
   return (
     <div className="ui-wrap">
+      <FlashText />
+
       <div className="absolute left-0 top-0 p-4 space-y-2 flex flex-col">
         {EDITOR_TOOL_TYPES.map((toolType) => {
           const t = TOOLS[toolType];
@@ -106,6 +117,14 @@ const EditUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
           </button>
         </div>
       ) : null}
+
+      {pendingPolygon && (
+        <p className="ui-text p-4 absolute left-1/2 bottom-4 -translate-x-1/2 text-center pointer-events-none">
+          Press ENTER to create polygon,
+          <br />
+          or ESC to cancel
+        </p>
+      )}
 
       <PointerPos />
     </div>

@@ -10,6 +10,8 @@ import DragTool from './DragTool';
 import ControlsTool from './ControlsTool';
 import PenTool from './PenTool';
 
+export { default as Tool } from './Tool';
+
 export const PLAY_TOOL_TYPES = [
   'wood',
   'water',

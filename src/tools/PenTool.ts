@@ -18,9 +18,19 @@ export default class PenTool extends Tool {
     );
 
   createShape(points: Point[]) {
+    if (this.pending.points.length < 3) {
+      this.scene.events.emit('showFlash', 'Not enough points!');
+
+      return;
+    }
+
     const fpoly = new Flatten.Polygon(points.map((p) => [p.x, p.y]));
 
-    if (!fpoly.isValid()) return; // TODO
+    // TODO
+    if (!fpoly.isValid()) {
+      this.scene.events.emit('showFlash', 'Invalid polygon!');
+      return;
+    }
 
     for (const poly of fpoly.splitToIslands()) {
       const shape = new Polygon(this.scene);
@@ -41,13 +51,19 @@ export default class PenTool extends Tool {
   } | null = null;
 
   handlePointerDown(x: number, y: number): boolean | void {
-    this.pending ||= {
-      points: [],
-      objs: [],
-      pendingLine: this.scene.add
-        .line(0, 0, 0, 0, 0, 0, 0xcccccc)
-        .setOrigin(0, 0),
-    };
+    if (!this.pending) {
+      this.pending = {
+        points: [],
+        objs: [],
+        pendingLine: this.scene.add
+          .line(0, 0, 0, 0, 0, 0, 0xcccccc)
+          .setOrigin(0, 0),
+      };
+
+      this.scene.events.emit('polygon:start');
+    } else {
+      this.scene.events.emit('polygon:createPoint');
+    }
 
     const next = { x, y };
 
@@ -90,9 +106,7 @@ export default class PenTool extends Tool {
   closePendingPath() {
     if (!this.pending) return;
 
-    if (this.pending.points.length >= 3) {
-      this.createShape(this.pending.points);
-    }
+    this.createShape(this.pending.points);
 
     this.cancelPendingPath();
   }
@@ -104,6 +118,8 @@ export default class PenTool extends Tool {
     this.pending.pendingLine?.destroy();
 
     this.pending = null;
+
+    this.scene.events.emit('polygon:end');
   }
 
   destroy() {

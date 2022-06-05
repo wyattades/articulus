@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+import React, { useState } from 'react';
 import clsx from 'clsx';
 
 import { useGame } from 'components/GameProvider';
@@ -7,6 +9,7 @@ import { PLAY_TOOL_TYPES, TOOLS } from 'src/tools';
 import { useScene } from 'components/game/Scene';
 import { useSubscribe } from 'hooks/useSubscribe';
 import { PointerPos } from 'components/PointerPos';
+import { FlashText } from 'components/FlashText';
 import type PlayScene from 'src/scenes/Play';
 
 const Directions = ({ onClose }) => (
@@ -44,40 +47,6 @@ const Directions = ({ onClose }) => (
     </div>
   </div>
 );
-
-const FlashText: React.FC = () => {
-  const [text, setText] = useState('');
-  const [showing, setShowing] = useState(false);
-
-  const playScene = useScene<PlayScene>();
-
-  useEffect(() => {
-    const cb = (flashText: string) => {
-      setText(flashText);
-      setShowing(true);
-      setTimeout(() => {
-        setShowing(false);
-      }, 60);
-    };
-    playScene.events.on('showFlash', cb);
-    return () => {
-      playScene.events.off('showFlash', cb);
-    };
-  }, []);
-
-  return (
-    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 overflow-hidden">
-      <p
-        className={clsx(
-          'ui-flash ui-text text-center text-xl p-2',
-          !showing && 'animate',
-        )}
-      >
-        {text}
-      </p>
-    </div>
-  );
-};
 
 const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
   const [showLegend, setShowLegend] = useState(false);
