@@ -1,6 +1,7 @@
 # Custom
 dist/
 .vercel
+db/schema.sql
 
 # Editor
 .vscode/
@@ -95,3 +96,6 @@ jspm_packages/
 .dynamodb/
 
 .DS_Store
+
+# Supabase
+.supabase/
