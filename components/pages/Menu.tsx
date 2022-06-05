@@ -37,7 +37,7 @@ const MenuUI: React.FC = () => {
       </div>
 
       {!levels ? (
-        <p className="ui-text">Loading...</p>
+        <p className="ui-text text-center">Loading...</p>
       ) : !levels.length ? (
         <p className="ui-text">No levels!</p>
       ) : (

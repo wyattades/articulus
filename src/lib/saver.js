@@ -36,11 +36,13 @@ const findOrCreateBy = async (table, data) => {
 
 let userIdPromise;
 const getUserId = async () => {
-  let u = localStorage.getItem('articulus:user_id');
-  if (typeof u === 'string' && u.length >= 6) return u;
+  const uid = localStorage.getItem('articulus:user_id');
+  if (typeof uid === 'string' && uid.length >= 6) return uid;
 
   let user = null;
   while (!user) {
+    await new Promise((r) => setTimeout(r, 100));
+
     const username = window.prompt('Enter a username to continue');
 
     if (username) user = await findOrCreateBy('users', { username });
