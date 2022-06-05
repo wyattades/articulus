@@ -86,7 +86,6 @@ const INTERSECT_MATRIX = (() => {
 
   const TYPES = Object.entries(GEOM_TYPES).reduce((arr, [type, klass]) => {
     arr[Number(type)] = klass.name;
-    console.log(type, Number(type), klass.name);
     return arr;
   }, []);
 
