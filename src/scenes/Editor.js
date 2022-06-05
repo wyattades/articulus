@@ -95,15 +95,27 @@ export default class Editor extends Phaser.Scene {
   create() {
     this.createListeners();
 
+    this.worldBounds = new Phaser.Geom.Rectangle(
+      (-this.iGridSize * 300) / 2,
+      (-this.iGridSize * 300) / 2,
+      this.iGridSize * 300,
+      this.iGridSize * 300,
+    );
+
     this.add
-      .rectangle(0, 0, this.iGridSize * 300, this.iGridSize * 300)
+      .rectangle(
+        this.worldBounds.centerX,
+        this.worldBounds.centerY,
+        this.worldBounds.width,
+        this.worldBounds.height,
+      )
       .setStrokeStyle(4, 0xffffff);
 
     this.gridObj = this.add.grid(
-      0,
-      0,
-      this.iGridSize * 300,
-      this.iGridSize * 300,
+      this.worldBounds.centerX,
+      this.worldBounds.centerY,
+      this.worldBounds.width,
+      this.worldBounds.height,
       this.iGridSize,
       this.iGridSize,
       0x000000,

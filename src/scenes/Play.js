@@ -237,8 +237,6 @@ export default class Play extends Phaser.Scene {
 
     // WORLD
 
-    let bounds;
-
     if (this.mapSaver) {
       this.mapSaver.load().then((mapData) => {
         MapSaver.loadPlayParts(mapData, this.terrainGroup);
@@ -246,7 +244,7 @@ export default class Play extends Phaser.Scene {
         fitCameraToObjs(this.cameras.main, this.terrainGroup.getChildren());
       });
 
-      bounds = new Phaser.Geom.Rectangle(-1000, -1000, 3000, 3000);
+      this.worldBounds = new Phaser.Geom.Rectangle(-1000, -1000, 3000, 3000);
     } else {
       const terrain = new Terrain(this);
       this.terrainGroup.add(terrain);
@@ -254,7 +252,7 @@ export default class Play extends Phaser.Scene {
       // we want world-pos 0,0 to be 300px above the y-pos of the center of the terrain
       terrain.setPosition(-terrain.width / 2, -terrain.midY + 300);
 
-      bounds = new Phaser.Geom.Rectangle(
+      this.worldBounds = new Phaser.Geom.Rectangle(
         -terrain.width / 2,
         -terrain.height,
         terrain.width,
@@ -264,17 +262,22 @@ export default class Play extends Phaser.Scene {
 
     // outline of world boundary
     this.add
-      .rectangle(bounds.centerX, bounds.centerY, bounds.width, bounds.height)
+      .rectangle(
+        this.worldBounds.centerX,
+        this.worldBounds.centerY,
+        this.worldBounds.width,
+        this.worldBounds.height,
+      )
       .setStrokeStyle(2, 0xffffff, 0.9)
       .setDepth(-1);
 
     // PHYSICS
 
     this.matter.world.setBounds(
-      bounds.x,
-      bounds.y,
-      bounds.width,
-      bounds.height,
+      this.worldBounds.x,
+      this.worldBounds.y,
+      this.worldBounds.width,
+      this.worldBounds.height,
       128,
     );
 

@@ -1,8 +1,9 @@
 import * as _ from 'lodash-es';
 import { createClient } from '@supabase/supabase-js';
+import Phaser from 'phaser';
 
 import { validPoint } from 'lib/utils';
-import { OBJECTS, SHAPE_TYPE_CLASSES } from 'src/objects';
+import { OBJECTS, SHAPE_TYPE_CLASSES, Part } from 'src/objects';
 import { serializePhysics, deserializePhysics } from 'lib/physics';
 
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -51,6 +52,29 @@ const getUserId = async () => {
   localStorage.setItem('articulus:user_id', user.id);
 
   return user.id;
+};
+
+/**
+ * Objects within the scene's `worldBounds` and some reasonable padding
+ * @param {Part[]} objs
+ * @param {Phaser.Geom.Rectangle} bounds
+ */
+const withinBounds = (objs, bounds, padding = 3000) => {
+  const sanityBounds = new Phaser.Geom.Rectangle(
+    bounds.x - padding,
+    bounds.y - padding,
+    bounds.width + 2 * padding,
+    bounds.height + 2 * padding,
+  );
+
+  const objBounds = new Phaser.Geom.Rectangle();
+  return objs.filter((obj) => {
+    obj.getBounds(objBounds);
+    return (
+      sanityBounds.contains(objBounds.left, objBounds.top) &&
+      sanityBounds.contains(objBounds.right, objBounds.bottom)
+    );
+  });
 };
 
 /**
@@ -129,11 +153,13 @@ export class BuildSaver {
     const scene = group.scene;
     if (!scene || scene.running) return;
 
-    const objs = group.getChildren().map((obj) => {
-      const json = obj.toJSON();
-      json.id = obj.id;
-      return json;
-    });
+    const objs = withinBounds(group.getChildren(), group.scene.worldBounds).map(
+      (obj) => {
+        const json = obj.toJSON();
+        json.id = obj.id;
+        return json;
+      },
+    );
 
     const physics = serializePhysics(scene);
 
@@ -255,11 +281,13 @@ export class MapSaver {
     const scene = group.scene;
     if (!scene) return;
 
-    const objs = group.getChildren().map((obj) => {
-      const json = obj.toJSON();
-      json.id = obj.id;
-      return json;
-    });
+    const objs = withinBounds(group.getChildren(), group.scene.worldBounds).map(
+      (obj) => {
+        const json = obj.toJSON();
+        json.id = obj.id;
+        return json;
+      },
+    );
 
     const userId = await getUserId();
 
