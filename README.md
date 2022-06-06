@@ -35,7 +35,7 @@
 ## Known bugs
 
 - grid snapping is slighly offset (uses object's center point instead of top-left)
-- rotated shapes don't scale properly when resized by user
+- resizing multiple rotated shapes is not exact
 
 ## Credits
 
