@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
 
-import * as MoreIntersects from 'lib/intersects';
+import { MoreIntersects } from 'lib/intersects';
 import { GEOM_TYPES } from 'lib/geom';
 
 /**
@@ -350,13 +350,20 @@ function* iterateBoundPoints(rect, angle) {
   yield rotateAround({ x: rect.left, y: rect.bottom });
 }
 
+const defaultEllipsePointCount = (w, h) => {
+  const m = Math.max(w, h);
+  if (m <= 100) return 16;
+  if (m <= 1000) return 32;
+  return 64;
+};
+
 export const getEllipsePoints = (
   ox,
   oy,
   w,
   h,
   rotation = 0,
-  numPoints = 16,
+  numPoints = defaultEllipsePointCount(w, h),
 ) => {
   const a = w / 2,
     b = h / 2;

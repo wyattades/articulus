@@ -101,7 +101,6 @@ export class Ellipse extends Rectangle {
           this.width,
           this.height,
           this.rotation,
-          16,
         ),
       );
     }
@@ -116,7 +115,7 @@ export class Ellipse extends Rectangle {
 
     return {
       type: 'fromVertices',
-      verts: getEllipsePoints(0, 0, this.width, this.height),
+      verts: getEllipsePoints(0, 0, this.width, this.height, 0, 16),
     };
   }
 }

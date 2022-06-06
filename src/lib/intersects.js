@@ -188,6 +188,20 @@ export const PolygonToRectangle = (points, rect) => {
 export const PolygonToEllipse = (points, ellipse) => {
   return PolygonToPolygon(
     points,
-    getEllipsePoints(ellipse.x, ellipse.y, ellipse.width, ellipse.height),
+    getEllipsePoints(
+      ellipse.x,
+      ellipse.y,
+      ellipse.width,
+      ellipse.height,
+      0,
+      16,
+    ),
   );
+};
+
+export const MoreIntersects = {
+  EllipseToRectangle,
+  PolygonToEllipse,
+  PolygonToPolygon,
+  PolygonToRectangle,
 };
