@@ -3,8 +3,9 @@ import Phaser from 'phaser';
 import ToolManager from 'src/tools/ToolManager';
 import { MapSaver, settingsSaver } from 'lib/saver';
 import { EDITOR_TOOL_TYPES } from 'src/tools';
-import { fitCameraToObjs } from 'src/lib/utils';
+import { fitCameraToObjs, groupByIntersection, mergeGeoms } from 'lib/utils';
 import { config } from 'src/const';
+import { Polygon } from 'src/objects/Polygon';
 
 export default class Editor extends Phaser.Scene {
   /** @type {Phaser.GameObjects.GameObject[]} */
@@ -57,6 +58,27 @@ export default class Editor extends Phaser.Scene {
       this.parts.add(newObj);
 
       return newObj;
+    });
+
+    this.events.emit('setSelected', newObjs);
+  }
+
+  mergeSelected() {
+    const groups = groupByIntersection(this.selected);
+
+    const newObjs = groups.map((g) => {
+      if (g.length === 1) return g[0];
+
+      const mergedPolygon = mergeGeoms(g.map((obj) => obj.geom));
+
+      const part = new Polygon(this, 0, 0, mergedPolygon);
+      part.localizePoints();
+
+      for (const obj of g) obj.destroy();
+
+      this.parts.add(part);
+
+      return part;
     });
 
     this.events.emit('setSelected', newObjs);

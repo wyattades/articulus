@@ -7,7 +7,13 @@ import { Rectangle } from './Shape';
 export class Polygon extends Rectangle {
   static type = 'polygon';
 
-  polygon = new Phaser.Geom.Polygon();
+  constructor(scene, x, y, polygon = new Phaser.Geom.Polygon()) {
+    super(scene, x, y);
+
+    // points relative to this.x, this.y, and this.rotation.
+    // (this.x, this.y) is the center of this polygon
+    this.polygon = polygon;
+  }
 
   getBounds(bounds) {
     bounds ||= new Phaser.Geom.Rectangle();
@@ -53,11 +59,11 @@ export class Polygon extends Rectangle {
     for (let i = 0, len = iPoints.length; i < len; i++) {
       const p = this.polygon.points[i];
       const iP = iPoints[i];
-      p.x = mapX(iP.x + iBounds.centerX) - bounds.centerX;
-      p.y = mapY(iP.y + iBounds.centerY) - bounds.centerY;
+      p.x = this.x + mapX(iP.x + iBounds.centerX) - bounds.centerX;
+      p.y = this.y + mapY(iP.y + iBounds.centerY) - bounds.centerY;
     }
 
-    super.mutateBounds(bounds);
+    this.localizePoints();
   }
 
   get geom() {

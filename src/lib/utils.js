@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import * as _ from 'lodash-es';
+import Flatten from '@flatten-js/core';
 
 import * as MoreIntersects from 'lib/intersects';
 import { GEOM_TYPES } from 'lib/geom';
@@ -56,6 +57,16 @@ export const base48 = (size = 8) =>
   [...new Array(size)]
     .map(() => charSample[Math.floor(Math.random() * charSample.length)])
     .join('');
+
+/**
+ * @template {T}
+ * @param {Iterable<T>} set
+ * @return {T | undefined}
+ */
+export const firstIterableValue = (set) => {
+  for (const el of set) return el;
+  return undefined;
+};
 
 export function* circle4Points(radius, startRotation = 0) {
   const cos = Math.cos(startRotation) * radius;
@@ -122,6 +133,98 @@ export const intersectsOtherSolid = (scene, obj, ignore = []) => {
   return null;
 };
 
+/**
+ * @param {(Phaser.Geom.Polygon | Phaser.Geom.Rectangle | Phaser.Geom.Ellipse)[]} geoms
+ * @return {Phaser.Geom.Polygon}
+ */
+export const mergeGeoms = (geoms) => {
+  if (geoms.length < 2) throw new Error(`mergeGeoms size must be >= 2`);
+
+  let shapes = geoms.map((geom) => {
+    if (geom instanceof Phaser.Geom.Polygon)
+      return new Flatten.Polygon(geom.points.map((p) => [p.x, p.y]));
+    if (geom instanceof Phaser.Geom.Rectangle)
+      return new Flatten.Polygon([
+        [geom.right, geom.top],
+        [geom.right, geom.bottom],
+        [geom.left, geom.bottom],
+        [geom.left, geom.top],
+      ]);
+    if (geom instanceof Phaser.Geom.Ellipse)
+      return new Flatten.Polygon(
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        getEllipsePoints(geom.x, geom.y, geom.width, geom.height).map((p) => [
+          p.x,
+          p.y,
+        ]),
+      );
+    throw new Error(`Unsupported type in mergeGeoms: ${geom.constructor.name}`);
+  });
+
+  shapes = shapes.map((s) => {
+    // make sure all polygons orient the same way (the orientation we choose is arbitrary)
+    const orient = firstIterableValue(s.faces).orientation();
+    if (orient === Flatten.ORIENTATION.CW) {
+      return s.reverse();
+    }
+
+    return s;
+  });
+
+  let merged = shapes
+    .slice(1)
+    .reduce((a, b) => Flatten.BooleanOperations.unify(a, b), shapes[0]);
+
+  // this seems to fix the faces after merging:
+  try {
+    merged = merged.splitToIslands()[0];
+  } catch {}
+
+  if (!merged.isValid()) console.warn('Merged polygon is not valid');
+
+  return new Phaser.Geom.Polygon(merged.vertices);
+};
+
+/**
+ * @param {Part[]} objs
+ * @return {Part[][]}
+ */
+export const groupByIntersection = (objs) => {
+  const intersects = _.memoize(
+    (a, b) => intersectsGeoms(a.geom, b.geom),
+    (a, b) => [a.id, b.id].sort().join(':'),
+  );
+
+  const ungrouped = [...objs];
+
+  const groups = [];
+
+  // eslint-disable-next-line no-restricted-syntax
+  outer: while (ungrouped.length > 0) {
+    const a = ungrouped.pop();
+    for (const g of groups) {
+      for (const b of g) {
+        if (intersects(a, b)) {
+          g.push(a);
+          continue outer;
+        }
+      }
+    }
+    for (const b of ungrouped) {
+      if (intersects(a, b)) {
+        _.pull(ungrouped, b); // remove b from `ungrouped`
+        groups.push([a, b]);
+        continue outer;
+      }
+    }
+
+    // `a` has no intersections
+    groups.push([a]);
+  }
+
+  return groups;
+};
+
 export const getTopObject = (scene, x, y) => {
   const point = new Phaser.Geom.Point(x, y);
 
@@ -149,6 +252,11 @@ export function* valuesIterator(obj) {
   for (const k in obj) yield obj[k];
 }
 
+/**
+ * @template T
+ * @param {Record<string, T>} obj
+ * @return {T}
+ */
 export const getFirstValue = (obj) => {
   for (const id in obj) return obj[id];
   return null;
@@ -229,6 +337,36 @@ function* iterateBoundPoints(rect, angle) {
   yield rotateAround({ x: rect.right, y: rect.bottom });
   yield rotateAround({ x: rect.left, y: rect.bottom });
 }
+
+export const getEllipsePoints = (
+  ox,
+  oy,
+  w,
+  h,
+  rotation = 0,
+  numPoints = 16,
+) => {
+  const a = w / 2,
+    b = h / 2;
+
+  const points = [];
+
+  const rotateAround = rotation
+    ? factoryRotateAround({ x: ox, y: oy }, rotation)
+    : null;
+
+  const delta = (2 * Math.PI) / numPoints;
+  for (let angle = 0; angle < Math.PI * 2; angle += delta) {
+    const p = {
+      x: ox + a * Math.cos(angle),
+      y: oy + b * Math.sin(angle),
+    };
+
+    points.push(rotateAround ? rotateAround(p) : p);
+  }
+
+  return points;
+};
 
 export const getBoundPoints = (rect, angle) => [
   ...iterateBoundPoints(rect, angle),

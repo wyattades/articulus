@@ -103,6 +103,14 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
 
       {selectedItems?.length ? (
         <div className="absolute left-0 bottom-0 p-4 space-y-2 flex flex-col">
+          {selectedItems.length >= 2 ? (
+            <button
+              className="ui-tool-button"
+              onClick={() => editScene.mergeSelected()}
+            >
+              Merge {selectedItems.length} selected
+            </button>
+          ) : null}
           <button
             className="ui-tool-button"
             onClick={() => editScene.duplicateSelected()}

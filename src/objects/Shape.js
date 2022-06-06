@@ -2,25 +2,9 @@ import Phaser from 'phaser';
 
 import { Matter } from 'lib/physics';
 import { config } from 'src/const';
+import { factoryRotateAround, getEllipsePoints } from 'lib/utils';
 
 import Part from './Part';
-
-const getEllipsePoints = (w, h, numPoints) => {
-  const a = w / 2,
-    b = h / 2;
-
-  const points = [];
-
-  const delta = (2 * Math.PI) / numPoints;
-  for (let angle = 0; angle < Math.PI * 2; angle += delta) {
-    const x = a * Math.cos(angle);
-    const y = b * Math.sin(angle);
-
-    points.push({ x, y });
-  }
-
-  return points;
-};
 
 export class Rectangle extends Part {
   fillColor = 0x00ff00;
@@ -111,13 +95,14 @@ export class Ellipse extends Rectangle {
       return new Phaser.Geom.Ellipse(this.x, this.y, this.width, this.height);
     } else {
       return new Phaser.Geom.Polygon(
-        getEllipsePoints(this.width, this.height, 16).map((p) => {
-          const r = Phaser.Math.Rotate(p, this.rotation);
-          return {
-            x: r.x + this.x,
-            y: r.y + this.y,
-          };
-        }),
+        getEllipsePoints(
+          this.x,
+          this.y,
+          this.width,
+          this.height,
+          this.rotation,
+          16,
+        ),
       );
     }
   }
@@ -131,7 +116,7 @@ export class Ellipse extends Rectangle {
 
     return {
       type: 'fromVertices',
-      verts: getEllipsePoints(this.width, this.height, 16),
+      verts: getEllipsePoints(0, 0, this.width, this.height),
     };
   }
 }

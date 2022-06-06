@@ -26,7 +26,6 @@ export default class PenTool extends Tool {
 
     const fpoly = new Flatten.Polygon(points.map((p) => [p.x, p.y]));
 
-    // TODO
     if (!fpoly.isValid()) {
       this.scene.events.emit('showFlash', 'Invalid polygon!');
       return;
@@ -77,7 +76,9 @@ export default class PenTool extends Tool {
       return;
     }
 
-    this.pending.objs.push(this.scene.add.circle(next.x, next.y, 4, 0x44ff00));
+    this.pending.objs.push(
+      this.scene.add.circle(next.x, next.y, 4, 0x028900).setDepth(1),
+    );
 
     if (this.pending.points.length > 0) {
       const prev = this.pending.points[this.pending.points.length - 1];

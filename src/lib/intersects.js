@@ -3,7 +3,7 @@
 // import Phaser from 'phaser';
 import Flatten from '@flatten-js/core';
 
-import { validPoint } from './utils';
+import { getEllipsePoints, validPoint } from './utils';
 
 /** @typedef {{ x: number; y: number; width: number; height: number; }} Rect */
 
@@ -80,7 +80,7 @@ export const EllipseToRectangle = (ellipse, rect) => {
 };
 
 /**
- * @param {Phaser.Geom.Polygon | number[] | { x: number; y: number }[]} polygon
+ * @param {Phaser.Geom.Polygon | [number, number][] | number[] | { x: number; y: number }[]} polygon
  * @returns {[number, number][]}
  */
 const polygonPoints = (polygon) => {
@@ -101,17 +101,8 @@ const polygonPoints = (polygon) => {
       out.push([polygon[i], polygon[i + 1]]);
     return out;
   } else {
-    return [];
+    throw new Error(`Unknown polygonPoints element: ${first}`);
   }
-  // if (!Array.isArray(polygon)) {
-  //   return Phaser.Geom.Polygon.GetNumberArray(polygon);
-  // } else if (typeof polygon[0] === 'object') {
-  //   const out = [];
-  //   for (let i = 0; i < polygon.length; i++)
-  //     out.push(polygon[i].x, polygon[i].y);
-  //   return out;
-  // }
-  // return polygon;
 };
 
 /**
@@ -179,11 +170,24 @@ export const PolygonToPolygon = (points1, points2) =>
  */
 export const PolygonToRectangle = (points, rect) => {
   const rectPoints = [
-    [rect.x, rect.y],
     [rect.x + rect.width, rect.y],
     [rect.x + rect.width, rect.y + rect.height],
     [rect.x, rect.y + rect.height],
+    [rect.x, rect.y],
   ];
 
   return PolygonToPolygon(points, rectPoints);
+};
+
+/**
+ * polygon-ellipse collision
+ * @param {number[]} points
+ * @param {Rect} ellipse
+ * @return {boolean}
+ */
+export const PolygonToEllipse = (points, ellipse) => {
+  return PolygonToPolygon(
+    points,
+    getEllipsePoints(ellipse.x, ellipse.y, ellipse.width, ellipse.height),
+  );
 };
