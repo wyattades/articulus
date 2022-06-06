@@ -3,7 +3,7 @@ import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
 
 import { MoreIntersects } from 'lib/intersects';
-import { GEOM_TYPES } from 'lib/geom';
+import { GEOM_NAMES } from 'lib/geom';
 
 /**
  * @param {Number} num
@@ -106,8 +106,8 @@ const INTERSECT_MATRIX = (() => {
   for (const name of ['Circle', 'Ellipse', 'Polygon', 'Rectangle'])
     Intersects[`PointTo${name}`] = ContainsPoint;
 
-  const TYPES = Object.entries(GEOM_TYPES).reduce((arr, [type, klass]) => {
-    arr[Number(type)] = klass.name;
+  const TYPES = Object.entries(GEOM_NAMES).reduce((arr, [type, name]) => {
+    arr[Number(type)] = name;
     return arr;
   }, []);
 
@@ -123,8 +123,8 @@ export const intersectsGeoms = (g1, g2) => {
 
   console.warn(
     'Missing intersect fn for:',
-    g1.constructor.name,
-    g2.constructor.name,
+    GEOM_NAMES[g1.type],
+    GEOM_NAMES[g2.type],
     INTERSECT_MATRIX,
   );
 
@@ -169,7 +169,7 @@ export const mergeGeoms = (geoms) => {
           p.y,
         ]),
       );
-    throw new Error(`Unsupported type in mergeGeoms: ${geom.constructor.name}`);
+    throw new Error(`Unsupported type in mergeGeoms: ${GEOM_NAMES[geom.type]}`);
   });
 
   shapes = shapes.map((s) => {

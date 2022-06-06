@@ -45,7 +45,7 @@ export default class ToolManager {
     if (toolType === 'select') {
       types.push('drag', 'select');
 
-      if (this.scene.constructor.name === 'Editor') types.unshift('controls');
+      if (this.scene.scene.key === 'Editor') types.unshift('controls');
     } else if (toolType) types.push(toolType);
 
     this.tools = types.map(
