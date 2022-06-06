@@ -1,9 +1,14 @@
-import { createContext, useContext, useEffect, useRef } from 'react';
-import { useAsync } from 'react-use';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { useLatest } from 'react-use';
 
 import type Game from 'src/Game';
 
 const GameCtx = createContext<Game | null>(null);
+
+// const clearCanvas = (canvas: HTMLCanvasElement) => {
+//   const ctx = canvas.getContext('webgl2');
+//   TODO
+// };
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -11,21 +16,49 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   const container = useRef();
   const canvas = useRef();
 
-  const Game = useAsync(() => import('src/Game'), []).value?.default || null;
+  const [game, setGame] = useState(null);
+  const latestGame = useLatest(game);
 
-  const game =
-    useAsync(async () => {
-      if (!Game) return null;
+  const initGame = async () => {
+    if (latestGame.current) {
+      setGame(null);
+      await latestGame.current.destroy();
+    }
 
-      // this is called twice after hot-reload :(
-      console.log('Mount game');
-
-      return new Game(canvas.current, container.current);
-    }, [Game]).value || null;
+    const Game = (await import('src/Game')).default;
+    console.log('Loaded Game class');
+    setGame(new Game(canvas.current, container.current));
+  };
 
   useEffect(() => {
-    if (game) return () => game.destroy();
-  }, [game]);
+    initGame();
+  }, []);
+
+  useEffect(() => {
+    // @ts-expect-error bad ImportMeta
+    if (process.env.NODE_ENV === 'development' && import.meta.webpackHot) {
+      let mounted = true;
+      // @ts-expect-error bad ImportMeta
+      import.meta.webpackHot.accept('src/Game', async () => {
+        if (!mounted) return;
+        console.log('Accepting the updated "src/Game" module');
+        initGame();
+      });
+      return () => {
+        mounted = false;
+      };
+    }
+  }, [latestGame]);
+
+  useEffect(() => {
+    return () => {
+      const endGame = latestGame.current;
+      if (endGame) {
+        console.log('Unmount game:', endGame.id);
+        if (!endGame.destroyed) endGame.destroy();
+      }
+    };
+  }, []);
 
   return (
     <GameCtx.Provider value={game}>

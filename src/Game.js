@@ -24,6 +24,8 @@ export default class Game extends Phaser.Game {
           debug: !!settingsSaver.get('debug'),
         },
       },
+      title: 'Articulus',
+      url: process.env.VERCEL_URL || '',
     });
 
     // TODO: scene lazy-loading?
@@ -31,7 +33,9 @@ export default class Game extends Phaser.Game {
       this.scene.add(Scene.name, Scene);
     }
 
-    console.log('Init Game');
+    this.id = window.gameCounter = (window.gameCounter || 0) + 1;
+
+    console.log('Init game:', this.id);
   }
 
   async waitForSceneReady(sceneKey) {
@@ -46,14 +50,22 @@ export default class Game extends Phaser.Game {
   }
 
   destroy() {
+    this.destroyed = true;
+
     for (const scene of this.scene.getScenes(true)) {
       scene.shutdown?.();
       this.scene.stop(scene.scene.key);
     }
 
+    const promise = new Promise((resolve) => {
+      this.events.once(Phaser.Core.Events.DESTROY, resolve);
+    });
+
     super.destroy();
 
-    this.destroyed = true;
+    console.log('Destroyed game:', this.id);
+
+    return promise;
   }
 
   setScene(key, { mapKey } = {}) {

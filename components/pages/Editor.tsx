@@ -4,13 +4,13 @@ import clsx from 'clsx';
 import { useGame } from 'components/GameProvider';
 import { colorInverse, colorIntToHex } from 'src/lib/utils';
 import { EDITOR_TOOL_TYPES, TOOLS } from 'src/tools';
-import type PenTool from 'src/tools/PenTool';
 import { useScene } from 'components/game/Scene';
 import { useSubscribe } from 'hooks/useSubscribe';
 import { PointerPos } from 'components/PointerPos';
 import { settingsSaver } from 'src/lib/saver';
 import EditorScene from 'src/scenes/Editor';
 import { FlashText } from 'components/FlashText';
+import type PenTool from 'src/tools/PenTool';
 
 const EditUI: React.FC<{ mapKey?: string }> = () => {
   const game = useGame();

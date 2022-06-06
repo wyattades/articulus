@@ -37,7 +37,7 @@ export const Scene: React.FC<{
 
   return (
     <SceneCtx.Provider value={scene}>
-      {scene ? children : null}
+      {scene && !scene.game.destroyed ? children : null}
     </SceneCtx.Provider>
   );
 };
