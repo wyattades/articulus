@@ -4,10 +4,17 @@ import Router from 'next/router';
 
 import PlayScene from 'src/scenes/Play';
 import EditorScene from 'src/scenes/Editor';
+import { BaseScene } from 'src/scenes/Scene';
 import { settingsSaver } from 'lib/saver';
 
+declare global {
+  interface Window {
+    gameCounter?: number;
+  }
+}
+
 export default class Game extends Phaser.Game {
-  constructor(canvas, parent) {
+  constructor(canvas: HTMLCanvasElement, parent: HTMLElement) {
     super({
       parent,
       canvas,
@@ -33,8 +40,6 @@ export default class Game extends Phaser.Game {
       this.scene.add(Scene.name, Scene);
     }
 
-    this.id = window.gameCounter = (window.gameCounter || 0) + 1;
-
     console.log('Init game:', this.id);
   }
 
@@ -49,10 +54,13 @@ export default class Game extends Phaser.Game {
     return scene;
   }
 
+  destroyed = false;
+  id = (window.gameCounter = (window.gameCounter || 0) + 1);
+
   destroy() {
     this.destroyed = true;
 
-    for (const scene of this.scene.getScenes(true)) {
+    for (const scene of this.scene.getScenes(true) as BaseScene[]) {
       scene.shutdown?.();
       this.scene.stop(scene.scene.key);
     }
@@ -61,14 +69,14 @@ export default class Game extends Phaser.Game {
       this.events.once(Phaser.Core.Events.DESTROY, resolve);
     });
 
-    super.destroy();
+    super.destroy(false);
 
     console.log('Destroyed game:', this.id);
 
     return promise;
   }
 
-  setScene(key, { mapKey } = {}) {
+  setScene(key: string, { mapKey }: { mapKey?: string } = {}) {
     const url =
       {
         Menu: '/',

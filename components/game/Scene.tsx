@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import type Phaser from 'phaser';
 
 import { useGame } from 'components/GameProvider';
+import type { BaseScene } from 'src/scenes/Scene';
 
 const SceneCtx = createContext<Phaser.Scene | null>(null);
 
@@ -29,8 +30,7 @@ export const Scene: React.FC<{
 
     return () => {
       if (game.destroyed) return;
-      // @ts-expect-error missing shutdown
-      game.scene.getScene(sceneKey)?.shutdown?.();
+      (game.scene.getScene(sceneKey) as BaseScene)?.shutdown?.();
       game.scene.stop(sceneKey);
     };
   }, [game, sceneKey]);

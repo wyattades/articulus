@@ -3,22 +3,22 @@ import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
 
 import { MoreIntersects } from 'lib/intersects';
-import { GEOM_NAMES } from 'lib/geom';
+import { Geom, GEOM_NAMES } from 'lib/geom';
+import type { Part } from 'src/objects';
+import type { BaseScene } from 'src/scenes/Scene';
 
-/**
- * @param {Number} num
- */
-export const colorIntToHex = (num) =>
-  `#${`00000${num.toString(16)}`.substr(-6)}`;
+export const colorIntToHex = (num: number) =>
+  `#${`00000${num.toString(16)}`.slice(-6)}`;
 
-export const colorInverse = (num) => {
+export const colorInverse = (num: number): number => {
   const { red, green, blue } = Phaser.Display.Color.IntegerToColor(num);
   return red * 0.299 + green * 0.587 + blue * 0.114 > 186 ? 0x000000 : 0xffffff;
 };
 
-export const isNum = (x) => typeof x === 'number' && !Number.isNaN(x);
+export const isNum = (x: number): boolean =>
+  typeof x === 'number' && !Number.isNaN(x);
 
-export const validPoint = (p) => {
+export const validPoint = (p: any): p is Point => {
   try {
     return p != null && isNum(p.x) && isNum(p.y);
   } catch {
@@ -26,19 +26,29 @@ export const validPoint = (p) => {
   }
 };
 
-export const constrain = (v, min, max) =>
+export const constrain = (v: number, min: number, max: number) =>
   min != null && v < min ? min : max != null && v > max ? max : v;
 
-export const mapNumber = (val, fromA, fromB, toA, toB) =>
-  (val - fromA) * ((toB - toA) / (fromB - fromA)) + toA;
+export const mapNumber = (
+  val: number,
+  fromA: number,
+  fromB: number,
+  toA: number,
+  toB: number,
+) => (val - fromA) * ((toB - toA) / (fromB - fromA)) + toA;
 
-export const factoryMapNumber = (fromA, fromB, toA, toB) => {
+export const factoryMapNumber = (
+  fromA: number,
+  fromB: number,
+  toA: number,
+  toB: number,
+) => {
   const ratio = (toB - toA) / (fromB - fromA);
   return (val) => (val - fromA) * ratio + toA;
 };
 
 const shifts = [0, 8, 16];
-export const adjustBrightness = (color, n) =>
+export const adjustBrightness = (color: number, n: number) =>
   shifts.reduce(
     (r, i) => r + (constrain(((color & (255 << i)) >> i) + n, 0, 255) << i),
     0,
@@ -46,29 +56,28 @@ export const adjustBrightness = (color, n) =>
 
 let _id = 1;
 export const nextId = () => _id++;
-export const setNextId = (val) => {
+export const setNextId = (val: number) => {
   if (val > _id) _id = val;
 };
 
-const charSample = [
-  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-];
+const charSample = Array.from(
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+);
+
 export const base48 = (size = 8) =>
-  [...new Array(size)]
+  Array.from({ length: size })
     .map(() => charSample[Math.floor(Math.random() * charSample.length)])
     .join('');
 
-/**
- * @template {T}
- * @param {Iterable<T>} set
- * @return {T | undefined}
- */
-export const firstIterableValue = (set) => {
+export const firstIterableValue = <T>(set: Iterable<T>): T | undefined => {
   for (const el of set) return el;
   return undefined;
 };
 
-export function* circle4Points(radius, startRotation = 0) {
+export function* circle4Points(
+  radius: number,
+  startRotation = 0,
+): Generator<[number, number], void, unknown> {
   const cos = Math.cos(startRotation) * radius;
   const sin = Math.sin(startRotation) * radius;
 
@@ -78,11 +87,7 @@ export function* circle4Points(radius, startRotation = 0) {
   yield [-sin, cos];
 }
 
-/**
- * @param {Point} a
- * @param {Point} b
- */
-export const midpoint = (a, b) => {
+export const midpoint = (a: Point, b: Point): Point => {
   return {
     x: (a.x + b.x) * 0.5,
     y: (a.y + b.y) * 0.5,
@@ -94,16 +99,27 @@ const INTERSECT_MATRIX = (() => {
 
   const { PointToLine } = Phaser.Geom.Intersects;
 
-  const ContainsPoint = (point, geom) => geom.contains(point.x, point.y);
+  const containsPointNames = [
+    'Circle',
+    'Ellipse',
+    'Polygon',
+    'Rectangle',
+  ] as const;
+
+  const ContainsPoint = (
+    point: Point,
+    geom: InstanceType<typeof Phaser.Geom[typeof containsPointNames[number]]>,
+  ) => geom.contains(point.x, point.y);
 
   // All available Geom intersect algorithms
   const Intersects = {
     ...Phaser.Geom.Intersects,
     ...MoreIntersects,
-    PointToLine: (point, line) => PointToLine(point, line, POINT_THICKNESS),
+    PointToLine: (point: Point, line: Phaser.Geom.Line) =>
+      PointToLine(point, line, POINT_THICKNESS),
   };
 
-  for (const name of ['Circle', 'Ellipse', 'Polygon', 'Rectangle'])
+  for (const name of containsPointNames)
     Intersects[`PointTo${name}`] = ContainsPoint;
 
   const TYPES = Object.entries(GEOM_NAMES).reduce((arr, [type, name]) => {
@@ -114,7 +130,7 @@ const INTERSECT_MATRIX = (() => {
   return TYPES.map((a) => TYPES.map((b) => Intersects[`${a}To${b}`]));
 })();
 
-export const intersectsGeoms = (g1, g2) => {
+export const intersectsGeoms = (g1: Geom, g2: Geom) => {
   let fn;
 
   if ((fn = INTERSECT_MATRIX[g1.type][g2.type])) return fn(g1, g2);
@@ -131,12 +147,16 @@ export const intersectsGeoms = (g1, g2) => {
   return false;
 };
 
-export const intersectsOtherSolid = (scene, obj, ignore = []) => {
+export const intersectsOtherSolid = (
+  scene: BaseScene,
+  obj: Part,
+  ignore: Part[] = [],
+): Part | null => {
   if (obj.noCollide) return null;
 
   ignore.push(obj);
 
-  const parts = _.difference(scene.parts.getChildren(), ignore);
+  const parts = _.difference(scene.getParts(), ignore);
 
   const geom = obj.geom;
   for (const part of parts)
@@ -144,11 +164,9 @@ export const intersectsOtherSolid = (scene, obj, ignore = []) => {
   return null;
 };
 
-/**
- * @param {(Phaser.Geom.Polygon | Phaser.Geom.Rectangle | Phaser.Geom.Ellipse)[]} geoms
- * @return {Phaser.Geom.Polygon}
- */
-export const mergeGeoms = (geoms) => {
+export const mergeGeoms = (
+  geoms: (Phaser.Geom.Polygon | Phaser.Geom.Rectangle | Phaser.Geom.Ellipse)[],
+): Phaser.Geom.Polygon => {
   if (geoms.length < 2) throw new Error(`mergeGeoms size must be >= 2`);
 
   let shapes = geoms.map((geom) => {
@@ -169,7 +187,9 @@ export const mergeGeoms = (geoms) => {
           p.y,
         ]),
       );
-    throw new Error(`Unsupported type in mergeGeoms: ${GEOM_NAMES[geom.type]}`);
+    throw new Error(
+      `Unsupported type in mergeGeoms: ${GEOM_NAMES[(geom as any).type]}`,
+    );
   });
 
   shapes = shapes.map((s) => {
@@ -196,11 +216,7 @@ export const mergeGeoms = (geoms) => {
   return new Phaser.Geom.Polygon(merged.vertices);
 };
 
-/**
- * @param {Part[]} objs
- * @return {Part[][]}
- */
-export const groupByIntersection = (objs) => {
+export const groupByIntersection = (objs: Part[]): Part[][] => {
   const intersects = _.memoize(
     (a, b) => intersectsGeoms(a.geom, b.geom),
     (a, b) => [a.id, b.id].sort().join(':'),
@@ -236,10 +252,10 @@ export const groupByIntersection = (objs) => {
   return groups;
 };
 
-export const getTopObject = (scene, x, y) => {
+export const getTopObject = (scene: BaseScene, x: number, y: number) => {
   const point = new Phaser.Geom.Point(x, y);
 
-  const children = scene.parts.getChildren();
+  const children = scene.getParts();
   for (let i = children.length - 1; i >= 0; i--) {
     const obj = children[i];
 
@@ -249,17 +265,15 @@ export const getTopObject = (scene, x, y) => {
   return null;
 };
 
-export const anySame = (objA, objB) => {
+export const anySame = (
+  objA: Record<string, any>,
+  objB: Record<string, any>,
+) => {
   for (const key in objA) if (key in objB) return true;
   return false;
 };
 
-/**
- * @template T
- * @param {Record<string, T>} obj
- * @yields {T}
- */
-export function* valuesIterator(obj) {
+export function* valuesIterator<T>(obj: Record<string, T>) {
   for (const k in obj) yield obj[k];
 }
 
@@ -268,12 +282,15 @@ export function* valuesIterator(obj) {
  * @param {Record<string, T>} obj
  * @return {T}
  */
-export const getFirstValue = (obj) => {
+export const getFirstValue = <T>(obj: Record<string, T>): T | null => {
   for (const id in obj) return obj[id];
   return null;
 };
 
-export const getFirstSameKeyValue = (a, b) => {
+export const getFirstSameKeyValue = <T>(
+  a: Record<string, T>,
+  b: Record<string, T>,
+): T | null => {
   for (const k in a) if (k in b) return a[k];
 
   for (const k in b) if (k in a) return a[k];
@@ -281,10 +298,12 @@ export const getFirstSameKeyValue = (a, b) => {
   return null;
 };
 
+type Emitter = any;
+
 export class EventManager {
   events = [];
 
-  on(eventEmitter, eventName, cb) {
+  on(eventEmitter: Emitter, eventName: string, cb: (...args: any[]) => any) {
     const [on, off] =
       'on' in eventEmitter
         ? ['on', 'off']
@@ -298,7 +317,11 @@ export class EventManager {
     return this;
   }
 
-  off(eventEmitter, eventName, cb) {
+  off(
+    eventEmitter?: Emitter,
+    eventName?: string,
+    cb?: (...args: any[]) => any,
+  ) {
     this.events = this.events.filter((e) => {
       if (cb) {
         if (
@@ -322,7 +345,10 @@ export class EventManager {
   }
 }
 
-export const factoryRotateAround = (center, angle) => {
+export const factoryRotateAround = (
+  center: Point,
+  angle: number,
+): ((point: Point) => Point) => {
   const cos = Math.cos(angle),
     sin = Math.sin(angle);
 
@@ -338,7 +364,7 @@ export const factoryRotateAround = (center, angle) => {
   };
 };
 
-function* iterateBoundPoints(rect, angle) {
+function* iterateBoundPoints(rect: Phaser.Geom.Rectangle, angle: number) {
   const rotateAround = factoryRotateAround(
     { x: rect.centerX ?? rect.x, y: rect.centerY ?? rect.y },
     angle,
@@ -350,7 +376,7 @@ function* iterateBoundPoints(rect, angle) {
   yield rotateAround({ x: rect.left, y: rect.bottom });
 }
 
-const defaultEllipsePointCount = (w, h) => {
+const defaultEllipsePointCount = (w: number, h: number): number => {
   const m = Math.max(w, h);
   if (m <= 100) return 16;
   if (m <= 1000) return 32;
@@ -358,10 +384,10 @@ const defaultEllipsePointCount = (w, h) => {
 };
 
 export const getEllipsePoints = (
-  ox,
-  oy,
-  w,
-  h,
+  ox: number,
+  oy: number,
+  w: number,
+  h: number,
   rotation = 0,
   numPoints = defaultEllipsePointCount(w, h),
 ) => {
@@ -387,11 +413,12 @@ export const getEllipsePoints = (
   return points;
 };
 
-export const getBoundPoints = (rect, angle) => [
-  ...iterateBoundPoints(rect, angle),
-];
+export const getBoundPoints = (
+  rect: Phaser.Geom.Rectangle,
+  angle: number,
+): Point[] => Array.from(iterateBoundPoints(rect, angle));
 
-export const getObjectsBounds = (objs) => {
+export const getObjectsBounds = (objs: Part[]): Phaser.Geom.Rectangle => {
   const o = objs[0];
   if (!o) return null;
 
@@ -420,8 +447,8 @@ export const getObjectsBounds = (objs) => {
 };
 
 export const fitCameraToObjs = (
-  camera,
-  objs,
+  camera: Phaser.Cameras.Scene2D.Camera,
+  objs: Part[],
   { padding = 50, minWidth = 800 } = {},
 ) => {
   if (objs.length === 0) return;
@@ -445,22 +472,21 @@ export const fitCameraToObjs = (
   camera.setZoom(camera.width / bounds.width);
 };
 
-const deterministicColor = (seed) => {
+const deterministicColor = (seed: string): number => {
   const rng = new Phaser.Math.RandomDataGenerator([seed]);
   return Phaser.Display.Color.HSLToColor(rng.frac(), 1, 0.5).color;
 };
 
-/**
- * @param {Phaser.Scene} scene
- * @param {string} key
- * @param {Phaser.Geom.Rectangle | Point} shape
- */
-export const debugShape = (scene, key, shape) => {
+export const debugShape = (
+  scene: BaseScene,
+  key: string,
+  shape: Phaser.Geom.Rectangle | Point,
+) => {
   if (shape instanceof Phaser.Geom.Rectangle) {
     const debug = ((scene.debugShapes ||= {})[key] ||= scene.add
       .rectangle(0, 0, 1, 1, 0, 0)
       .setStrokeStyle(4, deterministicColor(key))
-      .setOrigin(0, 0));
+      .setOrigin(0, 0)) as Phaser.GameObjects.Rectangle;
     debug.setPosition(shape.x, shape.y).setSize(shape.width, shape.height);
     return debug;
   } else if (validPoint(shape)) {

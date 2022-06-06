@@ -20,6 +20,8 @@ export default class Part extends Phaser.GameObjects.Sprite {
   strokeWidth = 0;
   particles = null;
 
+  noCollide = false;
+
   constructor(scene, x, y) {
     super(scene, x, y);
     scene.add.existing(this);

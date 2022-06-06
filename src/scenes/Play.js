@@ -10,7 +10,9 @@ import { MAX_PARTS, CONNECTOR_RADIUS } from 'src/const';
 import { fitCameraToObjs, getObjectsBounds, validPoint } from 'lib/utils';
 import { clonePhysics } from 'src/lib/physics';
 
-export default class Play extends Phaser.Scene {
+import { BaseScene } from './Scene';
+
+export default class Play extends BaseScene {
   // used by multiple tools e.g. SelectTool
   /** @type {Phaser.GameObjects.GameObject[]} */
   selected;

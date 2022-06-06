@@ -7,7 +7,9 @@ import { fitCameraToObjs, groupByIntersection, mergeGeoms } from 'lib/utils';
 import { config } from 'src/const';
 import { Polygon } from 'src/objects/Polygon';
 
-export default class Editor extends Phaser.Scene {
+import { BaseScene } from './Scene';
+
+export default class Editor extends BaseScene {
   /** @type {Phaser.GameObjects.GameObject[]} */
   selected;
 
