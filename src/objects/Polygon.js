@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import { factoryMapNumber } from 'src/lib/utils';
+import { factoryMapNumber } from 'lib/utils';
 
 import { Rectangle } from './Shape';
 
@@ -42,7 +42,7 @@ export class Polygon extends Rectangle {
     this.setSize(bounds.width, bounds.height);
   }
 
-  mutateBounds(bounds, iBounds, iPoints) {
+  mutateBounds(bounds, iBounds, iPoints, _deltaRotation) {
     const mapX = factoryMapNumber(
       iBounds.x,
       iBounds.right,
@@ -56,11 +56,29 @@ export class Polygon extends Rectangle {
       bounds.bottom,
     );
 
+    const from = {
+      x: iBounds.centerX,
+      y: iBounds.centerY,
+    };
+
+    // handle floating point errors
+    // if (!deltaRotation || Math.abs(deltaRotation) < 0.0001) deltaRotation = 0;
+
+    // let rotateAround;
+    // if (deltaRotation !== 0) {
+    //   rotateAround = factoryRotateAround(from, -deltaRotation);
+    // }
+
     for (let i = 0, len = iPoints.length; i < len; i++) {
       const p = this.polygon.points[i];
       const iP = iPoints[i];
-      p.x = this.x + mapX(iP.x + iBounds.centerX) - bounds.centerX;
-      p.y = this.y + mapY(iP.y + iBounds.centerY) - bounds.centerY;
+      // const delta = {
+      //   x: iP.x,
+      //   y: iP.y,
+      // };
+      // rotateAround?.(delta);
+      p.x = mapX(from.x + iP.x);
+      p.y = mapY(from.y + iP.y);
     }
 
     this.localizePoints();

@@ -1,7 +1,12 @@
 /* eslint-disable consistent-return */
 import Phaser from 'phaser';
 
-import { constrain, EventManager, factoryRotateAround } from 'lib/utils';
+import {
+  constrain,
+  EventManager,
+  factoryRotateAround,
+  midpoint,
+} from 'lib/utils';
 import Controls from 'src/objects/Controls';
 
 import Tool from './Tool';
@@ -76,6 +81,8 @@ export default class ControlsTool extends Tool {
           },
           c.rotation,
         );
+        oppCorner.x += obj.x;
+        oppCorner.y += obj.y;
 
         this.controlDragging = {
           obj,
@@ -87,19 +94,17 @@ export default class ControlsTool extends Tool {
           },
 
           // opposite corner from edgeObj
-          oppCorner: {
-            x: obj.x + oppCorner.x,
-            y: obj.y + oppCorner.y,
-          },
+          oppCorner,
+
+          center: midpoint(obj, oppCorner),
 
           invW: 1 / c.width, // inverse initial control height
           invH: 1 / c.height, // inverse initial control width
 
           iSelected: this.scene.selected.map((s) => ({
             obj: s,
+            rotation: s.rotation,
             bounds: new Phaser.Geom.Rectangle(
-              // s.x,
-              // s.y,
               s.x - s.width / 2,
               s.y - s.height / 2,
               s.width,
@@ -115,7 +120,7 @@ export default class ControlsTool extends Tool {
 
     if (c.rotateObj.getBounds(tempBounds).contains(x, y)) {
       this.controlRotating = {
-        sr: c.rotation,
+        iRotation: c.rotation,
         iSelected: this.scene.selected.map((s) => ({
           obj: s,
           x: s.x,
@@ -128,29 +133,74 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  // TODO: fix for rotated objects
+  /** @type {Phaser.Geom.Rectangle} */
+  _bounds;
+
+  // NOTE: this method does not sheer non-polygon shapes when we're scaling
+  // the shape at a different angle than the shape's angle. We would have
+  // to convert the ellipse/rectangle to a polygon first, which seems worse.
   updateSelected(draggedPos) {
-    const { oppCorner, invW, invH, iSelected } = this.controlDragging;
-    const { width: cw, height: ch } = this.controls;
+    const {
+      oppCorner,
+      invW,
+      invH,
+      iSelected,
+      center: iCenter,
+    } = this.controlDragging;
+    const c = this.controls;
 
-    const center = oppCorner;
-    // const center = {
-    //   x: (draggedPos.x + oppCorner.x) * 0.5,
-    //   y: (draggedPos.y + oppCorner.y) * 0.5,
-    // };
+    const newCenter = midpoint(draggedPos, oppCorner);
 
-    const scaleX = cw * invW;
-    const scaleY = ch * invH;
+    const origin = iCenter;
+
+    const iCenterRot = Phaser.Math.RotateAround(
+      { x: iCenter.x, y: iCenter.y },
+      origin.x,
+      origin.y,
+      -c.rotation,
+    );
+    const newCenterRot = Phaser.Math.RotateAround(
+      { x: newCenter.x, y: newCenter.y },
+      origin.x,
+      origin.y,
+      -c.rotation,
+    );
+
+    const scaleX = c.width * invW;
+    const scaleY = c.height * invH;
 
     const bounds = (this._bounds ||= new Phaser.Geom.Rectangle());
 
-    for (const { obj, bounds: iBounds, points: iPoints } of iSelected) {
-      bounds.x = center.x - scaleX * (center.x - iBounds.x);
-      bounds.y = center.y - scaleY * (center.y - iBounds.y);
-      bounds.right = center.x - scaleX * (center.x - iBounds.right);
-      bounds.bottom = center.y - scaleY * (center.y - iBounds.bottom);
+    for (const {
+      obj,
+      bounds: iBounds,
+      points: iPoints,
+      rotation: iRotation,
+    } of iSelected) {
+      const iPosRot = Phaser.Math.RotateAround(
+        { x: iBounds.centerX, y: iBounds.centerY },
+        origin.x,
+        origin.y,
+        -c.rotation,
+      );
 
-      obj.mutateBounds(bounds, iBounds, iPoints);
+      const pos = Phaser.Math.RotateAround(
+        {
+          x: newCenterRot.x + (iPosRot.x - iCenterRot.x) * scaleX,
+          y: newCenterRot.y + (iPosRot.y - iCenterRot.y) * scaleY,
+        },
+        origin.x,
+        origin.y,
+        c.rotation,
+      );
+
+      bounds.width = iBounds.width * scaleX;
+      bounds.height = iBounds.height * scaleY;
+
+      bounds.centerX = pos.x;
+      bounds.centerY = pos.y;
+
+      obj.mutateBounds(bounds, iBounds, iPoints, iRotation - c.rotation);
 
       obj.rerender();
     }
@@ -158,7 +208,7 @@ export default class ControlsTool extends Tool {
 
   updateSelectedRotation() {
     const { rotation } = this.controls;
-    const { iSelected, sr } = this.controlRotating;
+    const { iSelected, iRotation } = this.controlRotating;
 
     const rotateAround = factoryRotateAround(
       {
@@ -171,9 +221,9 @@ export default class ControlsTool extends Tool {
     for (const s of iSelected) {
       const { obj } = s;
 
-      obj.setRotation(s.angle + rotation - sr);
+      obj.setRotation(s.angle + rotation - iRotation);
       if (iSelected.length > 1) {
-        const p = rotateAround(s);
+        const p = rotateAround({ x: s.x, y: s.y });
 
         obj.setPosition(p.x, p.y);
       }

@@ -78,6 +78,17 @@ export function* circle4Points(radius, startRotation = 0) {
   yield [-sin, cos];
 }
 
+/**
+ * @param {Point} a
+ * @param {Point} b
+ */
+export const midpoint = (a, b) => {
+  return {
+    x: (a.x + b.x) * 0.5,
+    y: (a.y + b.y) * 0.5,
+  };
+};
+
 const INTERSECT_MATRIX = (() => {
   const POINT_THICKNESS = 6;
 
@@ -315,14 +326,15 @@ export const factoryRotateAround = (center, angle) => {
   const cos = Math.cos(angle),
     sin = Math.sin(angle);
 
-  return (obj) => {
-    const px = obj.x - center.x,
-      py = obj.y - center.y;
+  // this method mutates `point`
+  return (point) => {
+    const px = point.x - center.x,
+      py = point.y - center.y;
 
-    return {
-      x: cos * px - sin * py + center.x,
-      y: sin * px + cos * py + center.y,
-    };
+    point.x = cos * px - sin * py + center.x;
+    point.y = sin * px + cos * py + center.y;
+
+    return point;
   };
 };
 
@@ -424,4 +436,36 @@ export const fitCameraToObjs = (
     bounds.centerY - camera.height / 2,
   );
   camera.setZoom(camera.width / bounds.width);
+};
+
+const deterministicColor = (seed) => {
+  const rng = new Phaser.Math.RandomDataGenerator([seed]);
+  return Phaser.Display.Color.HSLToColor(rng.frac(), 1, 0.5).color;
+};
+
+/**
+ * @param {Phaser.Scene} scene
+ * @param {string} key
+ * @param {Phaser.Geom.Rectangle | Point} shape
+ */
+export const debugShape = (scene, key, shape) => {
+  if (shape instanceof Phaser.Geom.Rectangle) {
+    const debug = ((scene.debugShapes ||= {})[key] ||= scene.add
+      .rectangle(0, 0, 1, 1, 0, 0)
+      .setStrokeStyle(4, deterministicColor(key))
+      .setOrigin(0, 0));
+    debug.setPosition(shape.x, shape.y).setSize(shape.width, shape.height);
+    return debug;
+  } else if (validPoint(shape)) {
+    const debug = ((scene.debugShapes ||= {})[key] ||= scene.add.circle(
+      0,
+      0,
+      4,
+      deterministicColor(key),
+      1,
+    ));
+    debug.setPosition(shape.x, shape.y);
+    return debug;
+  }
+  return null;
 };
