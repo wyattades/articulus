@@ -20,7 +20,7 @@ export default class Game extends Phaser.Game {
       physics: {
         default: 'matter',
         matter: {
-          enableSleep: true,
+          enableSleeping: true,
           debug: !!settingsSaver.get('debug'),
         },
       },
