@@ -4,20 +4,19 @@ import { useEffect, useRef, useState } from 'react';
 export const useSubscribe = <V>(
   emitter: any,
   eventName: string | string[],
-  initValue?: (() => V) | V,
-  mapValue?: (v: any) => V,
+  mapValue: (arg?: any) => V,
+  runMapValueOnUpdate = false,
 ): V => {
-  const [value, setValue] = useState(initValue);
+  const [value, setValue] = useState(mapValue);
   const first = useRef(true);
 
   useEffect(() => {
-    if (!first.current)
-      setValue(_.isFunction(initValue) ? initValue() : initValue);
+    if (!first.current) setValue(mapValue());
     else first.current = false;
 
     const eventNames = _.flatten([eventName]);
     const cb = (next: V) => {
-      setValue(mapValue ? mapValue(next) : next);
+      setValue(runMapValueOnUpdate ? mapValue(next) : next);
     };
     for (const name of eventNames) emitter.on(name, cb);
     return () => {

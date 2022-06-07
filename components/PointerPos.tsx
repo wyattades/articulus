@@ -7,11 +7,11 @@ export const PointerPos: React.FC = () => {
   const { worldX, worldY } = useSubscribe(
     playScene.input,
     'pointermove',
-    () => ({
-      worldX: playScene.input.activePointer.worldX,
-      worldY: playScene.input.activePointer.worldY,
+    (evt = playScene.input.activePointer) => ({
+      worldX: evt.worldX,
+      worldY: evt.worldY,
     }),
-    (evt) => ({ worldX: evt.worldX, worldY: evt.worldY }),
+    true,
   );
 
   return (

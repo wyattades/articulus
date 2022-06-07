@@ -60,9 +60,9 @@
     filter: brightness(93%);
   }
 
-  border: 2px solid transparent;
-  &--active {
-    border-color: #b6b6b6;
+  &[aria-pressed='true'] {
+    box-shadow: -2px -4px 0px 0px #0006 inset,
+      2px 2px 0px 0px rgba(206, 206, 206, 0.467) inset;
   }
   &--danger {
     background: red;

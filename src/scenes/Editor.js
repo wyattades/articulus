@@ -95,6 +95,8 @@ export default class Editor extends BaseScene {
   enableSnapping(enabled) {
     settingsSaver.set('snapping', enabled);
 
+    this.events.emit('setGridSnapping', enabled);
+
     this.gridObj.setVisible(enabled).setActive(enabled);
 
     this.gridSize = enabled ? this.iGridSize : null;

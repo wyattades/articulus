@@ -82,10 +82,8 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
           return (
             <button
               key={toolType}
-              className={clsx(
-                'ui-tool-button',
-                activeToolType === toolType && 'ui-tool-button--active',
-              )}
+              className="ui-tool-button"
+              aria-pressed={activeToolType === toolType}
               style={{
                 backgroundColor: colorIntToHex(t.color),
                 color: colorIntToHex(colorInverse(t.color)),

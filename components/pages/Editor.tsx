@@ -17,7 +17,13 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
   const game = useGame();
   const editScene = useScene<EditorScene>();
 
-  const activeToolType = useSubscribe(
+  const gridSnapping = useSubscribe(
+    editScene.events,
+    'setGridSnapping',
+    () => !!settingsSaver.get('snapping'),
+  );
+
+  const activeToolType: string = useSubscribe(
     editScene.events,
     'setTool',
     () => editScene.tm.activeToolType,
@@ -32,8 +38,8 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
   const pendingPolygon = useSubscribe(
     editScene.events,
     ['polygon:start', 'polygon:end'],
-    false,
     () => !!(editScene.tm.getTool('polygon_shape') as PenTool | null)?.pending,
+    true,
   );
 
   const editingPolygon = activeToolType === 'edit_points';
@@ -59,10 +65,8 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
           return (
             <button
               key={toolType}
-              className={clsx(
-                'ui-tool-button',
-                activeToolType === toolType && 'ui-tool-button--active',
-              )}
+              className="ui-tool-button"
+              aria-pressed={activeToolType === toolType}
               style={{
                 backgroundColor: colorIntToHex(t.color),
                 color: colorIntToHex(colorInverse(t.color)),
@@ -96,8 +100,9 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
         </button>
         <button
           className="ui-tool-button"
+          aria-pressed={gridSnapping}
           onClick={() => {
-            editScene.enableSnapping(!settingsSaver.get('snapping'));
+            editScene.enableSnapping(!gridSnapping);
           }}
         >
           Grid Snapping?
