@@ -1,7 +1,7 @@
-const { resolve } = require('path');
+import { resolve } from 'path';
 
 /** @type {import('next').NextConfig} */
-module.exports = {
+const nextConfig = {
   env: {
     HOST_URL: process.env.VERCEL_URL
       ? 'https://articulus.vercel.app'
@@ -14,12 +14,14 @@ module.exports = {
     ignoreDuringBuilds: true,
   },
 
+  /** @param {import('webpack').Configuration} config */
   webpack(config) {
-    Object.assign(config.resolve.alias, {
-      ph: resolve(__dirname, 'node_modules/phaser/src'),
-      phaser: resolve(__dirname, 'src/phaser.js'),
-    });
+    // TODO: this doesn't work :(
+    config.resolve.alias.ph = resolve(process.cwd(), 'node_modules/phaser/src');
+    config.resolve.alias.phaser = resolve(process.cwd(), 'src/phaser.js');
 
     return config;
   },
 };
+
+export default nextConfig;
