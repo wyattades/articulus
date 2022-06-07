@@ -38,19 +38,26 @@ export default class ToolManager {
     return this.tools.find((t) => t.toolKey === toolType);
   }
 
-  setTool(toolType) {
+  setTool(toolType, ...args) {
     this.destroyTools();
 
-    const types = [...this.topTypes];
+    let types;
     if (toolType === 'select') {
-      types.push('drag', 'select');
+      types = [...this.topTypes, 'drag', toolType];
 
       if (this.scene.scene.key === 'Editor') types.unshift('controls');
-    } else if (toolType) types.push(toolType);
+    } else if (toolType === 'edit_points') {
+      types = [toolType, ...this.topTypes];
+    } else if (toolType) types = [...this.topTypes, toolType];
+    else {
+      types = [...this.topTypes];
+    }
 
-    this.tools = types.map(
-      (type) => new TOOLS[type].ToolClass(this.scene, type),
-    );
+    this.tools = types.map((type) => {
+      const ToolClass = TOOLS[type]?.ToolClass;
+      if (!ToolClass) throw new Error(`Invalid toolType: ${type}`);
+      return new ToolClass(this.scene, type, ...args);
+    });
 
     this.activeToolType = toolType;
     this.scene.events.emit('setTool', toolType);

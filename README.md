@@ -23,7 +23,6 @@
 - user login system
 - high score system
 - Show user that object placement is invalid _while_ placing/dragging object
-- editable polygon vertices
 - undo/redo capability
 
 ## Work in progress

@@ -11,6 +11,7 @@ import { settingsSaver } from 'src/lib/saver';
 import EditorScene from 'src/scenes/Editor';
 import { FlashText } from 'components/FlashText';
 import type PenTool from 'src/tools/PenTool';
+import { Polygon } from 'src/objects/Polygon';
 
 const EditUI: React.FC<{ mapKey?: string }> = () => {
   const game = useGame();
@@ -103,6 +104,16 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
 
       {selectedItems?.length ? (
         <div className="absolute left-0 bottom-0 p-4 space-y-2 flex flex-col">
+          {selectedItems.length === 1 && selectedItems[0] instanceof Polygon ? (
+            <button
+              className="ui-tool-button"
+              onClick={() =>
+                editScene.tm.setTool('edit_points', selectedItems[0])
+              }
+            >
+              Edit points
+            </button>
+          ) : null}
           {selectedItems.length >= 2 ? (
             <button
               className="ui-tool-button"

@@ -9,6 +9,7 @@ import NavTool from './NavTool';
 import DragTool from './DragTool';
 import ControlsTool from './ControlsTool';
 import PenTool from './PenTool';
+import EditPointsTool from './EditPointsTool';
 
 export { default as Tool } from './Tool';
 
@@ -93,6 +94,9 @@ export const TOOLS = {
   },
 
   // non-UI tools:
+  edit_points: {
+    ToolClass: EditPointsTool,
+  },
   nav: {
     ToolClass: NavTool,
   },

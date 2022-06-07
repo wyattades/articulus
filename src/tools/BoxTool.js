@@ -24,8 +24,8 @@ export default class BoxTool extends Tool {
         ? new Phaser.Geom.Point(this.box.x, this.box.y)
         : this.box;
 
-    const intersected = this.scene.parts
-      .getChildren()
+    const intersected = this.scene
+      .getParts()
       .filter((child) => intersectsGeoms(boxGeom, child.geom));
 
     return intersected;

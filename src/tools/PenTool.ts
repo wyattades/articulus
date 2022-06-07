@@ -77,7 +77,7 @@ export default class PenTool extends Tool {
     }
 
     this.pending.objs.push(
-      this.scene.add.circle(next.x, next.y, 4, 0x028900).setDepth(1),
+      this.scene.add.circle(next.x, next.y, 5, 0xff0000).setDepth(1),
     );
 
     if (this.pending.points.length > 0) {

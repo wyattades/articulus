@@ -161,6 +161,7 @@ export default class Editor extends BaseScene {
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 
     this.input.on('pointerup', () => this.saveLevel());
+    this.input.keyboard.on('keyup', () => this.saveLevel());
   }
 
   update(_t, delta) {
