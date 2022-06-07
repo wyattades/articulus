@@ -68,7 +68,9 @@ export default class Editor extends BaseScene {
   mergeSelected() {
     const groups = groupByIntersection(this.selected);
 
-    const newObjs = groups.map((g) => {
+    let someMerged = false;
+
+    const resultObjs = groups.map((g) => {
       if (g.length === 1) return g[0];
 
       const mergedPolygon = mergeGeoms(g.map((obj) => obj.geom));
@@ -80,10 +82,14 @@ export default class Editor extends BaseScene {
 
       this.parts.add(part);
 
+      someMerged = true;
+
       return part;
     });
 
-    this.events.emit('setSelected', newObjs);
+    if (!someMerged) this.events.emit('showFlash', 'Objects must be touching!');
+
+    this.events.emit('setSelected', resultObjs);
   }
 
   enableSnapping(enabled) {

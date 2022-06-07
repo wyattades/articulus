@@ -36,6 +36,8 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
     () => !!(editScene.tm.getTool('polygon_shape') as PenTool | null)?.pending,
   );
 
+  const editingPolygon = activeToolType === 'edit_points';
+
   const saveLevel = async () => {
     let mapName = editScene.mapSaver.name;
     if (!mapName) {
@@ -137,13 +139,21 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
         </div>
       ) : null}
 
-      {pendingPolygon && (
+      {editingPolygon ? (
+        <p className="ui-text p-4 absolute left-1/2 bottom-4 -translate-x-1/2 text-center pointer-events-none">
+          Right-click to add points.
+          <br />
+          Press ENTER to save changes,
+          <br />
+          or ESC to cancel
+        </p>
+      ) : pendingPolygon ? (
         <p className="ui-text p-4 absolute left-1/2 bottom-4 -translate-x-1/2 text-center pointer-events-none">
           Press ENTER to create polygon,
           <br />
           or ESC to cancel
         </p>
-      )}
+      ) : null}
 
       <PointerPos />
     </div>

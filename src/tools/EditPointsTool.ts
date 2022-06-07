@@ -4,17 +4,20 @@ import Flatten from '@flatten-js/core';
 import { EventManager } from 'src/lib/utils';
 import { Polygon } from 'src/objects/Polygon';
 import type { BaseScene } from 'src/scenes/Scene';
+import { minDistance } from 'src/lib/minDistance';
 
 import Tool from './Tool';
 
 export default class EditPointsTool extends Tool {
   eventManager = new EventManager()
-    .on(this.scene.input.keyboard, 'keydown-ESC', () =>
-      this.createShape(true, true),
-    )
-    .on(this.scene.input.keyboard, 'keydown-ENTER', () =>
-      this.createShape(true, false),
-    )
+    .on(this.scene.input.keyboard, 'keydown-ESC', () => {
+      this.createShape(true, true);
+      this.unload();
+    })
+    .on(this.scene.input.keyboard, 'keydown-ENTER', () => {
+      this.createShape(true, false);
+      this.unload();
+    })
     .on(this.scene.input.keyboard, 'keydown-DELETE', () =>
       this.deleteSelected(),
     )
@@ -28,7 +31,7 @@ export default class EditPointsTool extends Tool {
 
   unloaded = false;
 
-  constructor(scene: BaseScene, toolKey: string, original: Polygon) {
+  constructor(scene: BaseScene, toolKey: string, readonly original: Polygon) {
     super(scene, toolKey);
 
     this.vertices = [];
@@ -44,7 +47,8 @@ export default class EditPointsTool extends Tool {
 
     this.createLines();
 
-    original.destroy();
+    // set it to invisible and destroy it when this tool unloads so the SaveManager still saves it
+    original.setActive(false).setVisible(false);
   }
 
   createVert(x: number, y: number) {
@@ -68,6 +72,7 @@ export default class EditPointsTool extends Tool {
   }
 
   unload() {
+    this.original.destroy();
     while (this.vertices.length > 0) this.vertices.pop().destroy();
     while (this.lines.length > 0) this.lines.pop().destroy();
   }
@@ -82,7 +87,6 @@ export default class EditPointsTool extends Tool {
     if (points.length < 3) {
       this.scene.events.emit('showFlash', 'Not enough points!');
 
-      this.unload();
       if (setTool) this.scene.tm.setTool('polygon_shape');
       return;
     }
@@ -92,7 +96,6 @@ export default class EditPointsTool extends Tool {
     if (!fpoly.isValid()) {
       this.scene.events.emit('showFlash', 'Invalid polygon!');
 
-      this.unload();
       if (setTool) this.scene.tm.setTool('polygon_shape');
       return;
     }
@@ -111,7 +114,6 @@ export default class EditPointsTool extends Tool {
       newParts.push(part);
     }
 
-    this.unload();
     if (setTool) {
       this.scene.tm.setTool('select');
       this.scene.events.emit('setSelected', newParts);
@@ -145,15 +147,25 @@ export default class EditPointsTool extends Tool {
 
     this.selected = null;
 
+    // example:
+    //   original: --L0-- P0 --L1-- P1 --L2-- P2
+    //   after deleting P1: --L0-- P0 --L2-- P2
+
     const obj = this.vertices[index];
     obj.destroy();
     this.vertices.splice(index, 1);
 
-    // TODO: could be more efficient, but I'm too lazy
-    this.createLines();
-    // this.lines[index].destroy();
-    // this.lines[(index + 1) % this.lines.length].destroy();
-    // this.lines.splice(index, 2, )
+    const l = this.lines[(index + 1) % this.lines.length];
+    const a = this.vertices[(index - 1) % this.vertices.length];
+    l.setTo(
+      a.x,
+      a.y,
+      (l.geom as Phaser.Geom.Line).x2,
+      (l.geom as Phaser.Geom.Line).y2,
+    );
+
+    this.lines[index].destroy();
+    this.lines.splice(index, 1);
   }
 
   handlePointerDown(
@@ -161,13 +173,33 @@ export default class EditPointsTool extends Tool {
     y: number,
     { button }: Phaser.Input.Pointer,
   ): boolean | void {
-    if (button === 1) {
-      // TODO
-      // const p = {x,y};
-      // this.scene.snapToGrid(p);
-      // new Phaser.Geom.Line.GetNormal()
-      // const sorted = _.sortBy(this.lines.map((_l, i) => i), (index) => Phaser.Math.Distance.BetweenPointsSquared((this.vertices[index]), p));
-      // this.vertices.splice(index, this.createVert(p.x,p.y ));
+    if (button === 2) {
+      this.setSelected(null);
+
+      const p = { x, y };
+      this.scene.snapToGrid(p);
+
+      // example:
+      //   original: P0 --Dist0-- P1 --Dist1-- P2
+      //   let Dist1 be the smallest
+      //   after inserting PX: P0 P1 PX P2
+
+      const nearestEdgeIndex = _.minBy(
+        this.vertices.map((_l, i) => i),
+        (i) =>
+          minDistance(
+            this.vertices[i],
+            this.vertices[(i + 1) % this.vertices.length],
+            p,
+          ),
+      );
+      this.vertices.splice(
+        (nearestEdgeIndex + 1) % this.vertices.length,
+        0,
+        this.createVert(p.x, p.y),
+      );
+
+      this.createLines(); // TODO: be more efficient
     } else if (button === 0) {
       const tempCircle = new Phaser.Geom.Circle(0, 0, this.vertices[0]?.radius);
 
@@ -209,6 +241,7 @@ export default class EditPointsTool extends Tool {
 
   destroy() {
     this.createShape(false, true);
+    this.unload();
 
     this.eventManager.off();
   }
