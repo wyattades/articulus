@@ -47,7 +47,7 @@ export default class ToolManager {
 
       if (this.scene.scene.key === 'Editor') types.unshift('controls');
     } else if (toolType === 'edit_points') {
-      types = [toolType, ...this.topTypes];
+      types = [toolType, ...this.topTypes, 'select_points'];
     } else if (toolType) types = [...this.topTypes, toolType];
     else {
       types = [...this.topTypes];

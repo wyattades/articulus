@@ -7,6 +7,19 @@ import type { BaseScene } from 'src/scenes/Scene';
 import { minDistance } from 'src/lib/minDistance';
 
 import Tool from './Tool';
+import SelectPointsTool from './SelectPointsTool';
+
+export class Vert extends Phaser.GameObjects.Arc {
+  _selected = false;
+  setHighlight(isSelected: boolean) {
+    isSelected = !!isSelected;
+    if (this._selected === isSelected) return;
+    this._selected = isSelected;
+
+    if (isSelected) this.setStrokeStyle(2, 0xffffff, 1);
+    else this.setStrokeStyle(0, 0, 0);
+  }
+}
 
 export default class EditPointsTool extends Tool {
   eventManager = new EventManager()
@@ -17,15 +30,9 @@ export default class EditPointsTool extends Tool {
     .on(this.scene.input.keyboard, 'keydown-ENTER', () => {
       this.createShape(true, false);
       this.unload();
-    })
-    .on(this.scene.input.keyboard, 'keydown-DELETE', () =>
-      this.deleteSelected(),
-    )
-    .on(this.scene.input.keyboard, 'keydown-BACKSPACE', () =>
-      this.deleteSelected(),
-    );
+    });
 
-  vertices: Phaser.GameObjects.Arc[];
+  vertices: Vert[];
   lines: Phaser.GameObjects.Line[];
   originalPoints: Point[];
 
@@ -52,7 +59,11 @@ export default class EditPointsTool extends Tool {
   }
 
   createVert(x: number, y: number) {
-    return this.scene.add.circle(x, y, 5, 0xff0000).setDepth(1);
+    const vert = new Vert(this.scene, x, y, 5)
+      .setFillStyle(0xff0000)
+      .setDepth(1);
+    this.scene.add.existing(vert);
+    return vert;
   }
 
   createLines() {
@@ -120,52 +131,33 @@ export default class EditPointsTool extends Tool {
     }
   }
 
-  dragging: {
-    obj: Phaser.GameObjects.Arc;
-    lineTo: Phaser.GameObjects.Line;
-    lineFrom: Phaser.GameObjects.Line;
-    // dx: number;
-    // dy: number;
-  } | null = null;
+  dragging:
+    | {
+        obj: Phaser.GameObjects.Arc;
+        dx: number;
+        dy: number;
+        index: number;
+      }[]
+    | null = null;
 
-  selected: number | null = null;
-  setSelected(index: number | null) {
-    if (this.selected != null) {
-      const prevSelected = this.vertices[this.selected];
-      prevSelected.setStrokeStyle(0, 0, 0);
-    }
-    if (index != null && this.selected !== index) {
-      const obj = this.vertices[index];
-      obj.setStrokeStyle(2, 0xffffff, 1);
-    }
-    this.selected = index;
-  }
+  selectedVerts: Vert[] = [];
 
   deleteSelected() {
-    const index = this.selected;
-    if (index == null) return;
+    _.pullAll(this.vertices, this.selectedVerts);
 
-    this.selected = null;
+    for (const v of this.selectedVerts) {
+      v.destroy();
+    }
 
-    // example:
-    //   original: --L0-- P0 --L1-- P1 --L2-- P2
-    //   after deleting P1: --L0-- P0 --L2-- P2
+    this.selectedVerts = [];
 
-    const obj = this.vertices[index];
-    obj.destroy();
-    this.vertices.splice(index, 1);
+    this.createLines(); // TODO: be more efficient
+  }
 
-    const l = this.lines[(index + 1) % this.lines.length];
-    const a = this.vertices[(index - 1) % this.vertices.length];
-    l.setTo(
-      a.x,
-      a.y,
-      (l.geom as Phaser.Geom.Line).x2,
-      (l.geom as Phaser.Geom.Line).y2,
+  updateSelected(next: Vert[]) {
+    (this.scene.tm.getTool('select_points') as SelectPointsTool).setSelected(
+      next,
     );
-
-    this.lines[index].destroy();
-    this.lines.splice(index, 1);
   }
 
   handlePointerDown(
@@ -174,7 +166,7 @@ export default class EditPointsTool extends Tool {
     { button }: Phaser.Input.Pointer,
   ): boolean | void {
     if (button === 2) {
-      this.setSelected(null);
+      this.updateSelected([]);
 
       const p = { x, y };
       this.scene.snapToGrid(p);
@@ -202,35 +194,61 @@ export default class EditPointsTool extends Tool {
       this.createLines(); // TODO: be more efficient
     } else if (button === 0) {
       const tempCircle = new Phaser.Geom.Circle(0, 0, this.vertices[0]?.radius);
-
-      for (let i = 0, len = this.vertices.length; i < len; i++) {
-        const obj = this.vertices[i];
+      for (const obj of this.vertices) {
         if (tempCircle.setPosition(obj.x, obj.y).contains(x, y)) {
-          this.dragging = {
-            obj,
-            lineTo: this.lines[i],
-            lineFrom: this.lines[(i + 1) % this.lines.length],
-          };
-          this.setSelected(i);
+          this.updateSelected(
+            this.selectedVerts.includes(obj) ? this.selectedVerts : [obj],
+          );
+
+          this.dragging = this.selectedVerts.map((v) => {
+            const index = this.vertices.indexOf(v);
+            return {
+              obj: v,
+              index: index === -1 ? null : index, // danger!
+              dx: v.x - x,
+              dy: v.y - y,
+            };
+          });
           return false;
         }
       }
-      this.setSelected(null);
     }
+  }
+
+  getLine(i: number) {
+    const len = this.lines.length;
+    if (len === 0) throw new Error(`Unexpected empty lines`);
+    while (i < 0) i += len;
+    while (i >= len) i -= len;
+    return this.lines[i];
+  }
+  getVert(i: number) {
+    const len = this.vertices.length;
+    if (len === 0) throw new Error(`Unexpected empty vertices`);
+    while (i < 0) i += len;
+    while (i >= len) i -= len;
+    return this.vertices[i];
   }
 
   handlePointerMove(x: number, y: number): boolean | void {
     if (!this.dragging) return;
 
-    const { obj, lineFrom, lineTo } = this.dragging;
-
     const to = { x, y };
     this.scene.snapToGrid(to);
 
-    obj.setPosition(to.x, to.y);
+    for (const { obj, dx, dy } of this.dragging) {
+      obj.setPosition(to.x + dx, to.y + dy);
+    }
 
-    lineFrom.setTo(to.x, to.y, lineFrom.geom.x2, lineFrom.geom.y2);
-    lineTo.setTo(lineTo.geom.x1, lineTo.geom.y1, to.x, to.y);
+    for (const { index } of this.dragging) {
+      const a = this.getVert(index - 1);
+      const b = this.getVert(index);
+      const c = this.getVert(index + 1);
+      const ab = this.getLine(index);
+      const bc = this.getLine(index + 1);
+      ab.setTo(a.x, a.y, b.x, b.y);
+      bc.setTo(b.x, b.y, c.x, c.y);
+    }
   }
 
   handlePointerUp(_x: number, _y: number): boolean | void {

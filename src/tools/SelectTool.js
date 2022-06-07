@@ -6,42 +6,52 @@ import { EventManager } from 'lib/utils';
 import BoxTool from './BoxTool';
 
 export default class SelectTool extends BoxTool {
+  allowStartOverlapping = false;
+
+  get setSelectedEvent() {
+    return 'setSelected';
+  }
+
+  eventManager = new EventManager()
+    .on(this.scene.events, this.setSelectedEvent, (s) => this.setSelected(s))
+    .on(
+      this.scene.input.keyboard,
+      'keydown-BACKSPACE',
+      (e) => (e.preventDefault(), this.deleteSelected()),
+    )
+    .on(
+      this.scene.input.keyboard,
+      'keydown-DELETE',
+      (e) => (e.preventDefault(), this.deleteSelected()),
+    );
+
   shiftKey = this.scene.input.keyboard.addKey(
     Phaser.Input.Keyboard.KeyCodes.SHIFT,
   );
 
-  allowStartOverlapping = false;
-
-  /**
-   * @param {Phaser.Scene} scene
-   */
-  constructor(scene, toolKey) {
-    super(scene, toolKey);
-
-    this.eventManager = new EventManager()
-      .on(scene.events, 'setSelected', this.setSelected)
-      .on(scene.input.keyboard, 'keydown-BACKSPACE', this.deleteSelection)
-      .on(scene.input.keyboard, 'keydown-DELETE', this.deleteSelection);
+  get currentSelected() {
+    return this.scene.selected;
+  }
+  set currentSelected(next) {
+    this.scene.selected = next;
   }
 
-  setSelected = (selected) => {
-    for (const child of _.difference(this.scene.selected, selected)) {
+  setSelected(selected) {
+    for (const child of _.difference(this.currentSelected, selected)) {
       if (child.scene) child.setHighlight(false);
     }
 
-    for (const child of _.difference(selected, this.scene.selected)) {
+    for (const child of _.difference(selected, this.currentSelected)) {
       if (child.scene) child.setHighlight(true);
     }
 
     // Move somewhere else?
-    this.scene.selected = selected;
-  };
+    this.currentSelected = selected;
+  }
 
-  deleteSelection = (e) => {
-    e.preventDefault();
-
-    for (const obj of this.scene.selected || []) obj.destroy();
-  };
+  deleteSelected() {
+    for (const obj of this.currentSelected || []) obj.destroy();
+  }
 
   handleCreateBox(intersected) {
     // only select top object if we are clicking
@@ -51,27 +61,27 @@ export default class SelectTool extends BoxTool {
 
     // i.e. intersected is a subset of selected
     const subtract =
-      this.scene.selected &&
-      this.scene.selected.length > 0 &&
-      _.union(this.scene.selected, intersected).length ===
-        this.scene.selected.length;
+      this.currentSelected &&
+      this.currentSelected.length > 0 &&
+      _.union(this.currentSelected, intersected).length ===
+        this.currentSelected.length;
 
     const newSelected = this.shiftKey.isDown
       ? (subtract ? _.difference : _.union)(
-          this.scene.selected || [],
+          this.currentSelected || [],
           intersected,
         )
       : intersected;
 
-    this.scene.events.emit('setSelected', newSelected);
+    this.scene.events.emit(this.setSelectedEvent, newSelected);
   }
 
   destroy() {
     this.shiftKey.destroy();
-    if (this.scene.selected.length > 0)
-      this.scene.events.emit('setSelected', []);
+    if (this.currentSelected?.length)
+      this.scene.events.emit(this.setSelectedEvent, []);
     this.eventManager.off();
 
-    this.scene.selected = [];
+    this.currentSelected = [];
   }
 }
