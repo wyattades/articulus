@@ -42,7 +42,7 @@ export const TOOLS = {
   },
   thruster: {
     label: 'Thruster',
-    color: COLORS.grey,
+    color: COLORS.thrusterFill,
     ToolClass: PlaceTool,
   },
   select: {

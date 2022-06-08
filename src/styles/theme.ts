@@ -10,4 +10,6 @@ export const COLORS = {
   blueLight: 0x3dd0f5,
   blueSky: 0x82ceed,
   toolGreen: 0x1a7b0a,
+  thrusterFill: 0xb1b5da,
+  thrusterStroke: 0x5b668f,
 };

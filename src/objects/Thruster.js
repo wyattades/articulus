@@ -5,6 +5,7 @@ import { Matter } from 'lib/physics';
 import { config } from 'src/const';
 
 import Part from './Part';
+import { COLORS } from 'src/styles/theme';
 
 const anyNonemptyArrayValue = (objOfArrays) => {
   for (const val of valuesIterator(objOfArrays))
@@ -25,8 +26,8 @@ export default class Thruster extends Part {
   static type = 'thruster';
 
   strokeWidth = 2;
-  fillColor = 0xb1b5da;
-  strokeColor = 0x5b668f;
+  fillColor = COLORS.thrusterFill;
+  strokeColor = COLORS.thrusterStroke;
   width = 20 * config.gameScale;
   height = 40 * config.gameScale;
 
@@ -59,7 +60,7 @@ export default class Thruster extends Part {
       lifespan: 800,
       speed: { min: 200, max: 600 },
       angle: {
-        onEmit: () => this.angle + 90 + Phaser.Math.RND.between(-20, 20),
+        onEmit: () => this.angle + 90 + Phaser.Math.RND.realInRange(-15, 15),
       },
 
       // gravityY: 300,
@@ -73,7 +74,7 @@ export default class Thruster extends Part {
       // blendMode: 'ADD',
 
       on: false,
-    }).emitters.first;
+    }).setDepth(-1).emitters.first;
   }
 
   render() {
