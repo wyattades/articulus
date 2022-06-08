@@ -43,13 +43,13 @@ export default class Game extends Phaser.Game {
     console.log('Init game:', this.id);
   }
 
-  async waitForSceneReady(sceneKey) {
-    let scene = this.scene.getScene(sceneKey);
+  async waitForSceneReady(sceneKey: string): Promise<BaseScene> {
+    let scene = this.scene.getScene(sceneKey) as BaseScene;
     if (scene) return scene;
 
     await new Promise((r) => this.events.once(Phaser.Core.Events.POST_STEP, r));
 
-    scene = this.scene.getScene(sceneKey);
+    scene = this.scene.getScene(sceneKey) as BaseScene;
 
     return scene;
   }
@@ -76,7 +76,7 @@ export default class Game extends Phaser.Game {
     return promise;
   }
 
-  setScene(key: string, { mapKey }: { mapKey?: string } = {}) {
+  setScene(key: string, { mapKey }: { mapKey?: string | null } = {}) {
     const url =
       {
         Menu: '/',

@@ -109,9 +109,9 @@ const polygonPoints = (polygon: PointsInput): [number, number][] => {
   } else if (validPoint(first)) {
     return (polygon as Point[]).map((p) => [p.x, p.y] as [number, number]);
   } else if (typeof first === 'number') {
-    const out = [];
+    const out: [number, number][] = [];
     for (let i = 0, len = polygon.length; i < len; i += 2)
-      out.push([polygon[i], polygon[i + 1]]);
+      out.push([(polygon as number[])[i], (polygon as number[])[i + 1]]);
     return out;
   } else {
     throw new Error(`Unknown polygonPoints element: ${first}`);

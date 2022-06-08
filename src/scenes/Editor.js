@@ -16,6 +16,9 @@ export default class Editor extends BaseScene {
   /** @type {Phaser.GameObjects.Shape} */
   cursor;
 
+  /** @type {MapSaver} */
+  mapSaver;
+
   constructor() {
     super({
       key: 'Editor',

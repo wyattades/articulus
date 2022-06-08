@@ -1,7 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useState } from 'react';
-import clsx from 'clsx';
 
 import { useGame } from 'components/GameProvider';
 import { colorInverse, colorIntToHex } from 'src/lib/utils';
@@ -12,7 +11,7 @@ import { PointerPos } from 'components/PointerPos';
 import { FlashText } from 'components/FlashText';
 import type PlayScene from 'src/scenes/Play';
 
-const Directions = ({ onClose }) => (
+const Directions: React.FC<{ onClose: () => void }> = ({ onClose }) => (
   <div onClick={onClose} className="absolute left-0 top-0 bottom-0 right-0">
     <div id="directions" onClick={(e) => e.stopPropagation()}>
       <h2>Objective:</h2>

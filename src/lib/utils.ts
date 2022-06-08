@@ -44,7 +44,7 @@ export const factoryMapNumber = (
   toB: number,
 ) => {
   const ratio = (toB - toA) / (fromB - fromA);
-  return (val) => (val - fromA) * ratio + toA;
+  return (val: number) => (val - fromA) * ratio + toA;
 };
 
 const shifts = [0, 8, 16];
@@ -94,6 +94,10 @@ export const midpoint = (a: Point, b: Point): Point => {
   };
 };
 
+const fromEntries = <Pair extends readonly [any, any]>(
+  pairs: Pair[],
+): { [key in Pair[0]]: Pair[1] } => Object.fromEntries(pairs);
+
 const INTERSECT_MATRIX = (() => {
   const POINT_THICKNESS = 6;
 
@@ -111,23 +115,32 @@ const INTERSECT_MATRIX = (() => {
     geom: InstanceType<typeof Phaser.Geom[typeof containsPointNames[number]]>,
   ) => geom.contains(point.x, point.y);
 
+  type GeomName = typeof GEOM_NAMES[keyof typeof GEOM_NAMES];
+
   // All available Geom intersect algorithms
-  const Intersects = {
+  const Intersects: {
+    [key in `${GeomName}To${GeomName}`]?: (a: any, b: any) => boolean;
+  } = {
     ...Phaser.Geom.Intersects,
     ...MoreIntersects,
     PointToLine: (point: Point, line: Phaser.Geom.Line) =>
       PointToLine(point, line, POINT_THICKNESS),
-  };
 
-  for (const name of containsPointNames)
-    Intersects[`PointTo${name}`] = ContainsPoint;
+    ...fromEntries(
+      containsPointNames.map(
+        (name) => [`PointTo${name}`, ContainsPoint] as const,
+      ),
+    ),
+  };
 
   const TYPES = Object.entries(GEOM_NAMES).reduce((arr, [type, name]) => {
     arr[Number(type)] = name;
     return arr;
-  }, []);
+  }, [] as (typeof GEOM_NAMES[number] | undefined)[]);
 
-  return TYPES.map((a) => TYPES.map((b) => Intersects[`${a}To${b}`]));
+  return TYPES.map((a) =>
+    TYPES.map((b) => (a && b ? Intersects[`${a}To${b}`] : undefined)),
+  );
 })();
 
 export const intersectsGeoms = (g1: Geom, g2: Geom) => {
@@ -224,11 +237,11 @@ export const groupByIntersection = (objs: Part[]): Part[][] => {
 
   const ungrouped = [...objs];
 
-  const groups = [];
+  const groups: Part[][] = [];
 
   // eslint-disable-next-line no-restricted-syntax
   outer: while (ungrouped.length > 0) {
-    const a = ungrouped.pop();
+    const a = ungrouped.pop()!;
     for (const g of groups) {
       for (const b of g) {
         if (intersects(a, b)) {
@@ -301,7 +314,12 @@ export const getFirstSameKeyValue = <T>(
 type Emitter = any;
 
 export class EventManager {
-  events = [];
+  events: {
+    off: string;
+    eventName: string;
+    eventEmitter: Emitter;
+    cb: (...args: any[]) => any;
+  }[] = [];
 
   on(eventEmitter: Emitter, eventName: string, cb: (...args: any[]) => any) {
     const [on, off] =
@@ -418,7 +436,9 @@ export const getBoundPoints = (
   angle: number,
 ): Point[] => Array.from(iterateBoundPoints(rect, angle));
 
-export const getObjectsBounds = (objs: Part[]): Phaser.Geom.Rectangle => {
+export const getObjectsBounds = (
+  objs: Part[],
+): Phaser.Geom.Rectangle | null => {
   const o = objs[0];
   if (!o) return null;
 

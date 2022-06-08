@@ -1,6 +1,3 @@
 {
-  "extends": "@wyattades/eslint-config",
-  "rules": {
-    "react/jsx-filename-extension": "off"
-  }
+  "extends": "@wyattades/eslint-config"
 }

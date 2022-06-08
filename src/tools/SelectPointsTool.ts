@@ -10,7 +10,7 @@ export default class SelectPointsTool extends SelectTool {
 
   allowStartOverlapping = true;
 
-  _editPointsTool: EditPointsTool;
+  _editPointsTool?: EditPointsTool;
   get editPointsTool() {
     return (this._editPointsTool ||= this.scene.tm.getTool(
       'edit_points',

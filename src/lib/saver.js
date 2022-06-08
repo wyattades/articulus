@@ -213,7 +213,9 @@ export class MapSaver {
     });
   }
 
+  /** @type {string | null} */
   id = null;
+  /** @type {string | null} */
   name = null;
 
   constructor(id) {

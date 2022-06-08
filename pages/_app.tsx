@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import { DefaultSeo } from 'next-seo';
+import type { AppProps } from 'next/app';
 
 import { GameProvider } from 'components/GameProvider';
 // import { Footer } from 'components/Footer';
@@ -8,7 +9,7 @@ import 'src/styles/index.scss';
 
 const HOST_URL = process.env.HOST_URL;
 
-const App = ({ Component, pageProps }) => {
+const App: React.FC<AppProps> = ({ Component, pageProps }) => {
   return (
     <>
       <Head>

@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { getHoveredJoint } from 'lib/physics';
 import type { BaseScene } from 'src/scenes/Scene';
 
 export default abstract class Tool {
   constructor(readonly scene: BaseScene, readonly toolKey: string) {}
 
-  drawObj = null;
+  drawObj: any = null;
 
   refreshCursor(x: number, y: number) {
     const cursor = this.scene.cursor;

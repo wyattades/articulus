@@ -1,32 +1,42 @@
 import Phaser from 'phaser';
 
 import { EventManager } from 'lib/utils';
+import type { BaseScene } from 'src/scenes/Scene';
 
-import { TOOLS, Tool } from '.';
+import { TOOLS, Tool, ToolKey, ExtraArgsForTool } from '.';
 
 export default class ToolManager {
-  /** @type {Tool[]} */
-  tools = []; // active tools
+  tools: Tool[] = []; // active tools
 
-  lastPointer = null;
+  lastPointer: Phaser.Input.Pointer | null = null;
 
-  activeToolType = null;
+  activeToolType: ToolKey | null = null;
 
-  /**
-   * @param {Phaser.Scene} scene
-   * @param {string} initial
-   * @param {string[]} topTypes
-   */
-  constructor(scene, initial, topTypes = []) {
-    this.scene = scene;
-    this.topTypes = topTypes;
+  eventManager: EventManager;
 
+  constructor(
+    readonly scene: BaseScene,
+    initial: ToolKey,
+    readonly topTypes: ToolKey[] = [],
+  ) {
     this.setTool(initial);
-    this.createListeners();
+
+    this.scene.input
+      .on(Phaser.Input.Events.POINTER_DOWN, this.pointerDown)
+      .on(Phaser.Input.Events.POINTER_MOVE, this.pointerMove)
+      .on(Phaser.Input.Events.POINTER_UP, this.pointerUp);
+
+    this.eventManager = new EventManager()
+      .on(this.scene.game.canvas, 'mouseleave', () => {
+        if (this.lastPointer) this.pointerUp(this.lastPointer);
+      })
+      .on(window, 'blur', () => {
+        if (this.lastPointer) this.pointerUp(this.lastPointer);
+      });
   }
 
   destroyTools() {
-    for (const tool of this.tools) tool.destroy();
+    while (this.tools.length > 0) this.tools.shift()!.destroy();
   }
 
   destroy() {
@@ -34,14 +44,14 @@ export default class ToolManager {
     this.eventManager.off();
   }
 
-  getTool(toolType) {
+  getTool(toolType: ToolKey) {
     return this.tools.find((t) => t.toolKey === toolType);
   }
 
-  setTool(toolType, ...args) {
+  setTool<TK extends ToolKey>(toolType: TK, ...args: ExtraArgsForTool<TK>) {
     this.destroyTools();
 
-    let types;
+    let types: ToolKey[];
     if (toolType === 'select') {
       types = [...this.topTypes, 'drag', toolType];
 
@@ -56,14 +66,18 @@ export default class ToolManager {
     this.tools = types.map((type) => {
       const ToolClass = TOOLS[type]?.ToolClass;
       if (!ToolClass) throw new Error(`Invalid toolType: ${type}`);
-      return new ToolClass(this.scene, type, ...args);
+
+      // @ts-expect-error unknown args
+      if (toolType === type) return new ToolClass(this.scene, type, ...args);
+      // @ts-expect-error missing args
+      else return new ToolClass(this.scene, type);
     });
 
     this.activeToolType = toolType;
     this.scene.events.emit('setTool', toolType);
   }
 
-  pointerDown = (pointer) => {
+  pointerDown = (pointer: Phaser.Input.Pointer) => {
     this.lastPointer = pointer;
 
     const { worldX, worldY } = pointer;
@@ -73,7 +87,7 @@ export default class ToolManager {
       if (tool.handlePointerDown(worldX, worldY, pointer) === false) break;
   };
 
-  pointerMove = (pointer) => {
+  pointerMove = (pointer: Phaser.Input.Pointer) => {
     this.lastPointer = pointer;
 
     const { worldX, worldY } = pointer;
@@ -82,7 +96,7 @@ export default class ToolManager {
       if (tool.handlePointerMove(worldX, worldY, pointer) === false) break;
   };
 
-  pointerUp = (pointer) => {
+  pointerUp = (pointer: Phaser.Input.Pointer) => {
     this.lastPointer = pointer;
 
     const { worldX, worldY } = pointer;
@@ -90,19 +104,4 @@ export default class ToolManager {
     for (const tool of this.tools)
       if (tool.handlePointerUp(worldX, worldY, pointer) === false) break;
   };
-
-  createListeners() {
-    this.scene.input
-      .on(Phaser.Input.Events.POINTER_DOWN, this.pointerDown)
-      .on(Phaser.Input.Events.POINTER_MOVE, this.pointerMove)
-      .on(Phaser.Input.Events.POINTER_UP, this.pointerUp);
-
-    this.eventManager = new EventManager()
-      .on(this.scene.game.canvas, 'mouseleave', () => {
-        if (this.lastPointer) this.pointerUp(this.lastPointer);
-      })
-      .on(window, 'blur', () => {
-        if (this.lastPointer) this.pointerUp(this.lastPointer);
-      });
-  }
 }

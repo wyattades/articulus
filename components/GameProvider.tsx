@@ -13,10 +13,10 @@ const GameCtx = createContext<Game | null>(null);
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const container = useRef();
-  const canvas = useRef();
+  const container = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
 
-  const [game, setGame] = useState(null);
+  const [game, setGame] = useState<Game | null>(null);
   const latestGame = useLatest(game);
 
   const initGame = async () => {
@@ -27,6 +27,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const Game = (await import('src/Game')).default;
     console.log('Loaded Game class');
+    if (!canvas.current || !container.current)
+      throw new Error('Missing game DOM container');
     setGame(new Game(canvas.current, container.current));
   };
 

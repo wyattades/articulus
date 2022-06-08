@@ -6,7 +6,7 @@ import { Scene } from 'components/game/Scene';
 const UI = dynamic(() => import('components/pages/Play'), { ssr: false });
 
 const PlayPage: React.FC = () => {
-  const mapKey = useRouter().query.play?.[0] || null;
+  const mapKey = useRouter().query.play?.[0] || undefined;
 
   return (
     <>

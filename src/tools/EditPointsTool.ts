@@ -69,7 +69,7 @@ export default class EditPointsTool extends Tool {
   createLines() {
     const points = this.vertices;
 
-    while (this.lines.length > 0) this.lines.pop().destroy();
+    while (this.lines.length > 0) this.lines.pop()!.destroy();
 
     for (let i = 0, len = points.length; i < len; i++) {
       const p = points[i];
@@ -84,8 +84,8 @@ export default class EditPointsTool extends Tool {
 
   unload() {
     this.original.destroy();
-    while (this.vertices.length > 0) this.vertices.pop().destroy();
-    while (this.lines.length > 0) this.lines.pop().destroy();
+    while (this.vertices.length > 0) this.vertices.pop()!.destroy();
+    while (this.lines.length > 0) this.lines.pop()!.destroy();
   }
 
   // make sure to call `unload()` at the end of this method
@@ -185,6 +185,9 @@ export default class EditPointsTool extends Tool {
             p,
           ),
       );
+
+      if (nearestEdgeIndex == null) return;
+
       this.vertices.splice(
         (nearestEdgeIndex + 1) % this.vertices.length,
         0,
@@ -202,9 +205,10 @@ export default class EditPointsTool extends Tool {
 
           this.dragging = this.selectedVerts.map((v) => {
             const index = this.vertices.indexOf(v);
+            if (index === -1) throw new Error(`Bad selectedVerts item`);
             return {
               obj: v,
-              index: index === -1 ? null : index, // danger!
+              index,
               dx: v.x - x,
               dy: v.y - y,
             };

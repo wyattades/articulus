@@ -18,7 +18,7 @@ export default class PenTool extends Tool {
     );
 
   createShape(points: Point[]) {
-    if (this.pending.points.length < 3) {
+    if (this.pending!.points.length < 3) {
       this.scene.events.emit('showFlash', 'Not enough points!');
 
       return;
@@ -115,7 +115,7 @@ export default class PenTool extends Tool {
   cancelPendingPath() {
     if (!this.pending) return;
 
-    while (this.pending.objs.length > 0) this.pending.objs.pop().destroy();
+    while (this.pending.objs.length > 0) this.pending.objs.pop()!.destroy();
     this.pending.pendingLine?.destroy();
 
     this.pending = null;

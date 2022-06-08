@@ -19,7 +19,7 @@ export const Scene: React.FC<{
 }> = ({ children, sceneKey, data }) => {
   const game = useGame();
 
-  const [scene, setScene] = useState(null);
+  const [scene, setScene] = useState<BaseScene | null>(null);
 
   useEffect(() => {
     setScene(null);

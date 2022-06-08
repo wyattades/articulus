@@ -14,28 +14,6 @@ import SelectPointsTool from './SelectPointsTool';
 
 export { default as Tool } from './Tool';
 
-export const PLAY_TOOL_TYPES = [
-  'wood',
-  'water',
-  'forward_wheel',
-  'back_wheel',
-  'neutral_wheel',
-  'thruster',
-  'select',
-  'delete',
-];
-
-export const EDITOR_TOOL_TYPES = [
-  'rectangle_shape',
-  'ellipse_shape',
-  'polygon_shape',
-  'select',
-  'delete',
-];
-
-/**
- * @type {Record<string, { label?: string, color?: number, ToolClass: typeof import('./Tool').default }>}
- */
 export const TOOLS = {
   wood: {
     label: 'Wood Stick',
@@ -111,3 +89,35 @@ export const TOOLS = {
     ToolClass: DragTool,
   },
 };
+
+export type ToolKey = keyof typeof TOOLS;
+
+export type ToolClassFor<TK extends ToolKey> = typeof TOOLS[TK]['ToolClass'];
+
+export type ExtraArgsForTool<TK extends ToolKey> =
+  ToolClassFor<TK> extends abstract new (
+    arg1: any,
+    arg2: any,
+    ...args: infer P
+  ) => any
+    ? P
+    : never;
+
+export const PLAY_TOOL_TYPES = [
+  'wood',
+  'water',
+  'forward_wheel',
+  'back_wheel',
+  'neutral_wheel',
+  'thruster',
+  'select',
+  'delete',
+] as const;
+
+export const EDITOR_TOOL_TYPES = [
+  'rectangle_shape',
+  'ellipse_shape',
+  'polygon_shape',
+  'select',
+  'delete',
+] as const;

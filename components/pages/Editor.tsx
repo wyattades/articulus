@@ -1,5 +1,4 @@
 import React from 'react';
-import clsx from 'clsx';
 
 import { useGame } from 'components/GameProvider';
 import { colorInverse, colorIntToHex } from 'src/lib/utils';
