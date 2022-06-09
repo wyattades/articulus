@@ -60,10 +60,17 @@
     filter: brightness(93%);
   }
 
-  &[aria-pressed='true'] {
-    box-shadow: -2px -4px 0px 0px #0006 inset,
-      2px 2px 0px 0px rgba(206, 206, 206, 0.467) inset;
+  transition: box-shadow 150ms linear;
+
+  box-shadow: -2px -4px 0px 0px #0006 inset,
+    2px 2px 0px 0px rgba(206, 206, 206, 0.467) inset;
+
+  &[aria-pressed='true'],
+  &:active {
+    box-shadow: -2px -2px 0px 0px rgba(206, 206, 206, 0.467) inset,
+      2px 2px 0px 0px #0006 inset;
   }
+
   &--danger {
     background: red;
     color: white;
