@@ -7,7 +7,7 @@
 - [Phaser 3](https://phaser.io) - game engine
 - [Matter](https://brm.io/matter-js) - physics engine
 - [Supabase](https://supabase.io) - PostgreSQL database hosting + api
-- [Next.js](https://nextjs.org) - React & Webpack framework
+- [Next.js](https://nextjs.org) - React framework
 
 ## TODO
 
@@ -16,14 +16,16 @@
   - magnets
   - controllable wheels
   - piston
-- dynamic terrain e.g. move along path
+- dynamic terrain e.g. move along path, or as free bodies
 - premade levels
 - add goal e.g. get the thing to the end
 - scoring system (time? object count?)
 - user login system
 - high score system
-- Show user that object placement is invalid _while_ placing/dragging object
+- show user that object placement is invalid _while_ placing/dragging object
 - undo/redo capability
+- copy/paste keyboard shortcuts
+- multiplayer world
 
 ## Work in progress
 
@@ -33,7 +35,6 @@
 
 ## Known bugs
 
-- grid snapping is slighly offset (uses object's center point instead of top-left)
 - resizing multiple rotated shapes is not exact
 
 ## Credits
