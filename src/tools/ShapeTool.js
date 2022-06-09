@@ -18,6 +18,7 @@ export default class ShapeTool extends BoxTool {
         this.shape.width >= MIN_SHAPE_SIZE &&
         this.shape.height >= MIN_SHAPE_SIZE
       ) {
+        this.shape.saveRender();
         this.scene.parts.add(this.shape);
       } else this.shape.destroy();
 
