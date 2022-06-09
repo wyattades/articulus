@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useGame } from 'components/GameProvider';
 import { colorInverse, colorIntToHex } from 'src/lib/utils';
 import { EDITOR_TOOL_TYPES, TOOLS } from 'src/tools';
