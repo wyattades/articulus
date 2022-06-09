@@ -51,7 +51,7 @@ const allConnectedBodies = (body, res = [], hitIds = {}) => {
 export const getConnectedObjects = (objs, includeSelf = true) => {
   objs = _.flatten([objs]);
 
-  let bodies = [],
+  const bodies = [],
     hitIds = {};
 
   for (const obj of objs)
@@ -206,7 +206,7 @@ const createJoint = () => {
  */
 export const stiffConnect = (scene, anchorJoint, obj, anchorId) => {
   const newBodies = [[anchorId, obj.body]];
-  let joint = anchorJoint.joint || createJoint();
+  const joint = anchorJoint.joint || createJoint();
   if (anchorJoint.obj) {
     newBodies.push([anchorJoint.id, anchorJoint.obj.body]);
   }
@@ -221,7 +221,7 @@ export const stiffConnect = (scene, anchorJoint, obj, anchorId) => {
 /**
  * Delete all of the body's connections
  * @param {Phaser.Scene} scene
- * @param {Matter['Body']} body
+ * @param {FC.Body | FC.Matter['Body']} body
  */
 export const deleteConnections = (scene, body) => {
   for (const jId in body.collisionFilter.joints) {

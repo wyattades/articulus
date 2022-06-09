@@ -35,7 +35,7 @@ declare namespace FC {
 
   export type Joint = {
     id: number;
-    bodies: Record<number, Body>;
+    bodies: Record<number, [anchorId: number, body: Body]>;
     constraints: Matter.Constraint[];
   };
 

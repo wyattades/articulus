@@ -2,9 +2,9 @@ import Phaser from 'phaser';
 
 import { factoryMapNumber } from 'lib/utils';
 
-import { Rectangle } from './Shape';
+import { Shape } from './Shape';
 
-export class Polygon extends Rectangle {
+export class Polygon extends Shape {
   static type = 'polygon';
 
   constructor(scene, x, y, polygon = new Phaser.Geom.Polygon()) {
@@ -13,6 +13,12 @@ export class Polygon extends Rectangle {
     // points relative to this.x, this.y, and this.rotation.
     // (this.x, this.y) is the center of this polygon
     this.polygon = polygon;
+  }
+
+  textureKey() {
+    return `texture:${this.klass.type}:${Phaser.Geom.Polygon.GetNumberArray(
+      this.polygon,
+    ).join(' ')}:${this._selected ? 1 : 0}`;
   }
 
   getBounds(bounds) {

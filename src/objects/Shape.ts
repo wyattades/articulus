@@ -2,11 +2,11 @@ import Phaser from 'phaser';
 
 import { Matter } from 'lib/physics';
 import { config } from 'src/const';
-import { factoryRotateAround, getEllipsePoints } from 'lib/utils';
+import { getEllipsePoints } from 'lib/utils';
 
 import Part from './Part';
 
-export class Rectangle extends Part {
+export abstract class Shape extends Part {
   fillColor = 0x00ff00;
   fillOpacity = 1;
   strokeColor = 0xffffff;
@@ -17,46 +17,17 @@ export class Rectangle extends Part {
   originX = 0.5;
   originY = 0.5;
 
-  static type = 'rect';
-
-  setSize(width, height) {
-    this.width = width;
-    this.height = height;
-  }
-
-  render() {
-    this.gfx.fillStyle(this.fillColor, this.fillOpacity);
-    this.gfx.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
-    this.gfx.fillRect(
-      -this.width / 2,
-      -this.height / 2,
-      this.width,
-      this.height,
-    );
-    this.gfx.strokeRect(
-      -this.width / 2,
-      -this.height / 2,
-      this.width,
-      this.height,
-    );
-  }
-
-  /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
-  get physicsOptions() {
+  get physicsOptions(): Phaser.Types.Physics.Matter.MatterBodyConfig | null {
     return {
       density: config.physics.landDensity,
       isStatic: true,
     };
   }
 
-  get physicsShape() {
-    return 'rectangle';
-  }
-
   enablePhysics() {
     const rotation = this.rotation;
 
-    this.scene.matter.add.gameObject(this, {
+    this.scene.matter.add.gameObject(this as any, {
       shape: this.physicsShape,
       ...(this.physicsOptions || {}),
     });
@@ -65,13 +36,13 @@ export class Rectangle extends Part {
     // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
     const centerOfMass = Matter.Vector.sub(
       Matter.Vector.mult(
-        Matter.Vector.add(this.body.bounds.max, this.body.bounds.min),
+        Matter.Vector.add(this.body!.bounds.max, this.body!.bounds.min),
         0.5,
       ),
-      this.body.position,
+      this.body!.position,
     );
     const fix = centerOfMass;
-    Matter.Body.setCentre(this.body, fix, true);
+    Matter.Body.setCentre(this.body!, fix, true);
     this.setPosition(this.x - fix.x, this.y - fix.y);
 
     this.setRotation(rotation);
@@ -80,14 +51,33 @@ export class Rectangle extends Part {
   }
 }
 
+export class Rectangle extends Shape {
+  static type = 'rect';
+
+  render() {
+    const gfx = this.gfx!;
+    gfx.fillStyle(this.fillColor, this.fillOpacity);
+    gfx.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
+    gfx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    gfx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+  }
+
+  get physicsShape(): NonNullable<
+    Phaser.Types.Physics.Matter.MatterBodyConfig['shape']
+  > {
+    return 'rectangle';
+  }
+}
+
 export class Ellipse extends Rectangle {
   static type = 'ellipse';
 
   render() {
-    this.gfx.fillStyle(this.fillColor, this.fillOpacity);
-    this.gfx.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
-    this.gfx.fillEllipse(0, 0, this.width, this.height);
-    this.gfx.strokeEllipse(0, 0, this.width, this.height);
+    const gfx = this.gfx!;
+    gfx.fillStyle(this.fillColor, this.fillOpacity);
+    gfx.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
+    gfx.fillEllipse(0, 0, this.width, this.height);
+    gfx.strokeEllipse(0, 0, this.width, this.height);
   }
 
   get geom() {

@@ -23,4 +23,9 @@ export abstract class BaseScene extends Phaser.Scene {
   }
 
   abstract shutdown(): void;
+
+  // physics are running
+  get running() {
+    return false;
+  }
 }

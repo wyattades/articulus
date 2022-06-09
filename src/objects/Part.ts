@@ -9,8 +9,13 @@ import {
 } from 'lib/utils';
 import { deleteConnections } from 'lib/physics';
 import { config, CONNECTOR_RADIUS } from 'src/const';
+import type { BaseScene } from 'src/scenes/Scene';
+import type { Geom } from 'src/lib/geom';
 
 const texturePadding = 20 * config.gameScale;
+
+// doesn't really matter which texture we render here
+const DEFAULT_TEXTURE = '__DEFAULT';
 
 export default class Part extends Phaser.GameObjects.Sprite {
   static zIndex = 0;
@@ -18,19 +23,31 @@ export default class Part extends Phaser.GameObjects.Sprite {
   fillColor = 0xffffff;
   strokeColor = 0xffffff;
   strokeWidth = 0;
-  particles = null;
+  iStrokeColor?: number;
+
+  particles: Phaser.GameObjects.Particles.ParticleEmitterManager[] | null =
+    null;
 
   noCollide = false;
 
-  constructor(scene, x, y) {
-    super(scene, x, y);
-    scene.add.existing(this);
+  scene!: BaseScene;
 
-    if (this.constructor.zIndex !== 0) this.setDepth(this.constructor.zIndex);
+  gfx: Phaser.GameObjects.Graphics | null = null;
+
+  constructor(scene: BaseScene, x: number, y: number) {
+    super(scene, x, y, DEFAULT_TEXTURE);
+
+    scene.add.existing(this as any);
+
+    if (this.klass.zIndex !== 0) this.setDepth(this.klass.zIndex);
   }
 
-  /** @type {FC.Body} */
-  body;
+  get klass() {
+    return this.constructor as typeof Part;
+  }
+
+  // @ts-expect-error body CAN be undefined
+  body?: FC.Body;
 
   static type = 'base_part';
 
@@ -43,12 +60,13 @@ export default class Part extends Phaser.GameObjects.Sprite {
     return this._id;
   }
 
-  set color(color) {
+  set color(color: number) {
     this.fillColor = color;
     this.strokeColor = this.iStrokeColor = adjustBrightness(color, -70);
   }
 
-  getBounds(bounds) {
+  // @ts-expect-error bad override
+  getBounds(bounds?: Phaser.Geom.Rectangle) {
     bounds ||= new Phaser.Geom.Rectangle();
 
     bounds.setTo(
@@ -62,44 +80,46 @@ export default class Part extends Phaser.GameObjects.Sprite {
   }
 
   renderConnectors() {
-    this.gfx.lineStyle(1, 0xffffff);
-    this.gfx.fillStyle(0xcccccc, 1);
+    const gfx = this.gfx!;
+    gfx.lineStyle(1, 0xffffff);
+    gfx.fillStyle(0xcccccc, 1);
 
-    const p = {};
+    const p = { x: 0, y: 0 };
     for (const a of this.anchors()) {
       p.x = a.x - this.x;
       p.y = a.y - this.y;
 
       Phaser.Math.Rotate(p, -this.rotation);
 
-      this.gfx.fillCircle(p.x, p.y, CONNECTOR_RADIUS);
-      this.gfx.strokeCircle(p.x, p.y, CONNECTOR_RADIUS);
+      gfx.fillCircle(p.x, p.y, CONNECTOR_RADIUS);
+      gfx.strokeCircle(p.x, p.y, CONNECTOR_RADIUS);
     }
   }
 
   render() {}
 
-  mutateBounds(bounds) {
+  mutateBounds(bounds: Phaser.Geom.Rectangle) {
     this.setPosition(bounds.centerX, bounds.centerY);
     this.setSize(bounds.width, bounds.height);
   }
 
   textureKey() {
-    if (this.constructor.type === 'polygon')
-      return `texture:${
-        this.constructor.type
-      }:${Phaser.Geom.Polygon.GetNumberArray(this.polygon).join(' ')}:${
-        this._selected ? 1 : 0
-      }`;
-
-    return `texture:${this.constructor.type}:${this.width}:${this.height}:${
+    return `texture:${this.klass.type}:${this.width}:${this.height}:${
       this._selected ? 1 : 0
     }`;
   }
 
   rerender() {
-    if (this.texture.key !== '__DEFAULT') {
-      this.setTexture();
+    // clear any active texture
+    if (this.texture.key !== DEFAULT_TEXTURE) {
+      // this.texture.destroy(); TODO: clear up memory?
+
+      const w = this.width,
+        h = this.height;
+      // this sets the dimensions to the size of the texture e.g. 32x32
+      this.setTexture(DEFAULT_TEXTURE);
+      // make sure dimensions aren't changed
+      this.setSize(w, h);
     }
 
     if (this.gfx) {
@@ -148,7 +168,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
   }
 
   _selected = false;
-  setHighlight(isSelected) {
+  setHighlight(isSelected: boolean) {
     isSelected = !!isSelected;
     if (this._selected === isSelected) return;
     this._selected = isSelected;
@@ -159,7 +179,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
     this.saveRender();
   }
 
-  get geom() {
+  get geom(): Geom {
     const rect = new Phaser.Geom.Rectangle(
       this.x - this.width / 2,
       this.y - this.height / 2,
@@ -173,13 +193,13 @@ export default class Part extends Phaser.GameObjects.Sprite {
     }
   }
 
-  /** @type {NonNullable<Phaser.Types.Physics.Matter.MatterBodyConfig['shape']>} */
-  get physicsShape() {
+  get physicsShape(): NonNullable<
+    Phaser.Types.Physics.Matter.MatterBodyConfig['shape']
+  > {
     return {};
   }
 
-  /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
-  get physicsOptions() {
+  get physicsOptions(): Phaser.Types.Physics.Matter.MatterBodyConfig | null {
     return null;
   }
 
@@ -193,27 +213,28 @@ export default class Part extends Phaser.GameObjects.Sprite {
     }
 
     // NOTE: this changes this.origin (I think)
-    this.scene.matter.add.gameObject(this, {
+    this.scene.matter.add.gameObject(this as any, {
       shape: this.physicsShape,
       angle: this.rotation,
       ...(this.physicsOptions || {}),
     });
 
-    const cf = this.body.collisionFilter;
+    const cf = this.body!.collisionFilter;
     cf.joints = {};
-    cf.id = this.body.id;
+    cf.id = this.body!.id;
     if (this.noCollide) cf.noCollide = true;
 
     return this;
   }
 
   clone() {
-    return this.constructor.fromJSON(this.scene, this.toJSON());
+    return this.klass.fromJSON(this.scene, this.toJSON());
   }
 
+  // @ts-expect-error bad override
   toJSON() {
     return {
-      type: this.constructor.type,
+      type: this.klass.type,
       x: this.x,
       y: this.y,
       width: this.width,
@@ -222,35 +243,36 @@ export default class Part extends Phaser.GameObjects.Sprite {
     };
   }
 
-  static fromJSON(scene, { type: _t, x, y, ...rest }) {
+  static fromJSON(
+    scene: BaseScene,
+    { type: _t, x, y, ...rest }: ReturnType<Part['toJSON']>,
+  ) {
     const obj = new this(scene, x, y);
 
-    for (const k in rest) {
-      obj[k] = rest[k];
-    }
+    Object.assign(obj, rest);
 
     return obj;
   }
 
   getConnectedObjects(anchorId = null, includeSelf = false) {
-    const anchorObjs =
+    const anchorObjs: FC.GameObject[][] | null =
       anchorId == null
         ? Array.from({ length: this.anchorCount }, () => [])
         : null;
 
-    for (const joint of valuesIterator(this.body.collisionFilter.joints)) {
-      const aId = joint.bodies[this.body.id]?.[0];
+    for (const joint of valuesIterator(this.body!.collisionFilter.joints)) {
+      const aId = joint.bodies[this.body!.id]?.[0];
       if (aId == null || (anchorId != null && anchorId !== aId)) continue;
 
       const objs = Object.values(joint.bodies).map((r) => r[1].gameObject);
 
       if (!includeSelf) {
-        const i = objs.indexOf(this);
+        const i = objs.indexOf(this as any);
         if (i >= 0) objs.splice(i, 1);
       }
 
       if (anchorId == null) {
-        anchorObjs[aId] = objs;
+        anchorObjs![aId] = objs;
       } else {
         return objs;
       }
@@ -259,19 +281,19 @@ export default class Part extends Phaser.GameObjects.Sprite {
     return anchorObjs || [];
   }
 
-  *anchors() {
+  *anchors(): Generator<Point, void, unknown> {
     // empty
   }
 
-  getAnchorById(id) {
+  getAnchorById(id: number) {
     let i = 0;
     for (const anchor of this.anchors()) if (i++ === id) return anchor;
 
-    console.warn('Invalid anchorId', id, this.constructor.type);
+    console.warn('Invalid anchorId', id, this.klass.type);
     return null;
   }
 
-  getHoveredAnchor(x, y, dist) {
+  getHoveredAnchor(x: number, y: number, dist: number) {
     dist *= dist;
 
     for (const anchor of this.anchors())
@@ -281,23 +303,23 @@ export default class Part extends Phaser.GameObjects.Sprite {
     return null;
   }
 
+  _anchorCount?: number;
   get anchorCount() {
     if (this._anchorCount != null) return this._anchorCount;
 
     return (this._anchorCount = [...this.anchors()].length);
   }
 
-  /**
-   * @param {String} texture
-   * @param {string | number | object} [frame]
-   * @param {Phaser.Types.GameObjects.Particles.ParticleEmitterConfig | Phaser.Types.GameObjects.Particles.ParticleEmitterConfig[]} [emitters]
-   * @return {Phaser.GameObjects.Particles.ParticleEmitterManager}
-   */
-  addParticles(texture, frame, emitters) {
-    if (!this.particles) this.particles = [];
+  addParticles(
+    texture: string,
+    frame: number,
+    emitters:
+      | Phaser.Types.GameObjects.Particles.ParticleEmitterConfig
+      | Phaser.Types.GameObjects.Particles.ParticleEmitterConfig[],
+  ) {
     const p = this.scene.add.particles(texture, frame, emitters);
     if (!this.scene.running) p.pause();
-    this.particles.push(p);
+    (this.particles ||= []).push(p);
     return p;
   }
 
@@ -331,6 +353,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
     const scene = this.scene;
     super.destroy();
 
+    // @ts-expect-error _follow is not typed?
     if (scene?.cameras?.main?._follow === this) scene.refreshCameraFollower?.();
   }
 }
