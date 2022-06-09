@@ -7,7 +7,7 @@ import Thruster from './Thruster';
 import { Ellipse, Rectangle } from './Shape';
 import { Polygon } from './Polygon';
 
-export { Part, Line, Wheel, Thruster };
+export { Part, Line, Wheel, Thruster, Rectangle, Ellipse, Polygon };
 
 export class Water extends Line {
   static type = 'water';

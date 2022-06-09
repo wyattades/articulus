@@ -7,7 +7,7 @@ import {
   deserializePhysics,
   getJointPos,
 } from 'lib/physics';
-import { Line } from 'src/objects';
+import { Line, Rectangle } from 'src/objects';
 import { fromJSON } from 'lib/saver';
 
 import Tool from './Tool';
@@ -154,7 +154,17 @@ export default class DragTool extends Tool {
     if (activeDrag.dragging) {
       for (const { obj, dx = 0, dy = 0, customUpdate } of activeDrag.dragging) {
         const newPos = { x: x + dx, y: y + dy };
-        this.scene.snapToGrid(newPos);
+        // Rectangle/Ellipse should snap to top-left corner, unless they're rotated
+        if (obj instanceof Rectangle && obj.rotation === 0) {
+          newPos.x -= obj.width / 2;
+          newPos.y -= obj.height / 2;
+          this.scene.snapToGrid(newPos);
+          newPos.x += obj.width / 2;
+          newPos.y += obj.height / 2;
+        } else {
+          this.scene.snapToGrid(newPos);
+        }
+
         // `obj` may be `Controls`, which is a `Group` with a custom `setPosition` method
         // which should be called only once for performance
 
