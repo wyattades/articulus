@@ -16,6 +16,10 @@ export default class ControlsTool extends Tool {
   controls = new Controls(this.scene, 0, 0, 1, 1);
   controlDragging = null;
 
+  shiftKey = this.scene.input.keyboard.addKey(
+    Phaser.Input.Keyboard.KeyCodes.SHIFT,
+  );
+
   /**
    * @param {Phaser.Scene} scene
    */
@@ -72,31 +76,31 @@ export default class ControlsTool extends Tool {
 
     const tempBounds = (this._bounds ||= new Phaser.Geom.Rectangle());
 
-    for (const obj of c.edgeObjs) {
-      if (obj.getBounds(tempBounds).contains(x, y)) {
+    for (const edgeObj of c.edgeObjs) {
+      if (edgeObj.getBounds(tempBounds).contains(x, y)) {
         const oppCorner = Phaser.Math.Rotate(
           {
-            x: obj.originX === 1 ? c.width : -c.width,
-            y: obj.originY === 1 ? c.height : -c.height,
+            x: edgeObj.originX === 1 ? c.width : -c.width,
+            y: edgeObj.originY === 1 ? c.height : -c.height,
           },
           c.rotation,
         );
-        oppCorner.x += obj.x;
-        oppCorner.y += obj.y;
+        oppCorner.x += edgeObj.x;
+        oppCorner.y += edgeObj.y;
 
         this.controlDragging = {
-          obj,
+          edgeObj,
 
           // delta of click position on edgeObj
           startDelta: {
-            x: obj.x - x,
-            y: obj.y - y,
+            x: edgeObj.x - x,
+            y: edgeObj.y - y,
           },
 
           // opposite corner from edgeObj
           oppCorner,
 
-          center: midpoint(obj, oppCorner),
+          center: midpoint(edgeObj, oppCorner),
 
           invW: 1 / c.width, // inverse initial control height
           invH: 1 / c.height, // inverse initial control width
@@ -233,7 +237,8 @@ export default class ControlsTool extends Tool {
   handlePointerMove(x, y) {
     if (this.controlDragging) {
       this.controlDragging.moved = true;
-      const { obj, startDelta, oppCorner } = this.controlDragging;
+
+      const { edgeObj, startDelta, oppCorner } = this.controlDragging;
       const { rotation } = this.controls;
 
       const newPos = { x: x + startDelta.x, y: y + startDelta.y };
@@ -245,19 +250,19 @@ export default class ControlsTool extends Tool {
 
       newPos.x = constrain(
         newPos.x,
-        obj.originX === 0 ? oppCorner.x + minSize : null,
-        obj.originX === 1 ? oppCorner.x - minSize : null,
+        edgeObj.originX === 0 ? oppCorner.x + minSize : null,
+        edgeObj.originX === 1 ? oppCorner.x - minSize : null,
       );
       newPos.y = constrain(
         newPos.y,
-        obj.originY === 0 ? oppCorner.y + minSize : null,
-        obj.originY === 1 ? oppCorner.y - minSize : null,
+        edgeObj.originY === 0 ? oppCorner.y + minSize : null,
+        edgeObj.originY === 1 ? oppCorner.y - minSize : null,
       );
 
       Phaser.Math.RotateAround(newPos, oppCorner.x, oppCorner.y, rotation);
 
-      obj.setPosition(newPos.x, newPos.y);
-      this.controls.updateFromCorners(oppCorner, obj);
+      edgeObj.setPosition(newPos.x, newPos.y);
+      this.controls.updateFromCorners(oppCorner, edgeObj);
       this.updateSelected(newPos);
 
       return false;
@@ -271,7 +276,7 @@ export default class ControlsTool extends Tool {
         ) +
         Math.PI / 2;
 
-      if (this.scene.gridSize) {
+      if (!!this.scene.gridSize !== this.shiftKey.isDown) {
         const snap = Math.PI / 16;
         r = Math.round(r / snap) * snap;
       }
@@ -286,10 +291,10 @@ export default class ControlsTool extends Tool {
 
   handlePointerUp(_x, _y, _pointer) {
     if (this.controlDragging) {
-      // const moved = this.controlDragging.moved;
-      for (const { obj } of this.controlDragging.iSelected) obj.saveRender();
+      if (this.controlDragging.moved) {
+        for (const { obj } of this.controlDragging.iSelected) obj.saveRender();
+      }
       this.controlDragging = null;
-      // if (moved) return false;
     }
 
     if (this.controlRotating) this.controlRotating = null;
