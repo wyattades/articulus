@@ -171,28 +171,31 @@ export default class EditPointsTool extends Tool {
       const p = { x, y };
       this.scene.snapToGrid(p);
 
-      // example:
-      //   original: P0 --Dist0-- P1 --Dist1-- P2
-      //   let Dist1 be the smallest
-      //   after inserting PX: P0 P1 PX P2
+      if (this.vertices.length <= 1) {
+        this.vertices.push(this.createVert(p.x, p.y));
+      } else {
+        // example:
+        //   original: P0 --Dist0-- P1 --Dist1-- P2
+        //   let Dist1 be the smallest
+        //   after inserting PX: P0 P1 PX P2
 
-      const nearestEdgeIndex = _.minBy(
-        this.vertices.map((_l, i) => i),
-        (i) =>
-          minDistance(
-            this.vertices[i],
-            this.vertices[(i + 1) % this.vertices.length],
-            p,
-          ),
-      );
+        const nearestEdgeIndex =
+          _.minBy(
+            this.vertices.map((_l, i) => i),
+            (i) =>
+              minDistance(
+                this.vertices[i],
+                this.vertices[(i + 1) % this.vertices.length],
+                p,
+              ),
+          ) ?? 0;
 
-      if (nearestEdgeIndex == null) return;
-
-      this.vertices.splice(
-        (nearestEdgeIndex + 1) % this.vertices.length,
-        0,
-        this.createVert(p.x, p.y),
-      );
+        this.vertices.splice(
+          (nearestEdgeIndex + 1) % this.vertices.length,
+          0,
+          this.createVert(p.x, p.y),
+        );
+      }
 
       this.createLines(); // TODO: be more efficient
     } else if (button === 0) {
