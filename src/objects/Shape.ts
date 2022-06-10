@@ -50,9 +50,12 @@ export class GoalZone extends Rectangle {
   strokeColor = COLORS.goalBorder;
   fillOpacity = 0.5;
 
-  // disable physics
-  get physicsShape(): FC.PhysicsShape {
-    return null;
+  get physicsOptions(): Phaser.Types.Physics.Matter.MatterBodyConfig | null {
+    return {
+      isStatic: true,
+      // sensors trigger collision events, but doesn't react with colliding body physically
+      isSensor: true,
+    };
   }
 }
 

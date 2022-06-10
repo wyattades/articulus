@@ -14,10 +14,11 @@ import {
   TEMP_RECT2,
   validPoint,
 } from 'lib/utils';
-import { clonePhysics } from 'src/lib/physics';
+import { clonePhysics, Matter } from 'src/lib/physics';
 import { GoalObject, GoalZone } from 'src/objects';
 
 import { BaseScene } from './Scene';
+import { intersectsGeoms } from 'src/lib/intersects';
 
 export default class Play extends BaseScene {
   // used by multiple tools e.g. SelectTool
@@ -175,6 +176,30 @@ export default class Play extends BaseScene {
       this.matter.config.debug = debug;
 
       this.restart();
+    });
+
+    Matter.Events.on(this.matter.world.engine, 'collisionActive', (event) => {
+      for (const pair of event.pairs) {
+        const a = pair.bodyA.gameObject;
+        const b = pair.bodyB.gameObject;
+        if (!a || !b) continue;
+        if (
+          (a instanceof GoalObject && b instanceof GoalZone) ||
+          (b instanceof GoalObject && a instanceof GoalZone)
+        ) {
+          const [go, gz] = a instanceof GoalObject ? [a, b] : [b, a];
+          if (
+            Phaser.Geom.Rectangle.ContainsRect(
+              gz.getBounds(TEMP_RECT),
+              go.getBounds(TEMP_RECT2),
+            )
+          ) {
+            // TODO: better win state
+            this.showFlash('YOU WIN!', 'win');
+            this.setRunning(false);
+          }
+        }
+      }
     });
   }
 
@@ -360,24 +385,6 @@ export default class Play extends BaseScene {
       camera.scrollY -= CAMERA_SPEED;
     } else if (down.isDown && !up.isDown) {
       camera.scrollY += CAMERA_SPEED;
-    }
-
-    // TODO: use Matter collision event instead?
-    if (this.running) {
-      const objs = this.terrainGroup.getChildren();
-      const gos = objs.filter((p) => p instanceof GoalObject);
-      const gzs = objs.filter((p) => p instanceof GoalZone);
-      for (const gz of gzs) {
-        const bounds = gz.getBounds(TEMP_RECT);
-        for (const go of gos) {
-          if (
-            Phaser.Geom.Rectangle.ContainsRect(bounds, go.getBounds(TEMP_RECT2))
-          ) {
-            this.showFlash('YOU WIN!');
-            this.setRunning(false);
-          }
-        }
-      }
     }
   }
 
