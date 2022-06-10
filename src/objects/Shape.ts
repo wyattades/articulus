@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 
-import { Matter } from 'lib/physics';
 import { config } from 'src/const';
 import { getEllipsePoints } from 'lib/utils';
 
@@ -23,32 +22,6 @@ export abstract class Shape extends Part {
       isStatic: true,
     };
   }
-
-  enablePhysics() {
-    const rotation = this.rotation;
-
-    this.scene.matter.add.gameObject(this as any, {
-      shape: this.physicsShape,
-      ...(this.physicsOptions || {}),
-    });
-
-    // Get offset of center of mass and set the body to its correct position
-    // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
-    const centerOfMass = Matter.Vector.sub(
-      Matter.Vector.mult(
-        Matter.Vector.add(this.body!.bounds.max, this.body!.bounds.min),
-        0.5,
-      ),
-      this.body!.position,
-    );
-    const fix = centerOfMass;
-    Matter.Body.setCentre(this.body!, fix, true);
-    this.setPosition(this.x - fix.x, this.y - fix.y);
-
-    this.setRotation(rotation);
-
-    return this;
-  }
 }
 
 export class Rectangle extends Shape {
@@ -62,9 +35,7 @@ export class Rectangle extends Shape {
     gfx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
   }
 
-  get physicsShape(): NonNullable<
-    Phaser.Types.Physics.Matter.MatterBodyConfig['shape']
-  > {
+  get physicsShape(): FC.PhysicsShape {
     return 'rectangle';
   }
 }
@@ -96,7 +67,7 @@ export class Ellipse extends Rectangle {
     }
   }
 
-  get physicsShape() {
+  get physicsShape(): FC.PhysicsShape {
     if (this.width === this.height)
       return {
         type: 'circle',

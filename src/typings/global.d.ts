@@ -14,6 +14,10 @@ declare namespace FC {
   type Phaser = typeof import('phaser');
   type Matter = typeof import('matter-js');
 
+  export type PhysicsShape = NonNullable<
+    Phaser.Types.Physics.Matter.MatterBodyConfig['shape']
+  > | null;
+
   export type Body = Matter.Body & {
     id: number;
     gameObject: GameObject;

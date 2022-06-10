@@ -3,11 +3,12 @@ import Phaser from 'phaser';
 import {
   adjustBrightness,
   getBoundPoints,
+  midpoint,
   nextId,
   setNextId,
   valuesIterator,
 } from 'lib/utils';
-import { deleteConnections } from 'lib/physics';
+import { deleteConnections, Matter } from 'lib/physics';
 import { config, CONNECTOR_RADIUS } from 'src/const';
 import type { BaseScene } from 'src/scenes/Scene';
 import type { Geom } from 'src/lib/geom';
@@ -199,10 +200,8 @@ export default class Part extends Phaser.GameObjects.Sprite {
     }
   }
 
-  get physicsShape(): NonNullable<
-    Phaser.Types.Physics.Matter.MatterBodyConfig['shape']
-  > {
-    return {};
+  get physicsShape(): FC.PhysicsShape {
+    return null;
   }
 
   get physicsOptions(): Phaser.Types.Physics.Matter.MatterBodyConfig | null {
@@ -210,25 +209,45 @@ export default class Part extends Phaser.GameObjects.Sprite {
   }
 
   enablePhysics() {
+    const physicsShape = this.physicsShape;
+    if (!physicsShape) return this;
+
     if (this.body) {
       console.warn(
-        "Shouldn't call enablePhysics again!",
+        'enablePhysics was called more than once:',
         this.id,
         this.body.id,
       );
     }
 
+    const iRotation = this.rotation;
+
     // NOTE: this changes this.origin (I think)
     this.scene.matter.add.gameObject(this as any, {
-      shape: this.physicsShape,
-      angle: this.rotation,
+      shape: physicsShape,
       ...(this.physicsOptions || {}),
     });
 
-    const cf = this.body!.collisionFilter;
-    cf.joints = {};
-    cf.id = this.body!.id;
-    if (this.noCollide) cf.noCollide = true;
+    const body = this.body!;
+
+    // Get offset of center of mass and set the body to its correct position
+    // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
+    // (this is only strictly necessary on Polygon object b/c it's the only one of our shapes that can have a non-centered center-of-mass)
+    const centerOfMass = Matter.Vector.sub(
+      midpoint(body.bounds.max, body.bounds.min),
+      body.position,
+    );
+    Matter.Body.setCentre(body, centerOfMass, true);
+    this.setPosition(this.x - centerOfMass.x, this.y - centerOfMass.y);
+
+    this.setRotation(iRotation);
+
+    if (!body.isStatic) {
+      const cf = body.collisionFilter;
+      cf.joints = {};
+      cf.id = body.id;
+      if (this.noCollide) cf.noCollide = true;
+    }
 
     return this;
   }
