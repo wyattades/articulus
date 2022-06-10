@@ -190,7 +190,7 @@ export default class Play extends BaseScene {
       return newObj;
     });
 
-    clonePhysics(this.play, this.selected, newObjs);
+    clonePhysics(this, this.selected, newObjs);
 
     for (const obj of newObjs) obj.saveRender();
 
