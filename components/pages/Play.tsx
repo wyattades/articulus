@@ -95,14 +95,24 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
         })}
       </div>
 
-      <div className="absolute left-1/2 top-0 -translate-x-1/2 p-4">
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 p-4 space-x-2">
         <button
           className="ui-tool-button"
+          title="Or press 'SPACE'"
           onClick={() => {
             playScene.setRunning(!running);
           }}
         >
           {running ? 'Pause ⏸︎' : 'Play ⏵︎'}
+        </button>
+        <button
+          className="ui-tool-button"
+          title="Or press 'R'"
+          onClick={() => {
+            playScene.restart();
+          }}
+        >
+          Reset
         </button>
       </div>
 
