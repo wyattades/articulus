@@ -1,7 +1,7 @@
 import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
 
-import { EventManager } from 'src/lib/utils';
+import { addHoverCursor, EventManager } from 'src/lib/utils';
 import { Polygon } from 'src/objects/Polygon';
 import type { BaseScene } from 'src/scenes/Scene';
 import { minDistance } from 'src/lib/minDistance';
@@ -10,6 +10,10 @@ import Tool from './Tool';
 import SelectPointsTool from './SelectPointsTool';
 
 export class Vert extends Phaser.GameObjects.Arc {
+  __ = (() => {
+    addHoverCursor(this.setInteractive(), 'grab');
+  })();
+
   _selected = false;
   setHighlight(isSelected: boolean) {
     isSelected = !!isSelected;
