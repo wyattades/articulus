@@ -1,26 +1,3 @@
-@keyframes slideInOut {
-  0% {
-    opacity: 0;
-    transform: translateY(2rem);
-    text-shadow: none;
-  }
-  10%,
-  90% {
-    opacity: 1;
-    transform: translateY(0px);
-  }
-  10% {
-    text-shadow: -2px 0 #e9cdcd, 0 2px #e9cdcd, 2px 0 #e9cdcd, 0 -2px #e9cdcd;
-  }
-  30% {
-    text-shadow: none;
-  }
-  100% {
-    opacity: 0;
-    -transform: translateY(2rem);
-  }
-}
-
 @mixin button-base {
   @include monospace;
   border: none;
@@ -30,15 +7,6 @@
   background-color: #373737;
   font-weight: bold;
   font-size: 0.9rem;
-}
-
-.ui-flash {
-  overflow: hidden;
-  transform: translateY(2rem);
-  line-height: 1;
-  &.animate {
-    animation: slideInOut 3s;
-  }
 }
 
 .ui-text {
@@ -72,7 +40,7 @@
   }
 
   &--danger {
-    background: red;
+    background: #990b0b;
     color: white;
   }
 }
@@ -81,4 +49,45 @@
   border: 2px solid white;
   color: white;
   @apply p-4;
+}
+
+@keyframes slideInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(110%);
+    text-shadow: none;
+  }
+  10%,
+  90% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  10% {
+    text-shadow: -2px 0 #e9cdcd, 0 2px #e9cdcd, 2px 0 #e9cdcd, 0 -2px #e9cdcd;
+  }
+  30% {
+    text-shadow: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(110%);
+  }
+}
+
+.ui-flash {
+  overflow: hidden;
+  transform: translateY(110%);
+  line-height: 1;
+  &.animate {
+    animation: slideInOut 3s;
+  }
+
+  @apply text-xl;
+
+  &--win {
+    @apply text-8xl;
+  }
+  &--danger {
+    color: #990b0b;
+  }
 }

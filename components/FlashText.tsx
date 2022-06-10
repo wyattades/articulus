@@ -3,17 +3,23 @@ import clsx from 'clsx';
 
 import { useScene } from 'components/game/Scene';
 
+export type FlashStatus = 'info' | 'error' | 'win';
+export type FlashPayload = { message: string; status: FlashStatus };
+
 export const FlashText: React.FC = () => {
-  const [text, setText] = useState('');
+  const [flash, setFlash] = useState<FlashPayload>({
+    message: '',
+    status: 'info',
+  });
   const [showing, setShowing] = useState(false);
 
   const scene = useScene();
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const cb = (flashText: string) => {
+    const cb = (payload: FlashPayload) => {
       clearTimeout(timer);
-      setText(flashText);
+      setFlash(payload);
       setShowing(true);
       timer = setTimeout(() => {
         setShowing(false);
@@ -29,11 +35,16 @@ export const FlashText: React.FC = () => {
     <div className="absolute bottom-0 left-1/2 -translate-x-1/2 overflow-hidden">
       <p
         className={clsx(
-          'ui-flash ui-text text-center text-xl p-2',
+          'ui-flash ui-text text-center p-2',
           !showing && 'animate',
+          flash.status === 'win'
+            ? 'ui-flash--win'
+            : flash.status === 'error'
+            ? 'ui-flash--danger'
+            : null,
         )}
       >
-        {text}
+        {flash.message}
       </p>
     </div>
   );

@@ -1,3 +1,4 @@
+import type { FlashStatus } from 'components/FlashText';
 import type Game from 'src/Game';
 import type { Part } from 'src/objects';
 import type ToolManager from 'src/tools/ToolManager';
@@ -40,8 +41,8 @@ export abstract class BaseScene extends Phaser.Scene {
     return this.parts.getChildren() as unknown as Part[];
   }
 
-  showFlash(message: string) {
-    this.events.emit('showFlash', message);
+  showFlash(message: string, status: FlashStatus = 'info') {
+    this.events.emit('showFlash', { message, status });
   }
 
   deleteSelected() {
