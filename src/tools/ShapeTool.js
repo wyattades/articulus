@@ -1,5 +1,3 @@
-import { SHAPE_TYPE_CLASSES } from 'src/objects';
-
 import BoxTool from './BoxTool';
 
 export const MIN_SHAPE_SIZE = 10;
@@ -11,15 +9,7 @@ export default class ShapeTool extends BoxTool {
   allowGridSnapping = true;
 
   createShape() {
-    // TODO: stop using `toolKey` to determine shape class
-    const shapeType = this.toolKey
-      .replace(/_shape$/, '')
-      .replace('rectangle', 'rect');
-
-    const Klass = SHAPE_TYPE_CLASSES[shapeType];
-    if (!Klass) throw new Error(`Missing shape for tool: ${this.toolKey}`);
-
-    return new Klass(this.scene, 0, 0);
+    return new this.ShapeClass(this.scene, 0, 0);
   }
 
   handleCreateBox() {

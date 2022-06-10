@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import Phaser from 'phaser';
 
 import { validPoint } from 'lib/utils';
-import { OBJECTS, SHAPE_TYPE_CLASSES, Part } from 'src/objects';
+import { OBJECT_TYPE_MAP, Part } from 'src/objects';
 import { serializePhysics, deserializePhysics } from 'lib/physics';
 
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -11,7 +11,7 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 export const fromJSON = (scene, json, enablePhysics = false) => {
   if (json?.id == null) return null;
 
-  const Klass = OBJECTS[json.type] || SHAPE_TYPE_CLASSES[json.type];
+  const Klass = OBJECT_TYPE_MAP[json.type];
   if (!Klass) return null;
 
   const obj = Klass.fromJSON(scene, json);

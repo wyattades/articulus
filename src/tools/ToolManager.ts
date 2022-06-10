@@ -66,13 +66,20 @@ export default class ToolManager {
     }
 
     this.tools = types.map((type) => {
-      const ToolClass = TOOLS[type]?.ToolClass;
-      if (!ToolClass) throw new Error(`Invalid toolType: ${type}`);
+      const toolData = TOOLS[type] || {};
+      if (!toolData) throw new Error(`Invalid toolType: ${type}`);
+      const { ToolClass } = toolData;
 
-      // @ts-expect-error unknown args
-      if (toolType === type) return new ToolClass(this.scene, type, ...args);
-      // @ts-expect-error missing args
-      else return new ToolClass(this.scene, type);
+      const tool =
+        toolType === type
+          ? // @ts-expect-error unknown args
+            new ToolClass(this.scene, type, ...args)
+          : // @ts-expect-error missing args
+            new ToolClass(this.scene, type);
+
+      if ('ShapeClass' in toolData) tool.ShapeClass = toolData.ShapeClass;
+
+      return tool;
     });
 
     this.activeToolType = toolType;

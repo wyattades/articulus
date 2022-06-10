@@ -1,5 +1,5 @@
 import { stiffConnect } from 'lib/physics';
-import { Wheel, OBJECTS } from 'src/objects';
+import { Wheel } from 'src/objects';
 import { intersectsOtherSolid } from 'lib/utils';
 
 import Tool from './Tool';
@@ -75,9 +75,7 @@ export default class PlaceTool extends Tool {
         y = cursor.y;
       }
 
-      // TODO: using `toolKey` for the object key is kinda dirty
-      /** @type {import('../objects/Part').default} */
-      const obj = new OBJECTS[this.toolKey](this.scene, x, y);
+      const obj = new this.ShapeClass(this.scene, x, y);
       this.drawObj = { obj };
       obj.saveRender();
 

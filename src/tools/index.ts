@@ -1,4 +1,16 @@
 import { COLORS } from 'src/styles/theme';
+import {
+  BackWheel,
+  Ellipse,
+  ForwardWheel,
+  GoalZone,
+  NeutralWheel,
+  Polygon,
+  Rectangle,
+  Thruster,
+  Water,
+  Wood,
+} from 'src/objects';
 
 import DeleteTool from './DeleteTool';
 import LineTool from './LineTool';
@@ -19,31 +31,37 @@ export const TOOLS = {
     label: 'Wood Stick',
     color: COLORS.brown,
     ToolClass: LineTool,
+    ShapeClass: Wood,
   },
   water: {
     label: 'Water Stick',
     color: COLORS.blue,
     ToolClass: LineTool,
+    ShapeClass: Water,
   },
   forward_wheel: {
     label: 'Forward Wheel',
     color: COLORS.yellow,
     ToolClass: PlaceTool,
+    ShapeClass: ForwardWheel,
   },
   back_wheel: {
     label: 'Back Wheel',
     color: COLORS.pink,
     ToolClass: PlaceTool,
+    ShapeClass: BackWheel,
   },
   neutral_wheel: {
     label: 'Neutral Wheel',
     color: COLORS.blueLight,
     ToolClass: PlaceTool,
+    ShapeClass: NeutralWheel,
   },
   thruster: {
     label: 'Thruster',
     color: COLORS.thrusterFill,
     ToolClass: PlaceTool,
+    ShapeClass: Thruster,
   },
   select: {
     label: 'Select',
@@ -60,21 +78,25 @@ export const TOOLS = {
     label: 'Goal Zone',
     color: COLORS.goalLight,
     ToolClass: ShapeTool,
+    ShapeClass: GoalZone,
   },
   rectangle_shape: {
     label: 'Rectangle',
     color: COLORS.toolGreen,
     ToolClass: ShapeTool,
+    ShapeClass: Rectangle,
   },
   ellipse_shape: {
     label: 'Ellipse',
     color: COLORS.toolGreen,
     ToolClass: EllipseTool,
+    ShapeClass: Ellipse,
   },
   polygon_shape: {
     label: 'Pen',
     color: COLORS.toolGreen,
     ToolClass: PenTool,
+    ShapeClass: Polygon,
   },
 
   // non-UI tools:
