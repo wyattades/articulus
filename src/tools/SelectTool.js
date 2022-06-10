@@ -13,16 +13,16 @@ export default class SelectTool extends BoxTool {
   }
 
   eventManager = new EventManager()
-    .on(this.scene.events, this.setSelectedEvent, (s) => this.setSelected(s))
+    .on(this.scene.events, this.setSelectedEvent, this.setSelected.bind(this))
     .on(
       this.scene.input.keyboard,
       'keydown-BACKSPACE',
-      (e) => (e.preventDefault(), this.deleteSelected()),
+      this.deleteSelected.bind(this),
     )
     .on(
       this.scene.input.keyboard,
       'keydown-DELETE',
-      (e) => (e.preventDefault(), this.deleteSelected()),
+      this.deleteSelected.bind(this),
     );
 
   shiftKey = this.scene.input.keyboard.addKey(
@@ -49,8 +49,12 @@ export default class SelectTool extends BoxTool {
     this.currentSelected = selected;
   }
 
-  deleteSelected() {
+  deleteSelected(evt) {
+    evt?.preventDefault();
+
     for (const obj of this.currentSelected || []) obj.destroy();
+
+    this.scene.events.emit(this.setSelectedEvent, []);
   }
 
   handleCreateBox(intersected) {
