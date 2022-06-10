@@ -27,6 +27,10 @@ export abstract class BaseScene extends Phaser.Scene {
     return this.parts.getChildren() as unknown as Part[];
   }
 
+  showFlash(message: string) {
+    this.events.emit('showFlash', message);
+  }
+
   abstract shutdown(): void;
 
   // physics are running

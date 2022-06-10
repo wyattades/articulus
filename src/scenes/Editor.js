@@ -90,7 +90,7 @@ export default class Editor extends BaseScene {
       return part;
     });
 
-    if (!someMerged) this.events.emit('showFlash', 'Objects must be touching!');
+    if (!someMerged) this.showFlash('Objects must be touching!');
 
     this.events.emit('setSelected', resultObjs);
   }

@@ -19,7 +19,7 @@ export default class PenTool extends Tool {
 
   createShape(points: Point[]) {
     if (this.pending!.points.length < 3) {
-      this.scene.events.emit('showFlash', 'Not enough points!');
+      this.scene.showFlash('Not enough points!');
 
       return;
     }
@@ -27,7 +27,7 @@ export default class PenTool extends Tool {
     const fpoly = new Flatten.Polygon(points.map((p) => [p.x, p.y]));
 
     if (!fpoly.isValid()) {
-      this.scene.events.emit('showFlash', 'Invalid polygon!');
+      this.scene.showFlash('Invalid polygon!');
       return;
     }
 

@@ -100,7 +100,7 @@ export default class EditPointsTool extends Tool {
     const points = revertToOriginal ? this.originalPoints : this.vertices;
 
     if (points.length < 3) {
-      this.scene.events.emit('showFlash', 'Not enough points!');
+      this.scene.showFlash('Not enough points!');
 
       if (setTool) this.scene.tm.setTool('polygon_shape');
       return;
@@ -109,7 +109,7 @@ export default class EditPointsTool extends Tool {
     const fpoly = new Flatten.Polygon(points.map((p) => [p.x, p.y]));
 
     if (!fpoly.isValid()) {
-      this.scene.events.emit('showFlash', 'Invalid polygon!');
+      this.scene.showFlash('Invalid polygon!');
 
       if (setTool) this.scene.tm.setTool('polygon_shape');
       return;

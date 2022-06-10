@@ -169,7 +169,7 @@ export default class Play extends BaseScene {
 
   precheckMaxItems(additionalCount) {
     if (this.parts.getLength() + additionalCount > MAX_PARTS) {
-      this.events.emit('showFlash', 'MAX ITEM LIMIT EXCEEDED');
+      this.showFlash('MAX ITEM LIMIT EXCEEDED');
       return true;
     }
     return false;
@@ -331,7 +331,7 @@ export default class Play extends BaseScene {
     // LOAD OBJECTS
     this.loadObjects().catch((err) => {
       console.error(err);
-      this.events.emit('showFlash', 'Failed to load game objects!');
+      this.showFlash('Failed to load game objects!');
     });
 
     // START
