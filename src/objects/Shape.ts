@@ -2,11 +2,12 @@ import Phaser from 'phaser';
 
 import { config } from 'src/const';
 import { getEllipsePoints } from 'lib/utils';
+import { COLORS } from 'src/styles/theme';
 
 import Part from './Part';
 
 export abstract class Shape extends Part {
-  fillColor = 0x00ff00;
+  fillColor = COLORS.shapeFill;
   fillOpacity = 1;
   strokeColor = 0xffffff;
   strokeOpacity = 1;
@@ -37,6 +38,17 @@ export class Rectangle extends Shape {
 
   get physicsShape(): FC.PhysicsShape {
     return 'rectangle';
+  }
+}
+
+export class GoalZone extends Rectangle {
+  static type = 'goal_zone';
+
+  fillColor = COLORS.goalLight;
+  strokeColor = COLORS.goalBorder;
+
+  get physicsShape(): FC.PhysicsShape {
+    return null;
   }
 }
 

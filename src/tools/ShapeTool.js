@@ -1,4 +1,4 @@
-import { Rectangle, Ellipse } from 'src/objects/Shape';
+import { SHAPE_TYPE_CLASSES } from 'src/objects';
 
 import BoxTool from './BoxTool';
 
@@ -9,7 +9,15 @@ export default class ShapeTool extends BoxTool {
   fillOpacity = 1;
 
   createShape() {
-    return new Rectangle(this.scene, 0, 0);
+    // TODO: stop using `toolKey` to determine shape class
+    const shapeType = this.toolKey
+      .replace(/_shape$/, '')
+      .replace('rectangle', 'rect');
+
+    const Klass = SHAPE_TYPE_CLASSES[shapeType];
+    if (!Klass) throw new Error(`Missing shape for tool: ${this.toolKey}`);
+
+    return new Klass(this.scene, 0, 0);
   }
 
   handleCreateBox(_intersected) {
@@ -47,10 +55,6 @@ export default class ShapeTool extends BoxTool {
 }
 
 export class EllipseTool extends ShapeTool {
-  createShape() {
-    return new Ellipse(this.scene, 0, 0);
-  }
-
   updateShape() {
     const { ix, iy, width, height } = this.box;
 

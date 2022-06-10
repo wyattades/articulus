@@ -56,6 +56,11 @@ export const TOOLS = {
     ToolClass: DeleteTool,
   },
 
+  goal_zone: {
+    label: 'Goal Zone',
+    color: COLORS.goalLight,
+    ToolClass: ShapeTool,
+  },
   rectangle_shape: {
     label: 'Rectangle',
     color: COLORS.toolGreen,
@@ -118,6 +123,7 @@ export const EDITOR_TOOL_TYPES = [
   'rectangle_shape',
   'ellipse_shape',
   'polygon_shape',
+  'goal_zone',
   'select',
   'delete',
 ] as const;

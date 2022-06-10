@@ -12,4 +12,8 @@ export const COLORS = {
   toolGreen: 0x1a7b0a,
   thrusterFill: 0xb1b5da,
   thrusterStroke: 0x5b668f,
+  goalLight: 0xc174a5,
+  goalBorder: 0xa83e81,
+  goal: 0xf25cbb,
+  shapeFill: 0x26f241,
 };
