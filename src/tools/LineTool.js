@@ -37,7 +37,15 @@ export default class LineTool extends PlaceTool {
     )
       return false;
 
-    if (intersectsOtherSolid(this.scene, drawObj.obj, ignore)) return false;
+    if (
+      intersectsOtherSolid(
+        this.scene.parts.getChildren(),
+        this.scene.terrainGroup?.getChildren(),
+        drawObj.obj,
+        ignore,
+      )
+    )
+      return false;
 
     return true;
   }

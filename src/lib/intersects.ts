@@ -1,11 +1,10 @@
 // CREDIT: https://github.com/davidfig/intersects
 
-// import Phaser from 'phaser';
+import Phaser from 'phaser';
 import Flatten from '@flatten-js/core';
 
+import { Geom, GEOM_NAMES } from './geom';
 import { getEllipsePoints, validPoint } from './utils';
-
-type Box = { x: number; y: number; width: number; height: number };
 
 const sq = (x: number) => x * x;
 
@@ -31,6 +30,7 @@ const boxPoint = (
 
 /**
  * ellipse-line collision
+ * credit: https://github.com/davidfig/intersects
  * adapted from http://csharphelper.com/blog/2017/08/calculate-where-a-line-segment-and-an-ellipse-intersect-in-c/
  * @param xe center of ellipse
  * @param ye center of ellipse
@@ -75,8 +75,9 @@ const ellipseLine = (
 
 /**
  * ellipse-rectangle (axis-oriented rectangle) collision
+ * credit: https://github.com/davidfig/intersects
  */
-export const EllipseToRectangle = (ellipse: Box, rect: Box): boolean => {
+const EllipseToRectangle = (ellipse: Box, rect: Box): boolean => {
   const { x: xe, y: ye, width: we, height: he } = ellipse;
   const { x: xb, y: yb, width: wb, height: hb } = rect;
   const rex = we / 2;
@@ -118,8 +119,11 @@ const polygonPoints = (polygon: PointsInput): [number, number][] => {
   }
 };
 
-// this is a bit memory intensive
-export const PolygonToPolygon = (
+/**
+ * polygon-rectangle collision.
+ * this is a bit memory intensive
+ */
+const PolygonToPolygon = (
   points1: PointsInput,
   points2: PointsInput,
 ): boolean =>
@@ -131,7 +135,7 @@ export const PolygonToPolygon = (
 /**
  * polygon-rectangle collision
  */
-export const PolygonToRectangle = (points: PointsInput, rect: Box) => {
+const PolygonToRectangle = (points: PointsInput, rect: Box) => {
   const rectPoints: [number, number][] = [
     [rect.x + rect.width, rect.y],
     [rect.x + rect.width, rect.y + rect.height],
@@ -145,7 +149,7 @@ export const PolygonToRectangle = (points: PointsInput, rect: Box) => {
 /**
  * polygon-ellipse collision
  */
-export const PolygonToEllipse = (points: PointsInput, ellipse: Box) => {
+const PolygonToEllipse = (points: PointsInput, ellipse: Box) => {
   return PolygonToPolygon(
     points,
     getEllipsePoints(
@@ -159,9 +163,109 @@ export const PolygonToEllipse = (points: PointsInput, ellipse: Box) => {
   );
 };
 
-export const MoreIntersects = {
+/**
+ * polygon-segment collision
+ */
+const PolygonToLine = (points: PointsInput, line: LineSegment) =>
+  Flatten.Relations.intersect(
+    new Flatten.Segment(
+      new Flatten.Point(line.x1, line.y1),
+      new Flatten.Point(line.x2, line.y2),
+    ),
+    new Flatten.Polygon(polygonPoints(points)),
+  );
+
+/**
+ * ellipse-segment collision
+ */
+const EllipseToLine = (ellipse: Phaser.Geom.Ellipse, line: LineSegment) => {
+  // first check if line is inside ellipse
+  if (ellipse.contains(line.x1, line.y1)) return true;
+
+  return ellipseLine(
+    ellipse.x,
+    ellipse.y,
+    ellipse.width / 2,
+    ellipse.height / 2,
+    line.x1,
+    line.y1,
+    line.x2,
+    line.y2,
+  );
+};
+
+const POINT_THICKNESS = 6;
+
+const { PointToLine } = Phaser.Geom.Intersects;
+
+const fromEntries = <Pair extends readonly [any, any]>(
+  pairs: Pair[],
+): { [key in Pair[0]]: Pair[1] } => Object.fromEntries(pairs);
+
+const containsPointNames = [
+  'Circle',
+  'Ellipse',
+  'Polygon',
+  'Rectangle',
+] as const;
+
+const ContainsPoint = (
+  point: Point,
+  geom: InstanceType<typeof Phaser.Geom[typeof containsPointNames[number]]>,
+) => geom.contains(point.x, point.y);
+
+type GeomName = typeof GEOM_NAMES[keyof typeof GEOM_NAMES];
+
+// All available Geom intersect algorithms
+const Intersects: {
+  [key in `${GeomName}To${GeomName}`]?: (a: any, b: any) => boolean;
+} = {
+  ...Phaser.Geom.Intersects,
+
+  PointToLine: (point: Point, line: Phaser.Geom.Line) =>
+    PointToLine(point, line, POINT_THICKNESS),
+
   EllipseToRectangle,
   PolygonToEllipse,
   PolygonToPolygon,
   PolygonToRectangle,
+  PolygonToLine,
+  EllipseToLine,
+
+  ...fromEntries(
+    containsPointNames.map(
+      (name) => [`PointTo${name}`, ContainsPoint] as const,
+    ),
+  ),
+};
+
+const GEOM_INDEXED_NAMES = Object.entries(GEOM_NAMES).reduce(
+  (arr, [type, name]) => {
+    arr[Number(type)] = name;
+    return arr;
+  },
+  [] as (typeof GEOM_NAMES[number] | undefined)[],
+);
+
+const INTERSECT_MATRIX = GEOM_INDEXED_NAMES.map((a) =>
+  GEOM_INDEXED_NAMES.map((b) =>
+    a && b ? Intersects[`${a}To${b}`] : undefined,
+  ),
+);
+
+export const intersectsGeoms = (g1: Geom, g2: Geom) => {
+  let fn;
+
+  if ((fn = INTERSECT_MATRIX[g1.type][g2.type])) return fn(g1, g2);
+
+  if ((fn = INTERSECT_MATRIX[g2.type][g1.type])) return fn(g2, g1);
+
+  console.error(
+    'Missing intersect fn for:',
+    GEOM_NAMES[g1.type],
+    GEOM_NAMES[g2.type],
+    INTERSECT_MATRIX,
+  );
+
+  return false;
 };

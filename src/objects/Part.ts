@@ -18,8 +18,10 @@ const texturePadding = 20 * config.gameScale;
 // doesn't really matter which texture we render here
 const DEFAULT_TEXTURE = '__DEFAULT';
 
-export default class Part extends Phaser.GameObjects.Sprite {
+export default abstract class Part extends Phaser.GameObjects.Sprite {
   static zIndex = 0;
+
+  static type = 'base_part';
 
   fillColor = 0xffffff;
   strokeColor = 0xffffff;
@@ -52,8 +54,6 @@ export default class Part extends Phaser.GameObjects.Sprite {
   // @ts-expect-error body CAN be undefined
   body?: FC.Body;
 
-  static type = 'base_part';
-
   _id = nextId();
   set id(val) {
     this._id = val;
@@ -68,9 +68,10 @@ export default class Part extends Phaser.GameObjects.Sprite {
     this.strokeColor = this.iStrokeColor = adjustBrightness(color, -70);
   }
 
+  _bounds?: Phaser.Geom.Rectangle;
   // @ts-expect-error bad override
   getBounds(bounds?: Phaser.Geom.Rectangle) {
-    bounds ||= new Phaser.Geom.Rectangle();
+    bounds = bounds || (this._bounds ||= new Phaser.Geom.Rectangle());
 
     bounds.setTo(
       this.x - this.width * 0.5,
@@ -272,7 +273,9 @@ export default class Part extends Phaser.GameObjects.Sprite {
     scene: BaseScene,
     { type: _t, x, y, ...rest }: ReturnType<Part['toJSON']>,
   ) {
-    const obj = new this(scene, x, y);
+    const Klass = this as any;
+
+    const obj = new Klass(scene, x, y);
 
     Object.assign(obj, rest);
 
@@ -338,9 +341,7 @@ export default class Part extends Phaser.GameObjects.Sprite {
   addParticles(
     texture: string,
     frame: number,
-    emitters:
-      | Phaser.Types.GameObjects.Particles.ParticleEmitterConfig
-      | Phaser.Types.GameObjects.Particles.ParticleEmitterConfig[],
+    emitters: MaybeArray<Phaser.Types.GameObjects.Particles.ParticleEmitterConfig>,
   ) {
     const p = this.scene.add.particles(texture, frame, emitters);
     if (!this.scene.running) p.pause();

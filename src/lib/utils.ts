@@ -2,11 +2,13 @@ import Phaser from 'phaser';
 import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
 
-import { MoreIntersects } from 'lib/intersects';
-import { Geom, GEOM_NAMES } from 'lib/geom';
+import { intersectsGeoms } from 'lib/intersects';
+import { GEOM_NAMES } from 'lib/geom';
 import type { Part } from 'src/objects';
 import type { BaseScene } from 'src/scenes/Scene';
 
+// TODO: audit usage of: TEMP_RECT, Phaser.Polygon.GetAABB, bounds ||= ..., getBounds(), etc.
+// We want to create as little Rectangle objects as possible without risking using TEMP_RECT twice at the same time
 export const TEMP_RECT = new Phaser.Geom.Rectangle();
 export const TEMP_RECT2 = new Phaser.Geom.Rectangle();
 
@@ -97,86 +99,30 @@ export const midpoint = (a: Point, b: Point): Point => {
   };
 };
 
-const fromEntries = <Pair extends readonly [any, any]>(
-  pairs: Pair[],
-): { [key in Pair[0]]: Pair[1] } => Object.fromEntries(pairs);
-
-const INTERSECT_MATRIX = (() => {
-  const POINT_THICKNESS = 6;
-
-  const { PointToLine } = Phaser.Geom.Intersects;
-
-  const containsPointNames = [
-    'Circle',
-    'Ellipse',
-    'Polygon',
-    'Rectangle',
-  ] as const;
-
-  const ContainsPoint = (
-    point: Point,
-    geom: InstanceType<typeof Phaser.Geom[typeof containsPointNames[number]]>,
-  ) => geom.contains(point.x, point.y);
-
-  type GeomName = typeof GEOM_NAMES[keyof typeof GEOM_NAMES];
-
-  // All available Geom intersect algorithms
-  const Intersects: {
-    [key in `${GeomName}To${GeomName}`]?: (a: any, b: any) => boolean;
-  } = {
-    ...Phaser.Geom.Intersects,
-    ...MoreIntersects,
-    PointToLine: (point: Point, line: Phaser.Geom.Line) =>
-      PointToLine(point, line, POINT_THICKNESS),
-
-    ...fromEntries(
-      containsPointNames.map(
-        (name) => [`PointTo${name}`, ContainsPoint] as const,
-      ),
-    ),
-  };
-
-  const TYPES = Object.entries(GEOM_NAMES).reduce((arr, [type, name]) => {
-    arr[Number(type)] = name;
-    return arr;
-  }, [] as (typeof GEOM_NAMES[number] | undefined)[]);
-
-  return TYPES.map((a) =>
-    TYPES.map((b) => (a && b ? Intersects[`${a}To${b}`] : undefined)),
-  );
-})();
-
-export const intersectsGeoms = (g1: Geom, g2: Geom) => {
-  let fn;
-
-  if ((fn = INTERSECT_MATRIX[g1.type][g2.type])) return fn(g1, g2);
-
-  if ((fn = INTERSECT_MATRIX[g2.type][g1.type])) return fn(g2, g1);
-
-  console.warn(
-    'Missing intersect fn for:',
-    GEOM_NAMES[g1.type],
-    GEOM_NAMES[g2.type],
-    INTERSECT_MATRIX,
-  );
-
-  return false;
-};
-
 export const intersectsOtherSolid = (
-  scene: BaseScene,
+  objects: Part[],
+  terrains: Part[] | undefined | null,
   obj: Part,
-  ignore: Part[] = [],
+  ignoreObjects?: Part[],
 ): Part | null => {
-  if (obj.noCollide) return null;
+  let objGeom;
 
-  ignore.push(obj);
+  if (!obj.noCollide) {
+    for (const part of objects)
+      if (
+        !part.noCollide &&
+        part !== obj &&
+        !ignoreObjects?.includes(obj) &&
+        intersectsGeoms((objGeom ||= obj.geom), part.geom)
+      )
+        return part;
+  }
 
-  const parts = _.difference(scene.getParts(), ignore);
+  if (terrains?.length) {
+    for (const part of terrains)
+      if (intersectsGeoms((objGeom ||= obj.geom), part.geom)) return part;
+  }
 
-  const geom = obj.geom;
-  for (const part of parts)
-    if (!part.noCollide && intersectsGeoms(geom, part.geom)) return part;
   return null;
 };
 
@@ -436,17 +382,16 @@ export const getBoundPoints = (
 
 export const getObjectsBounds = (
   objs: Part[],
+  bounds = new Phaser.Geom.Rectangle(),
 ): Phaser.Geom.Rectangle | null => {
   const o = objs[0];
   if (!o) return null;
 
-  const tempBounds = new Phaser.Geom.Rectangle();
-
-  const bounds = new Phaser.Geom.Rectangle(o.x, o.y, 0, 0);
+  bounds.setTo(o.x, o.y, 0, 0);
 
   for (const obj of objs) {
     const r = obj.rotation ?? 0;
-    const b = obj.getBounds(tempBounds);
+    const b = obj.getBounds(TEMP_RECT2);
 
     for (const p of iterateBoundPoints(b, r)) {
       if (p.x > bounds.right) bounds.right = p.x;
@@ -454,11 +399,6 @@ export const getObjectsBounds = (
       if (p.x < bounds.left) bounds.left = p.x;
       if (p.y < bounds.top) bounds.top = p.y;
     }
-
-    // if (b.right > bounds.right) bounds.right = b.right;
-    // if (b.bottom > bounds.bottom) bounds.bottom = b.bottom;
-    // if (b.left < bounds.left) bounds.left = b.left;
-    // if (b.top < bounds.top) bounds.top = b.top;
   }
 
   return bounds;

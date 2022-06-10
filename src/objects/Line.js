@@ -11,7 +11,14 @@ export default class Line extends Part {
 
   strokeWidth = 2;
 
-  constructor(scene, x1, y1, x2, y2, lineWidth = 10 * config.gameScale) {
+  constructor(
+    scene,
+    x1 = 0,
+    y1 = 0,
+    x2 = x1,
+    y2 = y1,
+    lineWidth = 10 * config.gameScale,
+  ) {
     super(scene, x1, y1);
 
     this.length = this.width = 1;

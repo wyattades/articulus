@@ -44,10 +44,13 @@ export class Rectangle extends Shape {
 export class GoalZone extends Rectangle {
   static type = 'goal_zone';
 
+  static zIndex = 1;
+
   fillColor = COLORS.goalLight;
   strokeColor = COLORS.goalBorder;
   fillOpacity = 0.5;
 
+  // disable physics
   get physicsShape(): FC.PhysicsShape {
     return null;
   }

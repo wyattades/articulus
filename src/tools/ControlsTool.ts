@@ -3,7 +3,6 @@ import Phaser from 'phaser';
 
 import {
   constrain,
-  debugShape,
   EventManager,
   factoryRotateAround,
   midpoint,
@@ -164,8 +163,6 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  _bounds?: Phaser.Geom.Rectangle;
-
   // NOTE: this method does not sheer non-polygon shapes when we're scaling
   // the shape at a different angle than the shape's angle. We would have
   // to convert the ellipse/rectangle to a polygon first, which seems worse.
@@ -199,7 +196,7 @@ export default class ControlsTool extends Tool {
     const scaleX = c.width * invW;
     const scaleY = c.height * invH;
 
-    const bounds = (this._bounds ||= new Phaser.Geom.Rectangle());
+    const bounds = TEMP_RECT;
 
     for (const { obj, bounds: iBounds, points: iPoints } of iSelected) {
       const iPosRot = Phaser.Math.RotateAround(

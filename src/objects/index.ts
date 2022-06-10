@@ -76,8 +76,8 @@ export class GoalObject extends Ellipse {
   }
 
   render() {
+    super.render();
     const gfx = this.gfx!;
-    Ellipse.prototype.render.call(this);
     gfx.strokeEllipse(0, 0, 36 * config.gameScale, 36 * config.gameScale);
   }
 }
@@ -94,7 +94,7 @@ const OBJECTS = [
   Polygon,
   GoalZone,
   GoalObject,
-];
+] as const;
 
 export type ObjectType = typeof OBJECTS[number];
 

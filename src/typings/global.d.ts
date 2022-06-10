@@ -4,8 +4,12 @@ type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 type Override<T, R> = Omit<T, keyof R> & R;
 
+type MaybeArray<T> = T | T[];
+
 type Point = { x: number; y: number };
 type Vector2 = { x: number; y: number };
+type LineSegment = { x1: number; x2: number; y1: number; y2: number };
+type Box = { x: number; y: number; width: number; height: number };
 
 // physics:
 

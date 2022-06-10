@@ -22,7 +22,7 @@ export class Polygon extends Shape {
   }
 
   getBounds(bounds) {
-    bounds ||= new Phaser.Geom.Rectangle();
+    bounds = bounds || (this._bounds ||= new Phaser.Geom.Rectangle());
 
     if (this.polygon.points.length === 0) {
       return bounds.setTo(this.x, this.y, 1, 1);

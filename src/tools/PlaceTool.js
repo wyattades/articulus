@@ -24,7 +24,14 @@ export default class PlaceTool extends Tool {
         )
       )
         return false;
-    } else if (intersectsOtherSolid(this.scene, drawObj.obj)) return false;
+    } else if (
+      intersectsOtherSolid(
+        this.scene.parts.getChildren(),
+        this.scene.terrainGroup?.getChildren(),
+        drawObj.obj,
+      )
+    )
+      return false;
 
     return true;
   }
