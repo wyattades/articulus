@@ -12,7 +12,9 @@ export abstract class BaseScene extends Phaser.Scene {
 
   debugShapes?: Record<
     string,
-    Phaser.GameObjects.Rectangle | Phaser.GameObjects.Arc
+    | Phaser.GameObjects.Rectangle
+    | Phaser.GameObjects.Arc
+    | Phaser.GameObjects.Polygon
   >;
 
   selected?: Part[];

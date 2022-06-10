@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 
 import { Matter } from 'lib/physics';
 import { config } from 'src/const';
+import { midpoint } from 'lib/utils';
 
 // const retry = (fn, maxAttempts = 16) => {
 //   let err;
@@ -89,12 +90,12 @@ export class Terrain extends Phaser.GameObjects.Graphics {
   /**
    * @param {Phaser.Scene} scene
    */
-  constructor(scene, x, y) {
+  constructor(scene, x = 0, y = 0) {
     super(scene, { x, y });
     scene.add.existing(this);
 
-    this.__prevSetPos = this.setPosition;
-    this.setPosition = this.__setPosition;
+    this.ix = x;
+    this.iy = y;
 
     const { points, width, height, midY } = randMap(100, 1000, 40);
     this.midY = midY;
@@ -106,46 +107,60 @@ export class Terrain extends Phaser.GameObjects.Graphics {
 
     this.beginPath();
     this.moveTo(points[0].x, points[0].y);
-    for (const p of points) this.lineTo(p.x, p.y);
+    for (let i = 1; i < points.length; i++) {
+      const p = points[i];
+      this.lineTo(p.x, p.y);
+    }
     this.closePath();
 
     this.fillPath();
     this.strokePath();
 
     this.enablePhysics(points);
+
+    this.iPoints = points;
+    this.updateGeomCache();
+  }
+
+  updateGeomCache() {
+    if (!this.iPoints) return;
+    const { x, y } = this;
+    this._geom = new Phaser.Geom.Polygon(
+      this.iPoints.map((p) => ({ x: p.x + x, y: p.y + y })),
+    );
   }
 
   get geom() {
-    return new Phaser.Geom.Rectangle(this.x, this.y, this.width, this.height);
-  }
-
-  // move __body when this obj moves
-  __setPosition(x, y) {
-    this.__prevSetPos(x, y);
-
-    const body = this.__body;
-
-    // Get offset of center of mass and set the terrain to its correct position
-    // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
-    const centerOfMass = Matter.Vector.sub(body.bounds.min, body.position);
-    Matter.Body.setPosition(body, {
-      x: this.x + Math.abs(centerOfMass.x),
-      y: this.y + Math.abs(centerOfMass.y),
-    });
-
-    return this;
+    return this._geom;
   }
 
   enablePhysics(points) {
-    const body = this.scene.matter.add.fromVertices(0, 0, points, {
+    const ix = this.x,
+      iy = this.y;
+
+    this.scene.matter.add.gameObject(this, {
       density: config.physics.landDensity,
       isStatic: true,
+      shape: {
+        type: 'fromVertices',
+        verts: points.map((p) => ({ x: p.x, y: p.y })),
+      },
     });
 
-    // TODO: inject body correctly with matter.add.gameObject so
-    // we don't have to do this nor override setPosition
-    this.__body = body;
+    const body = this.body;
 
-    this.setPosition(this.x, this.y);
+    // Get offset of center of mass and set the body to its correct position
+    // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576
+    // (this is only strictly necessary on Polygon object b/c it's the only one of our shapes that can have a non-centered center-of-mass)
+    const centerOfMass = Matter.Vector.sub(
+      midpoint(body.bounds.max, body.bounds.min),
+      Matter.Vector.add(body.position, {
+        x: this.width / 2,
+        y: this.height / 2,
+      }),
+    );
+    Matter.Body.setCentre(body, centerOfMass, true);
+    this.setPosition(ix, iy);
+    // equivalent to: this.setPosition(this.x - centerOfMass.x, this.y - centerOfMass.y);
   }
 }

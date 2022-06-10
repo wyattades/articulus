@@ -320,6 +320,7 @@ export default class Play extends BaseScene {
 
       // we want world-pos 0,0 to be 300px above the y-pos of the center of the terrain
       terrain.setPosition(-terrain.width / 2, -terrain.midY + 300);
+      terrain.updateGeomCache();
 
       this.worldBounds = new Phaser.Geom.Rectangle(
         -terrain.width / 2,

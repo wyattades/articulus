@@ -3,8 +3,8 @@ import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
 
 import { intersectsGeoms } from 'lib/intersects';
-import { GEOM_NAMES } from 'lib/geom';
-import type { Part } from 'src/objects';
+import { Geom, GEOM_NAMES } from 'lib/geom';
+import { Part } from 'src/objects';
 import type { BaseScene } from 'src/scenes/Scene';
 
 // TODO: audit usage of: TEMP_RECT, Phaser.Polygon.GetAABB, bounds ||= ..., getBounds(), etc.
@@ -108,19 +108,24 @@ export const intersectsOtherSolid = (
   let objGeom;
 
   if (!obj.noCollide) {
-    for (const part of objects)
+    for (const part of objects) {
       if (
         !part.noCollide &&
         part !== obj &&
         !ignoreObjects?.includes(obj) &&
         intersectsGeoms((objGeom ||= obj.geom), part.geom)
-      )
+      ) {
         return part;
+      }
+    }
   }
 
   if (terrains?.length) {
-    for (const part of terrains)
-      if (intersectsGeoms((objGeom ||= obj.geom), part.geom)) return part;
+    for (const part of terrains) {
+      if (intersectsGeoms((objGeom ||= obj.geom), part.geom)) {
+        return part;
+      }
+    }
   }
 
   return null;
@@ -452,14 +457,36 @@ const deterministicColor = (seed: string): number => {
 export const debugShape = (
   scene: BaseScene,
   key: string,
-  shape: Phaser.Geom.Rectangle | Point,
+  shape: Geom | Point | Part,
 ) => {
+  if (shape instanceof Part) shape = shape.geom;
+
   if (shape instanceof Phaser.Geom.Rectangle) {
     const debug = ((scene.debugShapes ||= {})[key] ||= scene.add
       .rectangle(0, 0, 1, 1, 0, 0)
+      .setDepth(10)
       .setStrokeStyle(4, deterministicColor(key))
       .setOrigin(0, 0)) as Phaser.GameObjects.Rectangle;
     debug.setPosition(shape.x, shape.y).setSize(shape.width, shape.height);
+    return debug;
+  } else if (shape instanceof Phaser.Geom.Polygon) {
+    // TODO: how to update polygon points?
+
+    scene.debugShapes?.[key]?.destroy();
+    if (scene.debugShapes) delete scene.debugShapes[key];
+
+    const debug = ((scene.debugShapes ||= {})[key] ||= scene.add
+      .polygon(
+        0,
+        0,
+        shape.points.map((p) => ({ x: p.x, y: p.y })),
+        0,
+        0,
+      )
+      .setDepth(100)
+      .setStrokeStyle(4, deterministicColor(key))
+      .setOrigin(0, 0)) as Phaser.GameObjects.Polygon;
+
     return debug;
   } else if (validPoint(shape)) {
     const debug = ((scene.debugShapes ||= {})[key] ||= scene.add.circle(
@@ -468,7 +495,7 @@ export const debugShape = (
       4,
       deterministicColor(key),
       1,
-    ));
+    )).setDepth(10);
     debug.setPosition(shape.x, shape.y);
     return debug;
   }
