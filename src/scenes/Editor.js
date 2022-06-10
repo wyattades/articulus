@@ -36,6 +36,10 @@ export default class Editor extends BaseScene {
   createListeners() {
     this.cursors = this.input.keyboard.createCursorKeys();
 
+    this.modifierKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SHIFT,
+    );
+
     this.input.keyboard.on('keydown-T', () => {
       this.game.setScene('Play', {
         mapKey: this.mapKey,
@@ -97,16 +101,15 @@ export default class Editor extends BaseScene {
   }
 
   get snappingEnabled() {
-    return !!this.gridSize;
+    return !!this.gridSize !== this.modifierKey.isDown;
   }
   snapToGrid(obj) {
     if (this.snappingEnabled) {
+      const gridSize = this.iGridSize;
       const offsetX = obj.originX != null ? obj.originX * obj.width : 0;
       const offsetY = obj.originY != null ? obj.originY * obj.height : 0;
-      obj.x =
-        this.gridSize * Math.floor((obj.x - offsetX) / this.gridSize) + offsetX;
-      obj.y =
-        this.gridSize * Math.floor((obj.y - offsetY) / this.gridSize) + offsetY;
+      obj.x = gridSize * Math.floor((obj.x - offsetX) / gridSize) + offsetX;
+      obj.y = gridSize * Math.floor((obj.y - offsetY) / gridSize) + offsetY;
       return true;
     }
     return false;

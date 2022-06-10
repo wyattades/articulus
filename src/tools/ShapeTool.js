@@ -8,6 +8,8 @@ export default class ShapeTool extends BoxTool {
   fillColor = 0x00ff00;
   fillOpacity = 1;
 
+  allowGridSnapping = true;
+
   createShape() {
     // TODO: stop using `toolKey` to determine shape class
     const shapeType = this.toolKey
@@ -38,16 +40,10 @@ export default class ShapeTool extends BoxTool {
   updateShape() {
     const { x, y, width, height } = this.box;
 
-    const s = { x, y };
-    const w = { x: x + width, y: y + height };
+    const sw = x + width - x;
+    const sh = y + height - y;
 
-    this.scene.snapToGrid(s);
-    this.scene.snapToGrid(w);
-
-    const sw = w.x - s.x;
-    const sh = w.y - s.y;
-
-    this.shape.setPosition(s.x + sw / 2, s.y + sh / 2);
+    this.shape.setPosition(x + sw / 2, y + sh / 2);
     this.shape.setSize(sw, sh);
 
     this.shape.rerender();
@@ -58,16 +54,10 @@ export class EllipseTool extends ShapeTool {
   updateShape() {
     const { ix, iy, width, height } = this.box;
 
-    const ip = { x: ix, y: iy };
-    const w = { x: ix + width, y: iy + height };
+    const sw = ix + width - ix;
+    const sh = iy + height - iy;
 
-    this.scene.snapToGrid(ip);
-    this.scene.snapToGrid(w);
-
-    const sw = w.x - ip.x;
-    const sh = w.y - ip.y;
-
-    this.shape.setPosition(ip.x, ip.y);
+    this.shape.setPosition(ix, iy);
     this.shape.setSize(sw * 2, sh * 2);
 
     this.shape.rerender();

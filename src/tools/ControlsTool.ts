@@ -27,10 +27,6 @@ type DragData = {
 export default class ControlsTool extends Tool {
   controls = new Controls(this.scene);
 
-  shiftKey = this.scene.input.keyboard.addKey(
-    Phaser.Input.Keyboard.KeyCodes.SHIFT,
-  );
-
   selectedDragging: (DragData & { cdx: number; cdy: number })[] | null = null;
 
   controlRotating: {
@@ -301,7 +297,7 @@ export default class ControlsTool extends Tool {
         ) +
         Math.PI / 2;
 
-      if (this.scene.snappingEnabled !== this.shiftKey.isDown) {
+      if (this.scene.snappingEnabled) {
         const snap = Math.PI / 16;
         r = Math.round(r / snap) * snap;
       }

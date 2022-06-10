@@ -1,6 +1,5 @@
 import type Game from 'src/Game';
 import type { Part } from 'src/objects';
-import SelectTool from 'src/tools/SelectTool';
 import type ToolManager from 'src/tools/ToolManager';
 
 export abstract class BaseScene extends Phaser.Scene {
@@ -19,10 +18,23 @@ export abstract class BaseScene extends Phaser.Scene {
 
   tm!: ToolManager;
 
+  modifierKey!: Phaser.Input.Keyboard.Key;
+
   get snappingEnabled() {
     return false;
   }
-  abstract snapToGrid(point: Point): Point;
+  snapToGrid(
+    _point:
+      | Point
+      | (Point & {
+          originX: number;
+          originY: number;
+          width: number;
+          height: number;
+        }),
+  ): boolean {
+    return false;
+  }
 
   getParts() {
     return this.parts.getChildren() as unknown as Part[];

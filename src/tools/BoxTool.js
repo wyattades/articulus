@@ -12,6 +12,7 @@ export default class BoxTool extends Tool {
   box;
 
   allowStartOverlapping = true;
+  allowGridSnapping = false;
 
   handleCreateBox() {}
 
@@ -32,9 +33,7 @@ export default class BoxTool extends Tool {
     const { x, y, width, height } = this.box;
     this.shape.setPosition(x, y);
     this.shape.setSize(width, height);
-    if (this.shape.rerender) {
-      this.shape.rerender();
-    }
+    this.shape.rerender?.();
   }
 
   createShape() {
@@ -46,11 +45,16 @@ export default class BoxTool extends Tool {
   handlePointerDown(x, y) {
     this.clearBox();
 
+    if (this.allowGridSnapping) {
+      const p = { x, y };
+      this.scene.snapToGrid(p);
+      x = p.x;
+      y = p.y;
+    }
+
     this.box = new Phaser.Geom.Rectangle(x, y, 1, 1);
     this.box.ix = x;
     this.box.iy = y;
-
-    // TODO: snap to grid
 
     if (this.allowStartOverlapping || !getTopObject(this.scene, x, y)) {
       this.shape = this.createShape();
@@ -58,7 +62,14 @@ export default class BoxTool extends Tool {
     }
   }
 
-  handlePointerMove(x, y, pointer) {
+  handlePointerMove(x, y) {
+    if (this.allowGridSnapping) {
+      const p = { x, y };
+      this.scene.snapToGrid(p);
+      x = p.x;
+      y = p.y;
+    }
+
     if (this.box) {
       this.box.moved = true;
       const { ix, iy } = this.box;
@@ -71,13 +82,11 @@ export default class BoxTool extends Tool {
         this.box.y = y;
       } else this.box.height = y - iy;
 
-      // TODO: snap to grid
-
       if (this.shape) this.updateShape();
     }
   }
 
-  handlePointerUp(x, y, pointer) {
+  handlePointerUp() {
     if (this.box) {
       if (this.shape || !this.box.moved) {
         this.handleCreateBox();

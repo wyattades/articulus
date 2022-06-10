@@ -1,4 +1,3 @@
-import Phaser from 'phaser';
 import * as _ from 'lodash-es';
 
 import { EventManager } from 'lib/utils';
@@ -20,10 +19,6 @@ export default class SelectTool extends BoxTool {
       'keydown-DELETE',
       this.deleteSelected.bind(this),
     );
-
-  shiftKey = this.scene.input.keyboard.addKey(
-    Phaser.Input.Keyboard.KeyCodes.SHIFT,
-  );
 
   get setSelectedEvent() {
     return 'setSelected';
@@ -71,7 +66,7 @@ export default class SelectTool extends BoxTool {
       _.union(this.currentSelected, intersected).length ===
         this.currentSelected.length;
 
-    const newSelected = this.shiftKey.isDown
+    const newSelected = this.scene.modifierKey.isDown
       ? (subtract ? _.difference : _.union)(
           this.currentSelected || [],
           intersected,
@@ -82,7 +77,6 @@ export default class SelectTool extends BoxTool {
   }
 
   destroy() {
-    this.shiftKey.destroy();
     if (this.currentSelected?.length)
       this.scene.events.emit(this.setSelectedEvent, []);
     this.eventManager.off();

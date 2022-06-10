@@ -136,6 +136,10 @@ export default class Play extends BaseScene {
   }
 
   createListeners() {
+    this.modifierKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SHIFT,
+    );
+
     this.input.keyboard.on('keydown-SPACE', () => {
       this.setRunning(!this.running);
     });
@@ -332,10 +336,6 @@ export default class Play extends BaseScene {
     // START
 
     this.setRunning(false);
-  }
-
-  snapToGrid(_obj) {
-    return false;
   }
 
   update(_t, delta) {
