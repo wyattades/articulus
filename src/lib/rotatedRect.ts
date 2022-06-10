@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-export const ROTATED_RECT = 100; // 1 more than biggest Geom type
+export const ROTATED_RECT = 7; // 1 more than biggest Geom type
 
 const oppPoint = (
   from: Point,

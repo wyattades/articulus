@@ -8,6 +8,7 @@ import type { Part } from 'src/objects';
 import type { BaseScene } from 'src/scenes/Scene';
 
 export const TEMP_RECT = new Phaser.Geom.Rectangle();
+export const TEMP_RECT2 = new Phaser.Geom.Rectangle();
 
 export const colorIntToHex = (num: number) =>
   `#${`00000${num.toString(16)}`.slice(-6)}`;

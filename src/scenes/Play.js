@@ -7,8 +7,15 @@ import { BuildSaver, MapSaver, settingsSaver } from 'lib/saver';
 import { COLORS } from 'src/styles/theme';
 import ToolManager from 'src/tools/ToolManager';
 import { MAX_PARTS, CONNECTOR_RADIUS } from 'src/const';
-import { fitCameraToObjs, getObjectsBounds, validPoint } from 'lib/utils';
+import {
+  fitCameraToObjs,
+  getObjectsBounds,
+  TEMP_RECT,
+  TEMP_RECT2,
+  validPoint,
+} from 'lib/utils';
 import { clonePhysics } from 'src/lib/physics';
+import { GoalObject, GoalZone } from 'src/objects';
 
 import { BaseScene } from './Scene';
 
@@ -353,6 +360,24 @@ export default class Play extends BaseScene {
       camera.scrollY -= CAMERA_SPEED;
     } else if (down.isDown && !up.isDown) {
       camera.scrollY += CAMERA_SPEED;
+    }
+
+    // TODO: use Matter collision event instead?
+    if (this.running) {
+      const objs = this.terrainGroup.getChildren();
+      const gos = objs.filter((p) => p instanceof GoalObject);
+      const gzs = objs.filter((p) => p instanceof GoalZone);
+      for (const gz of gzs) {
+        const bounds = gz.getBounds(TEMP_RECT);
+        for (const go of gos) {
+          if (
+            Phaser.Geom.Rectangle.ContainsRect(bounds, go.getBounds(TEMP_RECT2))
+          ) {
+            this.showFlash('YOU WIN!');
+            this.setRunning(false);
+          }
+        }
+      }
     }
   }
 

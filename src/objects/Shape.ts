@@ -46,6 +46,7 @@ export class GoalZone extends Rectangle {
 
   fillColor = COLORS.goalLight;
   strokeColor = COLORS.goalBorder;
+  fillOpacity = 0.5;
 
   get physicsShape(): FC.PhysicsShape {
     return null;

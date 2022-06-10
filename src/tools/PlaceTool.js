@@ -45,7 +45,7 @@ export default class PlaceTool extends Tool {
 
       if (destroy) obj.destroy();
       else {
-        if (!this.canPlaceObject(drawObj) || this.scene.precheckMaxItems(1)) {
+        if (!this.canPlaceObject(drawObj) || this.scene.precheckMaxItems?.(1)) {
           obj.destroy();
           return drawObj;
         }
@@ -70,7 +70,7 @@ export default class PlaceTool extends Tool {
     const cursor = this.scene.cursor;
 
     if (!objExisted) {
-      if (cursor.visible) {
+      if (cursor?.visible) {
         x = cursor.x;
         y = cursor.y;
       }

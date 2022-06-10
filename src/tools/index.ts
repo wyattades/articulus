@@ -3,6 +3,7 @@ import {
   BackWheel,
   Ellipse,
   ForwardWheel,
+  GoalObject,
   GoalZone,
   NeutralWheel,
   Polygon,
@@ -74,6 +75,12 @@ export const TOOLS = {
     ToolClass: DeleteTool,
   },
 
+  goal_object: {
+    label: 'Goal Object',
+    color: COLORS.goal,
+    ToolClass: PlaceTool,
+    ShapeClass: GoalObject,
+  },
   goal_zone: {
     label: 'Goal Zone',
     color: COLORS.goalLight,
@@ -146,6 +153,7 @@ export const EDITOR_TOOL_TYPES = [
   'ellipse_shape',
   'polygon_shape',
   'goal_zone',
+  'goal_object',
   'select',
   'delete',
 ] as const;

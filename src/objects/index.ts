@@ -1,4 +1,5 @@
 import { COLORS } from 'src/styles/theme';
+import { config } from 'src/const';
 
 import Part from './Part';
 import Line from './Line';
@@ -59,6 +60,28 @@ export class NeutralWheel extends Wheel {
   }
 }
 
+export class GoalObject extends Ellipse {
+  static type = 'goal_object';
+
+  fillColor = COLORS.goal;
+  strokeColor = COLORS.goalBorder;
+
+  width = (this.height = 50 * config.gameScale);
+
+  get physicsOptions(): Phaser.Types.Physics.Matter.MatterBodyConfig | null {
+    return {
+      density: config.wheel.density,
+      friction: config.wheel.friction,
+    };
+  }
+
+  render() {
+    const gfx = this.gfx!;
+    Ellipse.prototype.render.call(this);
+    gfx.strokeEllipse(0, 0, 36 * config.gameScale, 36 * config.gameScale);
+  }
+}
+
 const OBJECTS = [
   ForwardWheel,
   BackWheel,
@@ -70,6 +93,7 @@ const OBJECTS = [
   Ellipse,
   Polygon,
   GoalZone,
+  GoalObject,
 ];
 
 export type ObjectType = typeof OBJECTS[number];
