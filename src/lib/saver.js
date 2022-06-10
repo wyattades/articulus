@@ -127,20 +127,22 @@ export class BuildSaver {
   async load() {
     if (!this.id) return null;
 
-    let query = db.from('builds').select().limit(1);
+    const userId = await (userIdPromise ||= getUserId());
 
-    if (this.id) query = query.match({ id: this.id });
-
-    const build = (await query).data[0];
+    const { data: build } = await db
+      .from('builds')
+      .select()
+      .match({ user_id: userId, id: this.id })
+      .single();
 
     if (!build) return null;
 
-    this.id = build.id;
+    // this.id = build.id;
     // this.name = build.name;
 
     return {
-      objs: build.objects,
-      physics: build.physics,
+      objs: build.data.objects,
+      physics: build.data.physics,
     };
   }
 
@@ -186,7 +188,7 @@ export class BuildSaver {
     }
   }
 
-  queueSave = _.debounce(this.save.bind(this), 1000);
+  queueSave = _.debounce(this.save.bind(this), 3000);
 }
 
 export class MapSaver {
@@ -311,7 +313,7 @@ export class MapSaver {
     }
   }
 
-  queueSave = _.debounce(this.save.bind(this), 1000);
+  queueSave = _.debounce(this.save.bind(this), 3000);
 }
 
 export const settingsSaver = new (class SettingsSaver {

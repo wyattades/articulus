@@ -43,7 +43,7 @@ export default class Play extends BaseScene {
     if (this.cameras.main.panEffect.isRunning) return;
 
     if (running) {
-      this.buildSaver.save(this.parts);
+      this.saveBuild('flush');
 
       this.refreshCameraFollower(() => {
         this.matter.resume();
@@ -141,14 +141,14 @@ export default class Play extends BaseScene {
     });
 
     this.input.on('pointerup', () => {
-      this.buildSaver.queueSave(this.parts);
+      this.saveBuild('queue');
     });
 
     this.input.keyboard.on('keydown-R', () => this.restart());
 
     this.input.keyboard.on('keydown-K', () => {
       this.parts.clear(true, true);
-      this.buildSaver.save(this.parts);
+      this.saveBuild();
     });
 
     this.input.keyboard.on('keydown-T', () => {
@@ -209,6 +209,57 @@ export default class Play extends BaseScene {
     this.scene.restart();
   }
 
+  cachedBuildIds() {
+    try {
+      const raw = localStorage.getItem('articulus:map_latest_builds');
+      const obj = raw && JSON.parse(raw);
+      if (obj && typeof obj === 'object') return obj;
+    } catch {}
+    return {};
+  }
+  setCachedBuildId() {
+    if (!this.buildSaver?.id) return;
+
+    const mapKey = this.mapSaver?.id || '__default';
+
+    localStorage.setItem(
+      'articulus:map_latest_builds',
+      JSON.stringify({
+        ...this.cachedBuildIds(),
+        [mapKey]: this.buildSaver.id,
+      }),
+    );
+  }
+
+  async loadObjects() {
+    if (this.mapSaver) {
+      const mapData = await this.mapSaver.load();
+
+      MapSaver.loadPlayParts(mapData, this.terrainGroup);
+
+      fitCameraToObjs(this.cameras.main, this.terrainGroup.getChildren());
+    }
+
+    const mapKey = this.mapSaver?.id || '__default';
+
+    const buildId = this.cachedBuildIds()[mapKey];
+    if (buildId) {
+      this.buildSaver.id = buildId;
+
+      const buildData = await this.buildSaver.load();
+
+      if (buildData) BuildSaver.loadPlayParts(buildData, this.parts);
+    }
+  }
+
+  async saveBuild(type) {
+    if (type === 'queue') await this.buildSaver.queueSave(this.parts);
+    else if (type === 'flush') await this.buildSaver.queueSave.flush();
+    else await this.buildSaver.save(this.parts);
+
+    this.setCachedBuildId();
+  }
+
   create() {
     // CAMERA
 
@@ -229,23 +280,9 @@ export default class Play extends BaseScene {
     this.parts = this.add.group();
     this.terrainGroup = this.add.group();
 
-    this.buildSaver
-      .load()
-      .then(
-        (partsData) =>
-          partsData && BuildSaver.loadPlayParts(partsData, this.parts),
-      )
-      .catch(console.error);
-
     // WORLD
 
     if (this.mapSaver) {
-      this.mapSaver.load().then((mapData) => {
-        MapSaver.loadPlayParts(mapData, this.terrainGroup);
-
-        fitCameraToObjs(this.cameras.main, this.terrainGroup.getChildren());
-      });
-
       this.worldBounds = new Phaser.Geom.Rectangle(-1000, -1000, 3000, 3000);
     } else {
       const terrain = new Terrain(this);
@@ -290,6 +327,12 @@ export default class Play extends BaseScene {
     this.createListeners();
 
     this.tm = new ToolManager(this, PLAY_TOOL_TYPES[0], ['nav']);
+
+    // LOAD OBJECTS
+    this.loadObjects().catch((err) => {
+      console.error(err);
+      this.events.emit('showFlash', 'Failed to load game objects!');
+    });
 
     // START
 
