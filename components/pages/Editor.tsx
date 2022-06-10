@@ -44,7 +44,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
     let mapName = editScene.mapSaver.name;
     if (!mapName) {
       mapName = window.prompt('Enter a map name:', '');
-      if (mapName) editScene.mapSaver.setName(mapName);
+      if (mapName) editScene.mapSaver.setName(mapName, false);
       else return editScene.mapSaver.id;
     }
     await editScene.saveLevel(true);

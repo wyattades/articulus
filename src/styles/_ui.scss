@@ -9,15 +9,14 @@
   font-size: 0.9rem;
 }
 
-.ui-text {
+.ui-markup {
   @include monospace;
   color: white;
   font-weight: bold;
+}
+.ui-text {
+  @extend .ui-markup;
   pointer-events: none !important;
-
-  &--black {
-    color: black;
-  }
 }
 
 .ui-tool-button {
@@ -42,6 +41,10 @@
   &--danger {
     background: #990b0b;
     color: white;
+  }
+  &--light {
+    background: #bababa;
+    color: #000000;
   }
 }
 

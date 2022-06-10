@@ -71,7 +71,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       {game ? (
         children
       ) : (
-        <p className="ui-text text-xl absolute top-1/2 left-1/2 -translate-1/2">
+        <p className="ui-markup text-xl absolute top-1/2 left-1/2 -translate-1/2">
           Loading...
         </p>
       )}

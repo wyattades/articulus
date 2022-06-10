@@ -1,6 +1,7 @@
 import * as _ from 'lodash-es';
 import { createClient } from '@supabase/supabase-js';
 import Phaser from 'phaser';
+import Router from 'next/router';
 
 import { validPoint } from 'lib/utils';
 import { OBJECT_TYPE_MAP, Part } from 'src/objects';
@@ -182,7 +183,7 @@ export class BuildSaver {
         .update(data, { returning: 'minimal' })
         .match({ id: this.id });
     } else {
-      const res = await db.from('builds').insert(data);
+      const res = await db.from('builds').insert(data).select('id');
 
       this.id = res.data[0].id;
     }
@@ -194,19 +195,29 @@ export class BuildSaver {
 export class MapSaver {
   static mapsMetaCache = {};
 
-  static async loadMapsMeta(from = 0, to = 21) {
+  static async loadMapsMeta() {
     const userId = await (userIdPromise ||= getUserId());
 
-    const res = await db
+    const { data: myLevels } = await db
       .from('maps')
-      .select('id, name')
-      .match({ user_id: userId })
-      .range(from, to);
+      .select('id, name, user_id, is_public')
+      .order('created_at', { ascending: false })
+      .match({ user_id: userId });
 
-    return res.data.map((l) => {
+    const { data: publicLevels } = await db
+      .from('maps')
+      .select('id, name, user_id, is_public, users(username)')
+      .order('updated_at', { ascending: false })
+      .neq('user_id', userId)
+      .match({ is_public: true });
+
+    return [...myLevels, ...publicLevels].map((l) => {
       const meta = {
         id: l.id,
         name: l.name,
+        is_public: l.is_public,
+        mine: l.user_id === userId,
+        author: l.users?.username || null,
       };
 
       MapSaver.mapsMetaCache[meta.id] = meta;
@@ -219,6 +230,8 @@ export class MapSaver {
   id = null;
   /** @type {string | null} */
   name = null;
+  /** @type {boolean | null} */
+  is_public = null;
 
   constructor(id) {
     this.id = id;
@@ -227,12 +240,45 @@ export class MapSaver {
       const meta = MapSaver.mapsMetaCache[id];
       if (meta) {
         this.name = meta.name;
+        this.user_id = meta.user_id;
+        this.is_public = meta.is_public;
       }
     }
   }
 
-  setName(name) {
+  async update(updates) {
+    if (!this.id) return;
+
+    await db
+      .from('maps')
+      .update(updates, { returning: 'minimal' })
+      .match({ id: this.id });
+  }
+
+  async setName(name, save = true) {
     this.name = name;
+
+    if (save) await this.update({ name });
+  }
+
+  async setPublic(is_public) {
+    this.is_public = is_public;
+
+    await this.update({ is_public });
+  }
+
+  async delete() {
+    if (!this.id) return;
+
+    await db
+      .from('maps')
+      .delete({ returning: 'minimal' })
+      .match({ id: this.id });
+
+    this.id = null;
+    this.name = null;
+    this.user_id = null;
+    this.is_public = null;
   }
 
   /**
@@ -272,6 +318,8 @@ export class MapSaver {
 
     this.id = map.id;
     this.name = map.name;
+    this.user_id = map.user_id;
+    this.is_public = map.is_public;
 
     return {
       objs: map.data.objects,
@@ -295,6 +343,14 @@ export class MapSaver {
 
     const userId = await getUserId();
 
+    const isFork = this.id && this.user_id && this.user_id !== userId;
+
+    if (isFork) {
+      this.name = `${this.name || '???'} (Forked)`;
+      this.user_id = userId;
+      this.id = null;
+    }
+
     const data = {
       user_id: userId,
       name: this.name,
@@ -307,9 +363,14 @@ export class MapSaver {
         .update(data, { returning: 'minimal' })
         .match({ id: this.id });
     } else {
-      const res = await db.from('maps').insert(data);
+      const res = await db.from('maps').insert(data).select('id');
 
       this.id = res.data[0].id;
+
+      // TODO: put this somewhere else
+      if (Router.pathname.match(/\/edit\/([^/]+)/)?.[1] !== this.id) {
+        Router.replace(`/edit/${this.id}`);
+      }
     }
   }
 
