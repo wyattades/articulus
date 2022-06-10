@@ -26,16 +26,18 @@
 - undo/redo capability
 - copy/paste keyboard shortcuts
 - multiplayer world
+- add a start screen
 
 ## Work in progress
 
-- ability to save & load builds
-- Start/menu screens
+- ability to view and import from your saved builds
+- user authentication
 - thrusters
 
 ## Known bugs
 
-- resizing multiple rotated shapes is not exact
+- resizing multiple rotated shapes does not accurately skew the shapes
+- can drag existing objects overtop other objects. this should be disallowed
 
 ## Credits
 
