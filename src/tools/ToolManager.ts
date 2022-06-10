@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 import { EventManager } from 'lib/utils';
 import type { BaseScene } from 'src/scenes/Scene';
 
-import { TOOLS, Tool, ToolKey, ExtraArgsForTool } from '.';
+import { TOOLS, Tool, ToolKey, ExtraArgsForTool, ToolClassFor } from '.';
 
 export default class ToolManager {
   tools: Tool[] = []; // active tools
@@ -44,8 +44,10 @@ export default class ToolManager {
     this.eventManager.off();
   }
 
-  getTool(toolType: ToolKey) {
-    return this.tools.find((t) => t.toolKey === toolType);
+  getTool<TK extends ToolKey>(toolType: TK) {
+    return this.tools.find((t) => t.toolKey === toolType) as
+      | InstanceType<ToolClassFor<TK>>
+      | undefined;
   }
 
   setTool<TK extends ToolKey>(toolType: TK, ...args: ExtraArgsForTool<TK>) {

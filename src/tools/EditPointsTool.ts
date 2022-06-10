@@ -159,9 +159,7 @@ export default class EditPointsTool extends Tool {
   }
 
   updateSelected(next: Vert[]) {
-    (this.scene.tm.getTool('select_points') as SelectPointsTool).setSelected(
-      next,
-    );
+    this.scene.tm.getTool('select_points')?.setSelected(next);
   }
 
   handlePointerDown(

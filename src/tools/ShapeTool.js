@@ -20,7 +20,7 @@ export default class ShapeTool extends BoxTool {
     return new Klass(this.scene, 0, 0);
   }
 
-  handleCreateBox(_intersected) {
+  handleCreateBox() {
     if (this.shape) {
       if (
         this.shape.width >= MIN_SHAPE_SIZE &&

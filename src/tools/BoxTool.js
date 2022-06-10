@@ -13,10 +13,7 @@ export default class BoxTool extends Tool {
 
   allowStartOverlapping = true;
 
-  /**
-   * @param {import('../objects/Part').default[]} intersected
-   */
-  handleCreateBox(intersected) {}
+  handleCreateBox() {}
 
   getBoxIntersections() {
     const boxGeom =
@@ -83,7 +80,7 @@ export default class BoxTool extends Tool {
   handlePointerUp(x, y, pointer) {
     if (this.box) {
       if (this.shape || !this.box.moved) {
-        this.handleCreateBox(this.getBoxIntersections());
+        this.handleCreateBox();
       }
 
       this.clearBox();

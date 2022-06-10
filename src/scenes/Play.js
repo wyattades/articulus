@@ -199,11 +199,6 @@ export default class Play extends BaseScene {
     this.refreshCameraFollower();
   }
 
-  deleteSelected() {
-    for (const obj of this.selected) obj.destroy();
-    this.events.emit('setSelected', []);
-  }
-
   restart() {
     this.matter.world.destroy();
     this.scene.restart();

@@ -7,7 +7,6 @@ import { PointerPos } from 'components/PointerPos';
 import { settingsSaver } from 'src/lib/saver';
 import EditorScene from 'src/scenes/Editor';
 import { FlashText } from 'components/FlashText';
-import type PenTool from 'src/tools/PenTool';
 import { Polygon } from 'src/objects/Polygon';
 
 const EditUI: React.FC<{ mapKey?: string }> = () => {
@@ -35,7 +34,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
   const pendingPolygon = useSubscribe(
     editScene.events,
     ['polygon:start', 'polygon:end'],
-    () => !!(editScene.tm.getTool('polygon_shape') as PenTool | null)?.pending,
+    () => !!editScene.tm.getTool('polygon_shape')?.pending,
     true,
   );
 

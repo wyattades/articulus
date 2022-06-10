@@ -4,7 +4,8 @@ export default class DeleteTool extends BoxTool {
   fillColor = 0xff0000;
   // fillOpacity = 0.3;
 
-  handleCreateBox(intersected) {
-    for (const obj of intersected) obj.destroy();
+  handleCreateBox() {
+    for (const obj of this.getBoxIntersections()) obj.destroy();
+    this.scene.events.emit('setSelected', []);
   }
 }

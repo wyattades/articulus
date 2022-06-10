@@ -8,10 +8,6 @@ import BoxTool from './BoxTool';
 export default class SelectTool extends BoxTool {
   allowStartOverlapping = false;
 
-  get setSelectedEvent() {
-    return 'setSelected';
-  }
-
   eventManager = new EventManager()
     .on(this.scene.events, this.setSelectedEvent, this.setSelected.bind(this))
     .on(
@@ -29,6 +25,9 @@ export default class SelectTool extends BoxTool {
     Phaser.Input.Keyboard.KeyCodes.SHIFT,
   );
 
+  get setSelectedEvent() {
+    return 'setSelected';
+  }
   get currentSelected() {
     return this.scene.selected;
   }
@@ -57,7 +56,9 @@ export default class SelectTool extends BoxTool {
     this.scene.events.emit(this.setSelectedEvent, []);
   }
 
-  handleCreateBox(intersected) {
+  handleCreateBox() {
+    let intersected = this.getBoxIntersections();
+
     // only select top object if we are clicking
     if (!this.box.moved && intersected.length > 1) {
       intersected = [intersected[intersected.length - 1]];

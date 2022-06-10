@@ -12,9 +12,7 @@ export default class SelectPointsTool extends SelectTool {
 
   _editPointsTool?: EditPointsTool;
   get editPointsTool() {
-    return (this._editPointsTool ||= this.scene.tm.getTool(
-      'edit_points',
-    ) as EditPointsTool);
+    return (this._editPointsTool ||= this.scene.tm.getTool('edit_points')!);
   }
 
   // @ts-expect-error Vert != Part

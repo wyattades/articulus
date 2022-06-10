@@ -36,9 +36,6 @@ export default class Editor extends BaseScene {
   createListeners() {
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    this.input.keyboard.on('keydown-BACKSPACE', this.deleteSelected);
-    this.input.keyboard.on('keydown-DELETE', this.deleteSelected);
-
     this.input.keyboard.on('keydown-T', () => {
       this.game.setScene('Play', {
         mapKey: this.mapKey,
@@ -48,12 +45,6 @@ export default class Editor extends BaseScene {
 
   iGridSize = 10 * config.gameScale;
   gridSize;
-
-  deleteSelected = (e) => {
-    e?.preventDefault?.();
-    for (const obj of this.selected || []) obj.destroy();
-    this.events.emit('setSelected', []);
-  };
 
   duplicateSelected() {
     const offset = 10;
