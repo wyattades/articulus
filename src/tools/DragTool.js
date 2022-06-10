@@ -70,13 +70,9 @@ export default class DragTool extends Tool {
       if (!(obj instanceof Line)) {
         for (const joint of valuesIterator(body.collisionFilter.joints)) {
           const pos = getJointPos(joint);
-          more.push(
-            ...Object.values(joint.bodies).map(([anchorId, body2]) => [
-              pos,
-              anchorId,
-              body2,
-            ]),
-          );
+          for (const [anchorId, body2] of Object.values(joint.bodies)) {
+            more.push([pos, anchorId, body2]);
+          }
         }
       }
     }
@@ -90,9 +86,13 @@ export default class DragTool extends Tool {
       nobj.rerender();
     };
 
-    dragging = _.uniqBy([...dragging, ...more], (a) => a[2]).map(
-      ([pos, anchorId, body]) => {
+    dragging = _.uniqBy([...dragging, ...more], (a) => a[2])
+      .map(([pos, anchorId, body]) => {
         const obj = body.gameObject;
+        if (!obj) {
+          console.warn(`Body missing gameObject: ${body.id}`, body);
+          return null;
+        }
 
         if (obj instanceof Line) {
           return {
@@ -101,14 +101,15 @@ export default class DragTool extends Tool {
             dx: pos.x - x,
             dy: pos.y - y,
           };
-        } else
+        } else {
           return {
             obj,
             dx: obj.x - x,
             dy: obj.y - y,
           };
-      },
-    );
+        }
+      })
+      .filter(Boolean);
 
     this.scene.activeDrag = {
       afterPlace,
@@ -178,15 +179,17 @@ export default class DragTool extends Tool {
   handlePointerUp(x, y) {
     const { activeDrag } = this.scene;
 
-    if (activeDrag) {
-      this.setDragging(null);
-      if (activeDrag.moved) {
-        for (const { obj } of activeDrag.dragging) obj.saveRender();
+    if (!activeDrag) return;
 
-        activeDrag.afterPlace?.(x, y);
+    this.setDragging(null);
+    if (activeDrag.moved) {
+      for (const { obj } of activeDrag.dragging) obj.saveRender();
 
-        return false;
-      }
+      activeDrag.afterPlace?.(x, y);
+
+      this.refreshCursor(x, y);
+
+      return false;
     }
   }
 }
