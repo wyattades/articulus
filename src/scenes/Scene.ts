@@ -3,6 +3,12 @@ import type Game from 'src/Game';
 import type { Part } from 'src/objects';
 import type ToolManager from 'src/tools/ToolManager';
 
+export type DebugShapeType =
+  | Phaser.GameObjects.Rectangle
+  | Phaser.GameObjects.Arc
+  | Phaser.GameObjects.Polygon
+  | Phaser.GameObjects.Line;
+
 export abstract class BaseScene extends Phaser.Scene {
   game!: Game;
 
@@ -10,12 +16,7 @@ export abstract class BaseScene extends Phaser.Scene {
 
   parts!: Phaser.GameObjects.Group;
 
-  debugShapes?: Record<
-    string,
-    | Phaser.GameObjects.Rectangle
-    | Phaser.GameObjects.Arc
-    | Phaser.GameObjects.Polygon
-  >;
+  debugShapes?: Record<string, DebugShapeType>;
 
   selected?: Part[];
 

@@ -5,7 +5,7 @@ import Flatten from '@flatten-js/core';
 import { intersectsGeoms } from 'lib/intersects';
 import { Geom, GEOM_NAMES } from 'lib/geom';
 import { Part } from 'src/objects';
-import type { BaseScene } from 'src/scenes/Scene';
+import type { BaseScene, DebugShapeType } from 'src/scenes/Scene';
 
 // TODO: audit usage of: TEMP_RECT, Phaser.Polygon.GetAABB, bounds ||= ..., getBounds(), etc.
 // We want to create as little Rectangle objects as possible without risking using TEMP_RECT twice at the same time
@@ -112,7 +112,7 @@ export const intersectsOtherSolid = (
       if (
         !part.noCollide &&
         part !== obj &&
-        !ignoreObjects?.includes(obj) &&
+        !ignoreObjects?.includes(part) &&
         intersectsGeoms((objGeom ||= obj.geom), part.geom)
       ) {
         return part;
@@ -457,47 +457,71 @@ const deterministicColor = (seed: string): number => {
 export const debugShape = (
   scene: BaseScene,
   key: string,
-  shape: Geom | Point | Part,
+  obj: Geom | Point | Part,
 ) => {
-  if (shape instanceof Part) shape = shape.geom;
+  const shape = obj instanceof Part ? obj.geom : obj;
+
+  const run = <G extends DebugShapeType>(
+    init: (color: number) => G,
+    update?: (shape: G) => void,
+  ): G => {
+    scene.debugShapes ||= {};
+
+    let prev = scene.debugShapes[key] as G | undefined | null;
+    if (!update) {
+      prev?.destroy();
+      delete scene.debugShapes[key];
+      prev = null;
+    } else if (prev) {
+      update(prev);
+      return prev;
+    }
+
+    return (scene.debugShapes[key] = init(deterministicColor(key)).setDepth(
+      10,
+    ) as G);
+  };
 
   if (shape instanceof Phaser.Geom.Rectangle) {
-    const debug = ((scene.debugShapes ||= {})[key] ||= scene.add
-      .rectangle(0, 0, 1, 1, 0, 0)
-      .setDepth(10)
-      .setStrokeStyle(4, deterministicColor(key))
-      .setOrigin(0, 0)) as Phaser.GameObjects.Rectangle;
-    debug.setPosition(shape.x, shape.y).setSize(shape.width, shape.height);
-    return debug;
+    return run(
+      (color) =>
+        scene.add
+          .rectangle(0, 0, 1, 1, 0, 0)
+          .setStrokeStyle(4, color)
+          .setOrigin(0, 0),
+      (prev) =>
+        prev.setPosition(shape.x, shape.y).setSize(shape.width, shape.height),
+    );
+  } else if (shape instanceof Phaser.Geom.Line) {
+    // TODO: how to update line points?
+
+    return run((color) =>
+      scene.add
+        .line(0, 0, shape.x1, shape.y1, shape.x2, shape.y2)
+        .setStrokeStyle(4, color)
+        .setOrigin(0, 0),
+    );
   } else if (shape instanceof Phaser.Geom.Polygon) {
     // TODO: how to update polygon points?
 
-    scene.debugShapes?.[key]?.destroy();
-    if (scene.debugShapes) delete scene.debugShapes[key];
-
-    const debug = ((scene.debugShapes ||= {})[key] ||= scene.add
-      .polygon(
-        0,
-        0,
-        shape.points.map((p) => ({ x: p.x, y: p.y })),
-        0,
-        0,
-      )
-      .setDepth(100)
-      .setStrokeStyle(4, deterministicColor(key))
-      .setOrigin(0, 0)) as Phaser.GameObjects.Polygon;
-
-    return debug;
+    return run((color) =>
+      scene.add
+        .polygon(
+          0,
+          0,
+          shape.points.map((p) => ({ x: p.x, y: p.y })),
+          0,
+          0,
+        )
+        .setStrokeStyle(4, color)
+        .setOrigin(0, 0),
+    );
   } else if (validPoint(shape)) {
-    const debug = ((scene.debugShapes ||= {})[key] ||= scene.add.circle(
-      0,
-      0,
-      4,
-      deterministicColor(key),
-      1,
-    )).setDepth(10);
-    debug.setPosition(shape.x, shape.y);
-    return debug;
+    return run(
+      (color) => scene.add.circle(0, 0, 4, color, 1),
+      (prev) => prev.setPosition(shape.x, shape.y),
+    );
   }
+  console.warn(`Unsupported debugShape:`, shape);
   return null;
 };
