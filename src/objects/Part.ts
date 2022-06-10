@@ -28,6 +28,8 @@ export default class Part extends Phaser.GameObjects.Sprite {
   particles: Phaser.GameObjects.Particles.ParticleEmitterManager[] | null =
     null;
 
+  polygon?: Phaser.Geom.Polygon;
+
   noCollide = false;
 
   scene!: BaseScene;
@@ -98,7 +100,11 @@ export default class Part extends Phaser.GameObjects.Sprite {
 
   render() {}
 
-  mutateBounds(bounds: Phaser.Geom.Rectangle) {
+  mutateBounds(
+    bounds: Phaser.Geom.Rectangle,
+    _iBounds: Phaser.Geom.Rectangle,
+    _iPoints?: Point[],
+  ) {
     this.setPosition(bounds.centerX, bounds.centerY);
     this.setSize(bounds.width, bounds.height);
   }

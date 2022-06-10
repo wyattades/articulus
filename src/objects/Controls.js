@@ -1,6 +1,10 @@
 import Phaser from 'phaser';
 
-import { factoryRotateAround, getObjectsBounds } from 'src/lib/utils';
+import {
+  addHoverCursor,
+  factoryRotateAround,
+  getObjectsBounds,
+} from 'src/lib/utils';
 import { COLORS } from 'src/styles/theme';
 import { config } from 'src/const';
 import { RotatedRect } from 'src/lib/rotatedRect';
@@ -10,27 +14,17 @@ import Part from './Part';
 const ROTATOR_OFFSET = 20 * config.gameScale;
 const ANCHOR_SIZE = 12 * config.gameScale;
 
-/**
- * @param {Phaser.GameObjects.Shape} obj
- * @param {string} cursor
- */
-const addHoverCursor = (obj, cursor) => {
-  const canvas = obj.scene.game.canvas;
-  obj
-    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
-      canvas.style.cursor = cursor;
-    })
-    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => {
-      canvas.style.cursor = 'auto';
-    });
-};
-
 export default class Controls extends Phaser.GameObjects.Group {
   x = 0;
   y = 0;
   width = 1;
   height = 1;
   rotation = 0;
+
+  /** @type {Phaser.GameObjects.Rectangle[]} */
+  edgeObjs;
+  /** @type {Phaser.GameObjects.Rectangle} */
+  rotateObj;
 
   /**
    * @param {Phaser.Scene} scene

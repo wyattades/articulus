@@ -14,8 +14,13 @@ export abstract class BaseScene extends Phaser.Scene {
     Phaser.GameObjects.Rectangle | Phaser.GameObjects.Arc
   >;
 
+  selected?: Part[];
+
   tm!: ToolManager;
 
+  get snappingEnabled() {
+    return false;
+  }
   abstract snapToGrid(point: Point): Point;
 
   getParts() {

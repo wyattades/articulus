@@ -6,57 +6,79 @@ import {
   EventManager,
   factoryRotateAround,
   midpoint,
+  TEMP_RECT,
 } from 'lib/utils';
 import Controls from 'src/objects/Controls';
+import type { Part } from 'src/objects';
 
 import Tool from './Tool';
 import { MIN_SHAPE_SIZE } from './ShapeTool';
 
+type DragCustomUpdate = (obj: Part | Controls, x: number, y: number) => void;
+
+type DragData = {
+  obj: Part | Controls;
+  dx: number;
+  dy: number;
+  customUpdate?: DragCustomUpdate;
+};
+
 export default class ControlsTool extends Tool {
-  controls = new Controls(this.scene, 0, 0, 1, 1);
-  controlDragging = null;
+  controls = new Controls(this.scene);
 
   shiftKey = this.scene.input.keyboard.addKey(
     Phaser.Input.Keyboard.KeyCodes.SHIFT,
   );
 
-  /**
-   * @param {Phaser.Scene} scene
-   */
-  constructor(scene, toolKey) {
-    super(scene, toolKey);
+  selectedDragging: (DragData & { cdx: number; cdy: number })[] | null = null;
 
-    this.eventManager = new EventManager()
-      .on(scene.events, 'setSelected', this.setSelected)
-      .on(scene.events, 'setDragging', this.setDragging);
-  }
+  controlRotating: {
+    iSelected: { obj: Part; x: number; y: number; angle: number }[];
+    iRotation: number;
+    moved?: boolean;
+  } | null = null;
 
-  destroy() {
-    this.eventManager.off();
-    this.controls.destroy(true); // destroy it's children too
-  }
+  controlDragging: {
+    edgeObj: Phaser.GameObjects.Rectangle;
+    moved?: boolean;
+    startDelta: Point;
+    oppCorner: Point;
+    center: Point;
+    invW: number;
+    invH: number;
+    iSelected: {
+      obj: Part;
+      rotation: number;
+      bounds: Phaser.Geom.Rectangle;
+      points?: Point[];
+    }[];
+  } | null = null;
 
-  setSelected = (selected) => {
-    this.controls.setSelected(selected);
-  };
+  eventManager = new EventManager()
+    .on(this.scene.events, 'setSelected', this.setSelected.bind(this))
+    .on(this.scene.events, 'setDragging', this.setDragging.bind(this));
 
-  onDrag = (_controls, x, y) => {
+  onDrag: DragCustomUpdate = (_controls, x, y) => {
     this.controls.setPosition(x, y);
-    for (const { obj, cdx, cdy } of this.selectedDragging) {
+    for (const { obj, cdx, cdy } of this.selectedDragging!) {
       obj.setPosition(x + cdx, y + cdy);
     }
   };
 
-  setDragging = (activeDrag) => {
+  setSelected(selected: Part[]) {
+    this.controls.setSelected(selected);
+  }
+
+  setDragging(activeDrag: { dragging: DragData[]; x: number; y: number }) {
     if (!activeDrag?.dragging) return;
 
     const { dragging, x, y } = activeDrag;
-    if (this.scene.selected?.includes(dragging[0].obj)) {
-      for (const data of dragging) {
-        data.cdx = data.obj.x - this.controls.x;
-        data.cdy = data.obj.y - this.controls.y;
-      }
-      this.selectedDragging = dragging;
+    if ((this.scene.selected as any[] | undefined)?.includes(dragging[0].obj)) {
+      this.selectedDragging = dragging.map((d) => ({
+        ...d,
+        cdx: d.obj.x - this.controls.x,
+        cdy: d.obj.y - this.controls.y,
+      }));
 
       activeDrag.dragging = [
         {
@@ -67,17 +89,17 @@ export default class ControlsTool extends Tool {
         },
       ];
     }
-  };
+  }
 
-  handlePointerDown(x, y) {
+  handlePointerDown(x: number, y: number) {
     const c = this.controls;
+    const selected = this.scene.selected;
 
+    if (!selected?.length) return;
     if (!c.edgeObjs[0].visible) return;
 
-    const tempBounds = (this._bounds ||= new Phaser.Geom.Rectangle());
-
     for (const edgeObj of c.edgeObjs) {
-      if (edgeObj.getBounds(tempBounds).contains(x, y)) {
+      if (edgeObj.getBounds(TEMP_RECT).contains(x, y)) {
         const oppCorner = Phaser.Math.Rotate(
           {
             x: edgeObj.originX === 1 ? c.width : -c.width,
@@ -105,7 +127,7 @@ export default class ControlsTool extends Tool {
           invW: 1 / c.width, // inverse initial control height
           invH: 1 / c.height, // inverse initial control width
 
-          iSelected: this.scene.selected.map((s) => ({
+          iSelected: selected.map((s) => ({
             obj: s,
             rotation: s.rotation,
             bounds: new Phaser.Geom.Rectangle(
@@ -114,7 +136,10 @@ export default class ControlsTool extends Tool {
               s.width,
               s.height,
             ),
-            points: s.polygon?.points?.map((p) => ({ x: p.x, y: p.y })),
+            points: s.polygon?.points?.map((p) => ({
+              x: p.x,
+              y: p.y,
+            })),
           })),
         };
 
@@ -122,10 +147,10 @@ export default class ControlsTool extends Tool {
       }
     }
 
-    if (c.rotateObj.getBounds(tempBounds).contains(x, y)) {
+    if (c.rotateObj.getBounds(TEMP_RECT).contains(x, y)) {
       this.controlRotating = {
         iRotation: c.rotation,
-        iSelected: this.scene.selected.map((s) => ({
+        iSelected: selected.map((s) => ({
           obj: s,
           x: s.x,
           y: s.y,
@@ -137,20 +162,19 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  /** @type {Phaser.Geom.Rectangle} */
-  _bounds;
+  _bounds?: Phaser.Geom.Rectangle;
 
   // NOTE: this method does not sheer non-polygon shapes when we're scaling
   // the shape at a different angle than the shape's angle. We would have
   // to convert the ellipse/rectangle to a polygon first, which seems worse.
-  updateSelected(draggedPos) {
+  updateSelected(draggedPos: Point) {
     const {
       oppCorner,
       invW,
       invH,
       iSelected,
       center: iCenter,
-    } = this.controlDragging;
+    } = this.controlDragging!;
     const c = this.controls;
 
     const newCenter = midpoint(draggedPos, oppCorner);
@@ -175,12 +199,7 @@ export default class ControlsTool extends Tool {
 
     const bounds = (this._bounds ||= new Phaser.Geom.Rectangle());
 
-    for (const {
-      obj,
-      bounds: iBounds,
-      points: iPoints,
-      rotation: iRotation,
-    } of iSelected) {
+    for (const { obj, bounds: iBounds, points: iPoints } of iSelected) {
       const iPosRot = Phaser.Math.RotateAround(
         { x: iBounds.centerX, y: iBounds.centerY },
         origin.x,
@@ -204,7 +223,7 @@ export default class ControlsTool extends Tool {
       bounds.centerX = pos.x;
       bounds.centerY = pos.y;
 
-      obj.mutateBounds(bounds, iBounds, iPoints, iRotation - c.rotation);
+      obj.mutateBounds(bounds, iBounds, iPoints);
 
       obj.rerender();
     }
@@ -212,7 +231,7 @@ export default class ControlsTool extends Tool {
 
   updateSelectedRotation() {
     const { rotation } = this.controls;
-    const { iSelected, iRotation } = this.controlRotating;
+    const { iSelected, iRotation } = this.controlRotating!;
 
     const rotateAround = factoryRotateAround(
       {
@@ -234,7 +253,7 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  handlePointerMove(x, y) {
+  handlePointerMove(x: number, y: number) {
     if (this.controlDragging) {
       this.controlDragging.moved = true;
 
@@ -276,7 +295,7 @@ export default class ControlsTool extends Tool {
         ) +
         Math.PI / 2;
 
-      if (!!this.scene.gridSize !== this.shiftKey.isDown) {
+      if (this.scene.snappingEnabled !== this.shiftKey.isDown) {
         const snap = Math.PI / 16;
         r = Math.round(r / snap) * snap;
       }
@@ -289,7 +308,7 @@ export default class ControlsTool extends Tool {
     }
   }
 
-  handlePointerUp(_x, _y, _pointer) {
+  handlePointerUp(_x: number, _y: number, _pointer: Phaser.Input.Pointer) {
     if (this.controlDragging) {
       if (this.controlDragging.moved) {
         for (const { obj } of this.controlDragging.iSelected) obj.saveRender();
@@ -298,5 +317,10 @@ export default class ControlsTool extends Tool {
     }
 
     if (this.controlRotating) this.controlRotating = null;
+  }
+
+  destroy() {
+    this.eventManager.off();
+    this.controls.destroy(true, true); // destroy it's children too
   }
 }

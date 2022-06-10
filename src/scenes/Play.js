@@ -146,7 +146,7 @@ export default class Play extends BaseScene {
 
     this.input.keyboard.on('keydown-R', () => this.restart());
 
-    this.input.keyboard.on('keydown-C', () => {
+    this.input.keyboard.on('keydown-K', () => {
       this.parts.clear(true, true);
       this.buildSaver.save(this.parts);
     });

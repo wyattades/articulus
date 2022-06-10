@@ -22,7 +22,7 @@ const Directions: React.FC<{ onClose: () => void }> = ({ onClose }) => (
       <h2>Legend:</h2>
       <ul>
         <li>
-          <code>[SPACE]</code>
+          <code>SPACE</code>
           <span>Pause/Resume</span>
         </li>
         <li>
@@ -35,7 +35,7 @@ const Directions: React.FC<{ onClose: () => void }> = ({ onClose }) => (
         </li>
         <li>
           <code>CTRL</code>
-          <span>+ mouse scroll to zoom in and out</span>
+          <span> + mouse scroll to zoom in and out</span>
         </li>
         <li>
           <span>

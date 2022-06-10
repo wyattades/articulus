@@ -17,9 +17,11 @@ export default class SelectPointsTool extends SelectTool {
     ) as EditPointsTool);
   }
 
+  // @ts-expect-error Vert != Part
   get currentSelected() {
     return this.editPointsTool.selectedVerts;
   }
+  // @ts-expect-error Vert != Part
   set currentSelected(next) {
     this.editPointsTool.selectedVerts = next;
   }

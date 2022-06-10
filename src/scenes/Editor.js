@@ -105,8 +105,11 @@ export default class Editor extends BaseScene {
     this.gridSize = enabled ? this.iGridSize : null;
   }
 
+  get snappingEnabled() {
+    return !!this.gridSize;
+  }
   snapToGrid(obj) {
-    if (this.gridSize) {
+    if (this.snappingEnabled) {
       const offsetX = obj.originX != null ? obj.originX * obj.width : 0;
       const offsetY = obj.originY != null ? obj.originY * obj.height : 0;
       obj.x =

@@ -7,6 +7,8 @@ import { Geom, GEOM_NAMES } from 'lib/geom';
 import type { Part } from 'src/objects';
 import type { BaseScene } from 'src/scenes/Scene';
 
+export const TEMP_RECT = new Phaser.Geom.Rectangle();
+
 export const colorIntToHex = (num: number) =>
   `#${`00000${num.toString(16)}`.slice(-6)}`;
 
@@ -26,7 +28,7 @@ export const validPoint = (p: any): p is Point => {
   }
 };
 
-export const constrain = (v: number, min: number, max: number) =>
+export const constrain = (v: number, min: number | null, max: number | null) =>
   min != null && v < min ? min : max != null && v > max ? max : v;
 
 export const mapNumber = (
@@ -290,11 +292,6 @@ export function* valuesIterator<T>(obj: Record<string, T>) {
   for (const k in obj) yield obj[k];
 }
 
-/**
- * @template T
- * @param {Record<string, T>} obj
- * @return {T}
- */
 export const getFirstValue = <T>(obj: Record<string, T>): T | null => {
   for (const id in obj) return obj[id];
   return null;
@@ -490,6 +487,20 @@ export const fitCameraToObjs = (
     bounds.centerY - camera.height / 2,
   );
   camera.setZoom(camera.width / bounds.width);
+};
+
+export const addHoverCursor = (
+  obj: Phaser.GameObjects.Shape,
+  cursor: CSSStyleDeclaration['cursor'],
+) => {
+  const canvas = obj.scene.game.canvas;
+  obj
+    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
+      canvas.style.cursor = cursor;
+    })
+    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => {
+      canvas.style.cursor = 'auto';
+    });
 };
 
 const deterministicColor = (seed: string): number => {
