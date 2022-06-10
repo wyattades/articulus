@@ -176,6 +176,44 @@ const PolygonToLine = (points: PointsInput, line: LineSegment) =>
   );
 
 /**
+ * ellipse-ellipse collision
+ * TODO: use more efficient method
+ */
+const EllipseToEllipse = (ellipse1: Box, ellipse2: Box) => {
+  return PolygonToPolygon(
+    getEllipsePoints(
+      ellipse1.x,
+      ellipse1.y,
+      ellipse1.width,
+      ellipse1.height,
+      0,
+      16,
+    ),
+    getEllipsePoints(
+      ellipse2.x,
+      ellipse2.y,
+      ellipse2.width,
+      ellipse2.height,
+      0,
+      16,
+    ),
+  );
+};
+
+/**
+ * ellipse-circle collision
+ */
+const EllipseToCircle = (ellipse1: Box, circle: Circle) => {
+  const width = circle.radius * 2;
+  return EllipseToEllipse(ellipse1, {
+    x: circle.x,
+    y: circle.y,
+    width,
+    height: width,
+  });
+};
+
+/**
  * ellipse-segment collision
  */
 const EllipseToLine = (ellipse: Phaser.Geom.Ellipse, line: LineSegment) => {
@@ -231,6 +269,8 @@ const Intersects: {
   PolygonToRectangle,
   PolygonToLine,
   EllipseToLine,
+  EllipseToEllipse,
+  EllipseToCircle,
 
   ...fromEntries(
     containsPointNames.map(

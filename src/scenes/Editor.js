@@ -22,6 +22,13 @@ export default class Editor extends BaseScene {
   constructor() {
     super({
       key: 'Editor',
+
+      // disable physics
+      physics: {
+        matter: {
+          enabled: false,
+        },
+      },
     });
   }
 

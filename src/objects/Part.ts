@@ -209,6 +209,7 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
     return null;
   }
 
+  // TODO: don't need to enablePhysics in the editor scene
   enablePhysics() {
     const physicsShape = this.physicsShape;
     if (!physicsShape) return this;

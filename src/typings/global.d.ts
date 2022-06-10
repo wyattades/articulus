@@ -10,6 +10,7 @@ type Point = { x: number; y: number };
 type Vector2 = { x: number; y: number };
 type LineSegment = { x1: number; x2: number; y1: number; y2: number };
 type Box = { x: number; y: number; width: number; height: number };
+type Circle = { x: number; y: number; radius: number };
 
 // physics:
 

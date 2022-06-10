@@ -18,7 +18,6 @@ import { clonePhysics, Matter } from 'src/lib/physics';
 import { GoalObject, GoalZone } from 'src/objects';
 
 import { BaseScene } from './Scene';
-import { intersectsGeoms } from 'src/lib/intersects';
 
 export default class Play extends BaseScene {
   // used by multiple tools e.g. SelectTool
