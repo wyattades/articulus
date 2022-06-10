@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 
 import {
   constrain,
+  debugShape,
   EventManager,
   factoryRotateAround,
   midpoint,
@@ -33,9 +34,14 @@ export default class ControlsTool extends Tool {
   selectedDragging: (DragData & { cdx: number; cdy: number })[] | null = null;
 
   controlRotating: {
-    iSelected: { obj: Part; x: number; y: number; angle: number }[];
     iRotation: number;
     moved?: boolean;
+    iSelected: {
+      obj: Part;
+      x: number;
+      y: number;
+      rotation: number;
+    }[];
   } | null = null;
 
   controlDragging: {
@@ -154,7 +160,7 @@ export default class ControlsTool extends Tool {
           obj: s,
           x: s.x,
           y: s.y,
-          angle: s.rotation,
+          rotation: s.rotation,
         })),
       };
 
@@ -233,18 +239,16 @@ export default class ControlsTool extends Tool {
     const { rotation } = this.controls;
     const { iSelected, iRotation } = this.controlRotating!;
 
-    const rotateAround = factoryRotateAround(
-      {
-        x: this.controls.x + this.controls.width / 2,
-        y: this.controls.y + this.controls.height / 2,
-      },
-      rotation,
-    );
+    const center = {
+      x: this.controls.x + this.controls.width / 2,
+      y: this.controls.y + this.controls.height / 2,
+    };
+    const rotateAround = factoryRotateAround(center, rotation - iRotation);
 
     for (const s of iSelected) {
       const { obj } = s;
 
-      obj.setRotation(s.angle + rotation - iRotation);
+      obj.setRotation(s.rotation + rotation - iRotation);
       if (iSelected.length > 1) {
         const p = rotateAround({ x: s.x, y: s.y });
 
@@ -288,6 +292,8 @@ export default class ControlsTool extends Tool {
     }
 
     if (this.controlRotating) {
+      this.controlRotating.moved = true;
+
       let r =
         Math.atan2(
           y - this.controls.y - this.controls.height / 2,
