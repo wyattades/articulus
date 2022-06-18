@@ -1,3 +1,5 @@
+import type StatsJs from 'stats.js';
+
 import type { FlashStatus } from 'components/FlashText';
 import type Game from 'src/Game';
 import type { Part } from 'src/objects';
@@ -18,11 +20,14 @@ export abstract class BaseScene extends Phaser.Scene {
 
   debugShapes?: Record<string, DebugShapeType>;
 
+  // used by multiple tools e.g. SelectTool
   selected?: Part[];
 
   tm!: ToolManager;
 
   modifierKey!: Phaser.Input.Keyboard.Key;
+
+  stats?: StatsJs;
 
   get snappingEnabled() {
     return false;

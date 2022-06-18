@@ -20,12 +20,8 @@ import { GoalObject, GoalZone } from 'src/objects';
 import { BaseScene } from './Scene';
 
 export default class Play extends BaseScene {
-  // used by multiple tools e.g. SelectTool
-  /** @type {Phaser.GameObjects.GameObject[]} */
-  selected;
-
-  /** @type {Phaser.GameObjects.Shape} */
-  cursor;
+  /** @type {MapSaver} */
+  mapSaver;
 
   constructor() {
     super({
@@ -264,6 +260,7 @@ export default class Play extends BaseScene {
   async loadObjects() {
     if (this.mapSaver) {
       const mapData = await this.mapSaver.load();
+      if (!this.scene.isActive()) return;
 
       MapSaver.loadPlayParts(mapData, this.terrainGroup);
 
@@ -277,6 +274,7 @@ export default class Play extends BaseScene {
       this.buildSaver.id = buildId;
 
       const buildData = await this.buildSaver.load();
+      if (!this.scene.isActive()) return;
 
       if (buildData) BuildSaver.loadPlayParts(buildData, this.parts);
     }
@@ -371,7 +369,7 @@ export default class Play extends BaseScene {
   }
 
   update(_t, delta) {
-    // stats?.update(); TODO
+    this.stats?.update();
 
     const camera = this.cameras.main;
     const CAMERA_SPEED = (0.4 * delta) / camera.zoom;

@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import type Phaser from 'phaser';
 
 import { useGame } from 'components/GameProvider';
 import type { BaseScene } from 'src/scenes/Scene';
 
-const SceneCtx = createContext<Phaser.Scene | null>(null);
+const SceneCtx = createContext<BaseScene | null>(null);
 
-export const useScene = <V extends Phaser.Scene>() => {
+export const useScene = <V extends BaseScene>() => {
   const scene = useContext(SceneCtx);
   if (!scene) throw new Error('Missing Scene provider');
   return scene as V;

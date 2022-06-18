@@ -9,6 +9,7 @@ import { useScene } from 'components/game/Scene';
 import { useSubscribe } from 'hooks/useSubscribe';
 import { PointerPos } from 'components/PointerPos';
 import { FlashText } from 'components/FlashText';
+import { Stats } from 'components/Stats';
 import type PlayScene from 'src/scenes/Play';
 
 const Directions: React.FC<{ onClose: () => void }> = ({ onClose }) => (
@@ -74,6 +75,8 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
   return (
     <div className="ui-wrap">
       <FlashText />
+
+      <Stats />
 
       <div className="absolute left-0 top-0 p-4 space-y-2 flex flex-col">
         {PLAY_TOOL_TYPES.map((toolType) => {

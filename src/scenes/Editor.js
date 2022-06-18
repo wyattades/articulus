@@ -10,12 +10,6 @@ import { Polygon } from 'src/objects/Polygon';
 import { BaseScene } from './Scene';
 
 export default class Editor extends BaseScene {
-  /** @type {Phaser.GameObjects.GameObject[]} */
-  selected;
-
-  /** @type {Phaser.GameObjects.Shape} */
-  cursor;
-
   /** @type {MapSaver} */
   mapSaver;
 
@@ -165,7 +159,8 @@ export default class Editor extends BaseScene {
 
     this.parts = this.add.group();
     this.mapSaver.load().then((mapData) => {
-      if (this.game.destroyed) return;
+      if (!this.scene.isActive()) return;
+
       if (mapData) {
         MapSaver.loadEditorParts(mapData, this.parts);
 
@@ -180,6 +175,8 @@ export default class Editor extends BaseScene {
   }
 
   update(_t, delta) {
+    this.stats?.update();
+
     const CAMERA_SPEED = (0.4 * delta) / this.cameras.main.zoom;
     const { left, right, up, down } = this.cursors;
     if (left.isDown && !right.isDown) {
