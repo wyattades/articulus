@@ -147,9 +147,9 @@ export default class Play extends BaseScene {
     this.input.keyboard.on('keydown-SPACE', (evt) => {
       evt.preventDefault();
 
-      console.log(document.activeElement);
       if (document.activeElement !== this.game.canvas) {
-        this.game.canvas.focus();
+        document.activeElement?.blur?.();
+        this.game.canvas.focus(); // NOOP
       }
 
       this.setRunning(!this.running);
