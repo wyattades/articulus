@@ -99,7 +99,8 @@ export default class Play extends BaseScene {
             cb?.();
 
             if (this.running && validPoint(follow)) {
-              camera.startFollow(follow, false, 0.08, 0.08);
+              // camera.setZoom(Math.round(camera.zoom));
+              camera.startFollow(follow, true, 0.08, 0.08);
 
               // super stupid failure case just in case somethin is NaN once physics kicks in
               const prevX = camera.scrollX,
@@ -143,7 +144,14 @@ export default class Play extends BaseScene {
       Phaser.Input.Keyboard.KeyCodes.SHIFT,
     );
 
-    this.input.keyboard.on('keydown-SPACE', () => {
+    this.input.keyboard.on('keydown-SPACE', (evt) => {
+      evt.preventDefault();
+
+      console.log(document.activeElement);
+      if (document.activeElement !== this.game.canvas) {
+        this.game.canvas.focus();
+      }
+
       this.setRunning(!this.running);
     });
 

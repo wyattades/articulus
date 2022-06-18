@@ -19,6 +19,7 @@ export default class NavTool extends Tool {
   onScroll = (e) => {
     e.preventDefault();
     const camera = this.scene.cameras.main;
+    if (!camera) return;
 
     let dirX = Math.sign(e.deltaX);
     let dirY = Math.sign(e.deltaY);
