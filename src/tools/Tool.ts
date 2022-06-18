@@ -6,8 +6,8 @@ import type { BaseScene } from 'src/scenes/Scene';
 export default abstract class Tool {
   constructor(readonly scene: BaseScene, readonly toolKey: string) {}
 
-  // TODO: types
-  drawObj: any = null;
+  // drawObj is in PlaceTool
+  drawObj: { obj: FC.GameObject } | null = null;
 
   ShapeClass?: ObjectType;
 
@@ -15,13 +15,7 @@ export default abstract class Tool {
     const cursor = this.scene.cursor;
     if (!cursor) return null;
 
-    const anchorJoint = getHoveredJoint(
-      this.scene,
-      x,
-      y,
-      // drawObj is in PlaceTool
-      this.drawObj?.obj || null,
-    );
+    const anchorJoint = getHoveredJoint(this.scene, x, y, this.drawObj?.obj);
 
     if (anchorJoint) {
       cursor.setPosition(anchorJoint.x, anchorJoint.y);

@@ -3,20 +3,19 @@ import { EventManager, constrain } from 'lib/utils';
 import Tool from './Tool';
 
 export default class NavTool extends Tool {
-  dragView = null;
+  dragView: {
+    x: number;
+    y: number;
+  } | null = null;
 
-  constructor(scene, toolKey) {
-    super(scene, toolKey);
+  eventManager = new EventManager()
+    .on(this.scene.game.canvas, 'contextmenu', (e) => {
+      // disable right-click menu
+      e.preventDefault();
+    })
+    .on(this.scene.game.canvas, 'wheel', this.onScroll.bind(this));
 
-    this.eventManager = new EventManager()
-      .on(scene.game.canvas, 'contextmenu', (e) => {
-        // disable right-click menu
-        e.preventDefault();
-      })
-      .on(scene.game.canvas, 'wheel', this.onScroll);
-  }
-
-  onScroll = (e) => {
+  onScroll(e: WheelEvent) {
     e.preventDefault();
     const camera = this.scene.cameras.main;
     if (!camera) return;
@@ -45,9 +44,13 @@ export default class NavTool extends Tool {
         constrain(camera.scrollY + dirY * scale, -l, l),
       );
     }
-  };
+  }
 
-  handlePointerDown(x, y, { button, position }) {
+  handlePointerDown(
+    x: number,
+    y: number,
+    { button, position }: Phaser.Input.Pointer,
+  ) {
     // if (topObject) return;
 
     // right click or middle click
@@ -64,7 +67,7 @@ export default class NavTool extends Tool {
     }
   }
 
-  handlePointerMove(x, y, { position }) {
+  handlePointerMove(x: number, y: number, { position }: Phaser.Input.Pointer) {
     if (this.dragView) {
       const camera = this.scene.cameras.main;
 
@@ -78,7 +81,7 @@ export default class NavTool extends Tool {
     }
   }
 
-  handlePointerUp(x, y, { button }) {
+  handlePointerUp(x: number, y: number, { button }: Phaser.Input.Pointer) {
     if (button === 2 || button === 1) {
       this.dragView = null;
       return false;

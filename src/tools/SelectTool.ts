@@ -1,6 +1,7 @@
 import * as _ from 'lodash-es';
 
 import { EventManager } from 'lib/utils';
+import type { Part } from 'src/objects';
 
 import BoxTool from './BoxTool';
 
@@ -30,12 +31,12 @@ export default class SelectTool extends BoxTool {
     this.scene.selected = next;
   }
 
-  setSelected(selected) {
+  setSelected(selected: Part[]) {
     for (const child of _.difference(this.currentSelected, selected)) {
       if (child.scene) child.setHighlight(false);
     }
 
-    for (const child of _.difference(selected, this.currentSelected)) {
+    for (const child of _.difference(selected, this.currentSelected || [])) {
       if (child.scene) child.setHighlight(true);
     }
 
@@ -43,7 +44,7 @@ export default class SelectTool extends BoxTool {
     this.currentSelected = selected;
   }
 
-  deleteSelected(evt) {
+  deleteSelected(evt?: KeyboardEvent) {
     evt?.preventDefault();
 
     for (const obj of this.currentSelected || []) obj.destroy();
@@ -55,7 +56,7 @@ export default class SelectTool extends BoxTool {
     let intersected = this.getBoxIntersections();
 
     // only select top object if we are clicking
-    if (!this.box.moved && intersected.length > 1) {
+    if (!this.box!.moved && intersected.length > 1) {
       intersected = [intersected[intersected.length - 1]];
     }
 

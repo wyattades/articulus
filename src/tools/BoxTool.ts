@@ -2,26 +2,30 @@ import Phaser from 'phaser';
 
 import { getTopObject } from 'lib/utils';
 import { intersectsGeoms } from 'lib/intersects';
+import { Part } from 'src/objects';
 
 import Tool from './Tool';
+
+type Shape = Part | Phaser.GameObjects.Rectangle;
 
 export default class BoxTool extends Tool {
   fillColor = 0xffffff;
   fillOpacity = 0.3;
 
-  /** @type {Phaser.Geom.Rectangle} */
-  box;
-
   allowStartOverlapping = true;
   allowGridSnapping = false;
+
+  box?: Phaser.Geom.Rectangle & { ix: number; iy: number; moved?: boolean };
+
+  shape?: Shape;
 
   handleCreateBox() {}
 
   getBoxIntersections() {
+    const box = this.box!;
+
     const boxGeom =
-      this.box.width + this.box.height < 4
-        ? new Phaser.Geom.Point(this.box.x, this.box.y)
-        : this.box;
+      box.width + box.height < 4 ? new Phaser.Geom.Point(box.x, box.y) : box;
 
     const intersected = this.scene
       .getParts()
@@ -31,19 +35,19 @@ export default class BoxTool extends Tool {
   }
 
   updateShape() {
-    const { x, y, width, height } = this.box;
-    this.shape.setPosition(x, y);
-    this.shape.setSize(width, height);
-    this.shape.rerender?.();
+    const { x, y, width, height } = this.box!;
+    this.shape!.setPosition(x, y);
+    this.shape!.setSize(width, height);
+    if (this.shape instanceof Part) this.shape.rerender();
   }
 
-  createShape() {
+  createShape(): Shape {
     return this.scene.add
       .rectangle(0, 0, 1, 1, this.fillColor, this.fillOpacity)
       .setOrigin(0, 0);
   }
 
-  handlePointerDown(x, y) {
+  handlePointerDown(x: number, y: number) {
     this.clearBox();
 
     if (this.allowGridSnapping) {
@@ -53,7 +57,9 @@ export default class BoxTool extends Tool {
       y = p.y;
     }
 
-    this.box = new Phaser.Geom.Rectangle(x, y, 1, 1);
+    this.box = new Phaser.Geom.Rectangle(x, y, 1, 1) as NonNullable<
+      typeof this['box']
+    >;
     this.box.ix = x;
     this.box.iy = y;
 
@@ -63,7 +69,7 @@ export default class BoxTool extends Tool {
     }
   }
 
-  handlePointerMove(x, y) {
+  handlePointerMove(x: number, y: number) {
     if (this.allowGridSnapping) {
       const p = { x, y };
       this.scene.snapToGrid(p);
@@ -98,11 +104,11 @@ export default class BoxTool extends Tool {
   }
 
   clearBox() {
-    this.box = null;
+    this.box = undefined;
 
     if (this.shape) {
       this.shape.destroy();
-      this.shape = null;
+      this.shape = undefined;
     }
   }
 }

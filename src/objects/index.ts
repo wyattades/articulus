@@ -98,6 +98,8 @@ const OBJECTS = [
 
 export type ObjectType = typeof OBJECTS[number];
 
+export type ObjectInstance = InstanceType<ObjectType>;
+
 export const OBJECT_TYPE_MAP = OBJECTS.reduce((m, el) => {
   m[el.type] = el;
   return m;
