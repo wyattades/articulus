@@ -1,6 +1,10 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useState } from 'react';
+import {
+  IoPlaySharp as PlayIcon,
+  IoPauseSharp as PauseIcon,
+} from 'react-icons/io5';
 
 import { useGame } from 'components/GameProvider';
 import { colorInverse, colorIntToHex } from 'src/lib/utils';
@@ -106,7 +110,15 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
             playScene.setRunning(!running);
           }}
         >
-          {running ? 'Pause ⏸︎' : 'Play ⏵︎'}
+          {running ? (
+            <>
+              Pause <PauseIcon className="inline-block" />
+            </>
+          ) : (
+            <>
+              Play <PlayIcon className="inline-block" />
+            </>
+          )}
         </button>
         <button
           className="ui-tool-button"
