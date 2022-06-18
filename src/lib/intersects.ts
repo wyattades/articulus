@@ -6,6 +6,8 @@ import Flatten from '@flatten-js/core';
 import { Geom, GEOM_NAMES } from './geom';
 import { getEllipsePoints, validPoint } from './utils';
 
+const ELLIPSE_POINTS = 16;
+
 const sq = (x: number) => x * x;
 
 /**
@@ -158,9 +160,21 @@ const PolygonToEllipse = (points: PointsInput, ellipse: Box) => {
       ellipse.width,
       ellipse.height,
       0,
-      16,
+      ELLIPSE_POINTS,
     ),
   );
+};
+
+/**
+ * polygon-circle collision
+ */
+const PolygonToCircle = (points: PointsInput, circle: Circle) => {
+  return PolygonToEllipse(points, {
+    x: circle.x,
+    y: circle.y,
+    width: circle.radius * 2,
+    height: circle.radius * 2,
+  });
 };
 
 /**
@@ -187,7 +201,7 @@ const EllipseToEllipse = (ellipse1: Box, ellipse2: Box) => {
       ellipse1.width,
       ellipse1.height,
       0,
-      16,
+      ELLIPSE_POINTS,
     ),
     getEllipsePoints(
       ellipse2.x,
@@ -195,7 +209,7 @@ const EllipseToEllipse = (ellipse1: Box, ellipse2: Box) => {
       ellipse2.width,
       ellipse2.height,
       0,
-      16,
+      ELLIPSE_POINTS,
     ),
   );
 };
@@ -265,6 +279,7 @@ const Intersects: {
 
   EllipseToRectangle,
   PolygonToEllipse,
+  PolygonToCircle,
   PolygonToPolygon,
   PolygonToRectangle,
   PolygonToLine,
