@@ -41,7 +41,7 @@ body {
 }
 
 .pointerevents-pass {
-  pointer-events: none;
+  pointer-events: none !important;
   > * {
     pointer-events: all;
   }

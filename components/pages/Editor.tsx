@@ -55,7 +55,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
     <div className="ui-wrap">
       <FlashText />
 
-      <div className="absolute left-0 top-0 p-4 space-y-2 flex flex-col">
+      <div className="pointerevents-pass absolute left-0 top-0 p-4 space-y-2 flex flex-col">
         {EDITOR_TOOL_TYPES.map((toolType) => {
           const t = TOOLS[toolType];
           return (
@@ -75,7 +75,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
         })}
       </div>
 
-      <div className="absolute right-0 top-0 p-4 space-y-2 flex flex-col">
+      <div className="pointerevents-pass absolute right-0 top-0 p-4 space-y-2 flex flex-col">
         <button
           className="ui-tool-button"
           onClick={async () => {
@@ -106,7 +106,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
       </div>
 
       {selectedItems?.length ? (
-        <div className="absolute left-0 bottom-0 p-4 space-y-2 flex flex-col">
+        <div className="pointerevents-pass absolute left-0 bottom-0 p-4 space-y-2 flex flex-col">
           {selectedItems.length === 1 && selectedItems[0] instanceof Polygon ? (
             <button
               className="ui-tool-button"

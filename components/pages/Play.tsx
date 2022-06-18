@@ -78,7 +78,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
 
       <Stats />
 
-      <div className="absolute left-0 top-0 p-4 space-y-2 flex flex-col">
+      <div className="pointerevents-pass absolute left-0 top-0 p-4 space-y-2 flex flex-col">
         {PLAY_TOOL_TYPES.map((toolType) => {
           const t = TOOLS[toolType];
           return (
@@ -98,7 +98,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
         })}
       </div>
 
-      <div className="absolute left-1/2 top-0 -translate-x-1/2 p-4 space-x-2">
+      <div className="pointerevents-pass absolute left-1/2 top-0 -translate-x-1/2 p-4 space-x-2">
         <button
           className="ui-tool-button"
           title="Or press 'SPACE'"
@@ -119,7 +119,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
         </button>
       </div>
 
-      <div className="absolute right-0 top-0 p-4 space-y-2 flex flex-col">
+      <div className="pointerevents-pass absolute right-0 top-0 p-4 space-y-2 flex flex-col">
         <button
           className="ui-tool-button"
           onClick={() => game.setScene('Menu')}
@@ -141,7 +141,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
       </div>
 
       {selectedItems?.length ? (
-        <div className="absolute left-0 bottom-0 p-4 space-y-2 flex flex-col">
+        <div className="pointerevents-pass absolute left-0 bottom-0 p-4 space-y-2 flex flex-col">
           <button
             className="ui-tool-button"
             onClick={() => playScene.duplicateSelected()}
