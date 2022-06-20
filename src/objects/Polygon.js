@@ -118,7 +118,7 @@ export class Polygon extends Shape {
     this.gfx.beginPath();
     const points = this.polygon.points;
     this.gfx.moveTo(points[0].x, points[0].y);
-    for (var i = 1; i < points.length; i++) {
+    for (let i = 1; i < points.length; i++) {
       this.gfx.lineTo(points[i].x, points[i].y);
     }
     this.gfx.closePath();

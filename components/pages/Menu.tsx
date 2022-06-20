@@ -47,6 +47,7 @@ const MenuUI: React.FC = () => {
   return (
     <div className="ui-wrap container py-8">
       <button
+        type="button"
         className="ui-tool-button ui-tool-button--light absolute top-4 left-4"
         onClick={() => {
           localStorage.removeItem('articulus:user_id');
@@ -60,12 +61,14 @@ const MenuUI: React.FC = () => {
 
       <div className="flex justify-end space-x-4 p-4">
         <button
+          type="button"
           className="ui-tool-button"
           onClick={() => game.setScene('Editor')}
         >
           New Level
         </button>
         <button
+          type="button"
           className="ui-tool-button"
           onClick={() => game.setScene('Play')}
         >
@@ -109,6 +112,7 @@ const MenuUI: React.FC = () => {
                           ) : null}
                           <div className="flex space-x-4">
                             <button
+                              type="button"
                               className="ui-tool-button"
                               onClick={() =>
                                 game.setScene('Play', { mapKey: level.id })
@@ -117,6 +121,7 @@ const MenuUI: React.FC = () => {
                               Play
                             </button>
                             <button
+                              type="button"
                               className="ui-tool-button"
                               onClick={() =>
                                 game.setScene('Editor', { mapKey: level.id })
@@ -127,6 +132,7 @@ const MenuUI: React.FC = () => {
 
                             {level.mine ? (
                               <button
+                                type="button"
                                 className="ui-tool-button ui-tool-button--danger"
                                 onClick={async () => {
                                   if (

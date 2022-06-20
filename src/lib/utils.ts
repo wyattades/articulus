@@ -2,9 +2,10 @@ import Phaser from 'phaser';
 import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
 
+// eslint-disable-next-line import/no-cycle
 import { intersectsGeoms } from 'lib/intersects';
 import { Geom, GEOM_NAMES } from 'lib/geom';
-import { Part } from 'src/objects';
+import type { Part } from 'src/objects';
 import type { BaseScene, DebugShapeType } from 'src/scenes/Scene';
 
 // TODO: audit usage of: TEMP_RECT, Phaser.Polygon.GetAABB, bounds ||= ..., getBounds(), etc.
@@ -459,7 +460,7 @@ export const debugShape = (
   key: string,
   obj: Geom | Point | Part,
 ) => {
-  const shape = obj instanceof Part ? obj.geom : obj;
+  const shape = 'geom' in obj ? obj.geom : obj;
 
   const run = <G extends DebugShapeType>(
     init: (color: number) => G,

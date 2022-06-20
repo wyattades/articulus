@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved, global-require */
 /**
  * This custom Phaser build reduces the bundle size from
  * ~1.2MB to ~800kb

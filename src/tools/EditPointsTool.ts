@@ -7,7 +7,6 @@ import type { BaseScene } from 'src/scenes/Scene';
 import { minDistance } from 'src/lib/minDistance';
 
 import Tool from './Tool';
-import SelectPointsTool from './SelectPointsTool';
 
 export class Vert extends Phaser.GameObjects.Arc {
   __ = (() => {

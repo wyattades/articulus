@@ -4,6 +4,7 @@ import Phaser from 'phaser';
 import Flatten from '@flatten-js/core';
 
 import { Geom, GEOM_NAMES } from './geom';
+// eslint-disable-next-line import/no-cycle
 import { getEllipsePoints, validPoint } from './utils';
 
 const ELLIPSE_POINTS = 16;

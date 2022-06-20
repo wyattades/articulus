@@ -60,6 +60,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
           const t = TOOLS[toolType];
           return (
             <button
+              type="button"
               key={toolType}
               className="ui-tool-button"
               aria-pressed={activeToolType === toolType}
@@ -77,6 +78,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
 
       <div className="pointerevents-pass absolute right-0 top-0 p-4 space-y-2 flex flex-col">
         <button
+          type="button"
           className="ui-tool-button"
           onClick={async () => {
             await saveLevel();
@@ -86,6 +88,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
           Menu
         </button>
         <button
+          type="button"
           className="ui-tool-button"
           onClick={async () => {
             const savedKey = await saveLevel();
@@ -95,6 +98,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
           Play
         </button>
         <button
+          type="button"
           className="ui-tool-button"
           aria-pressed={gridSnapping}
           onClick={() => {
@@ -109,6 +113,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
         <div className="pointerevents-pass absolute left-0 bottom-0 p-4 space-y-2 flex flex-col">
           {selectedItems.length === 1 && selectedItems[0] instanceof Polygon ? (
             <button
+              type="button"
               className="ui-tool-button"
               onClick={() =>
                 editScene.tm.setTool('edit_points', selectedItems[0])
@@ -119,6 +124,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
           ) : null}
           {selectedItems.length >= 2 ? (
             <button
+              type="button"
               className="ui-tool-button"
               onClick={() => editScene.mergeSelected()}
             >
@@ -126,12 +132,14 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
             </button>
           ) : null}
           <button
+            type="button"
             className="ui-tool-button"
             onClick={() => editScene.duplicateSelected()}
           >
             Duplicate {selectedItems.length} selected
           </button>
           <button
+            type="button"
             className="ui-tool-button ui-tool-button--danger"
             onClick={() => editScene.deleteSelected()}
           >

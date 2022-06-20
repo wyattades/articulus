@@ -9,8 +9,6 @@ import { COLORS } from 'src/styles/theme';
 import { config } from 'src/const';
 import { RotatedRect } from 'src/lib/rotatedRect';
 
-import Part from './Part';
-
 const ROTATOR_OFFSET = 20 * config.gameScale;
 const ANCHOR_SIZE = 12 * config.gameScale;
 

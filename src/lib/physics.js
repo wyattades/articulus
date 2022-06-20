@@ -261,7 +261,7 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
     if (!from.body) continue;
 
     for (const joint of valuesIterator(from.body.collisionFilter.joints)) {
-      let jointData = (jointDatas[joint.id] = jointDatas[joint.id] || []);
+      const jointData = (jointDatas[joint.id] = jointDatas[joint.id] || []);
 
       const anchorId = joint.bodies[from.body.id][0];
 

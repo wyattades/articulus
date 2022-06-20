@@ -87,6 +87,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
           const t = TOOLS[toolType];
           return (
             <button
+              type="button"
               key={toolType}
               className="ui-tool-button"
               aria-pressed={activeToolType === toolType}
@@ -104,6 +105,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
 
       <div className="pointerevents-pass absolute left-1/2 top-0 -translate-x-1/2 p-4 space-x-2">
         <button
+          type="button"
           className="ui-tool-button"
           title="Or press 'SPACE'"
           onClick={() => {
@@ -121,6 +123,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
           )}
         </button>
         <button
+          type="button"
           className="ui-tool-button"
           title="Or press 'R'"
           onClick={() => {
@@ -133,18 +136,21 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
 
       <div className="pointerevents-pass absolute right-0 top-0 p-4 space-y-2 flex flex-col">
         <button
+          type="button"
           className="ui-tool-button"
           onClick={() => game.setScene('Menu')}
         >
           Menu
         </button>
         <button
+          type="button"
           className="ui-tool-button"
           onClick={() => game.setScene('Editor', { mapKey })}
         >
           Edit
         </button>
         <button
+          type="button"
           className="ui-tool-button"
           onClick={() => setShowLegend((v) => !v)}
         >
@@ -155,12 +161,14 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
       {selectedItems?.length ? (
         <div className="pointerevents-pass absolute left-0 bottom-0 p-4 space-y-2 flex flex-col">
           <button
+            type="button"
             className="ui-tool-button"
             onClick={() => playScene.duplicateSelected()}
           >
             Duplicate {selectedItems.length} selected
           </button>
           <button
+            type="button"
             className="ui-tool-button ui-tool-button--danger"
             onClick={() => playScene.deleteSelected()}
           >

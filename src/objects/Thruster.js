@@ -3,9 +3,9 @@ import Phaser from 'phaser';
 import { valuesIterator } from 'lib/utils';
 import { Matter } from 'lib/physics';
 import { config } from 'src/const';
+import { COLORS } from 'src/styles/theme';
 
 import Part from './Part';
-import { COLORS } from 'src/styles/theme';
 
 const anyNonemptyArrayValue = (objOfArrays) => {
   for (const val of valuesIterator(objOfArrays))
@@ -181,8 +181,7 @@ export default class Thruster extends Part {
   }
 
   *anchors() {
-    let i = 0,
-      j = 0;
+    let i = 0;
 
     yield { x: this.x, y: this.y, id: i++ };
 

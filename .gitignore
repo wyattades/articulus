@@ -2,6 +2,7 @@
 dist/
 .vercel
 db/schema.sql
+tmp/
 
 # Editor
 .vscode/

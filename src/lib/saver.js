@@ -4,7 +4,7 @@ import Phaser from 'phaser';
 import Router from 'next/router';
 
 import { validPoint } from 'lib/utils';
-import { OBJECT_TYPE_MAP, Part } from 'src/objects';
+import { OBJECT_TYPE_MAP } from 'src/objects';
 import { serializePhysics, deserializePhysics } from 'lib/physics';
 
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
