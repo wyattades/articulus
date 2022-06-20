@@ -32,17 +32,18 @@ export default class SelectPointsTool extends SelectTool {
   getBoxIntersections() {
     const vertices = this.editPointsTool.vertices;
 
-    if (this.box.width + this.box.height < 4) {
+    const box = this.box!;
+    if (box.width + box.height < 4) {
       const tempCircle = new Phaser.Geom.Circle(0, 0, vertices[0]?.radius);
 
       for (const v of vertices) {
-        if (tempCircle.setPosition(v.x, v.y).contains(this.box.x, this.box.y)) {
+        if (tempCircle.setPosition(v.x, v.y).contains(box.x, box.y)) {
           return [v];
         }
       }
       return [];
     } else {
-      return vertices.filter((v) => this.box.contains(v.x, v.y));
+      return vertices.filter((v) => box.contains(v.x, v.y));
     }
   }
 }

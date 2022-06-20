@@ -159,6 +159,7 @@ export default class EditPointsTool extends Tool {
   }
 
   updateSelected(next: Vert[]) {
+    // @ts-expect-error Vert != Part
     this.scene.tm.getTool('select_points')?.setSelected(next);
   }
 
