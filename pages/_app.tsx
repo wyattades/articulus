@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { DefaultSeo } from 'next-seo';
 import type { AppProps } from 'next/app';
+import Script from 'next/script';
 
 import { GameProvider } from 'components/GameProvider';
 // import { Footer } from 'components/Footer';
@@ -31,15 +32,15 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
           href="/favicon-16x16.png"
         />
         <link rel="manifest" href="/manifest.json" />
-        {process.env.NODE_ENV === 'production' ? (
-          <script
-            async
-            defer
-            data-website-id="41249c7a-b770-4a8a-98a0-408572b9658e"
-            src="https://sip-umami.vercel.app/umami.js"
-          />
-        ) : null}
       </Head>
+      {process.env.NODE_ENV === 'production' ? (
+        <Script
+          async
+          defer
+          data-website-id="41249c7a-b770-4a8a-98a0-408572b9658e"
+          src="https://sip-umami.vercel.app/sip.js"
+        />
+      ) : null}
 
       <DefaultSeo
         title="Articulus - A Physics Sandbox Game"
