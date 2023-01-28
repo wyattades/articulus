@@ -258,7 +258,7 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
     return this.klass.fromJSON(this.scene, this.toJSON());
   }
 
-  // @ts-expect-error bad override
+  // @ts-expect-error override method returntype
   toJSON() {
     return {
       type: this.klass.type,
@@ -272,7 +272,7 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
 
   static fromJSON(
     scene: BaseScene,
-    { type: _t, x, y, ...rest }: ReturnType<Part['toJSON']>,
+    { type: _t, x, y, ...rest }: ReturnType<typeof this.prototype.toJSON>,
   ) {
     const Klass = this as any;
 
@@ -283,7 +283,14 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
     return obj;
   }
 
-  getConnectedObjects(anchorId = null, includeSelf = false) {
+  getConnectedObjects<AnchorId extends number | null | undefined = undefined>(
+    anchorId?: AnchorId,
+    includeSelf = false,
+  ) {
+    type Return = AnchorId extends number
+      ? FC.GameObject[]
+      : (FC.GameObject[] | undefined)[];
+
     const anchorObjs: FC.GameObject[][] | null =
       anchorId == null
         ? Array.from({ length: this.anchorCount }, () => [])
@@ -303,11 +310,11 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
       if (anchorId == null) {
         anchorObjs![aId] = objs;
       } else {
-        return objs;
+        return objs as Return;
       }
     }
 
-    return anchorObjs || [];
+    return (anchorObjs || []) as Return;
   }
 
   *anchors(): Generator<Point, void, unknown> {
@@ -350,9 +357,9 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
     return p;
   }
 
-  onConnect() {}
+  onConnect(_anchorId: number) {}
 
-  onDisconnect() {}
+  onDisconnect(_anchorId: number) {}
 
   pause() {
     if (this.particles) for (const p of this.particles) p.pause();

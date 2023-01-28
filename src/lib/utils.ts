@@ -241,8 +241,12 @@ export const anySame = (
   return false;
 };
 
-export function* valuesIterator<T>(obj: Record<string, T>) {
-  for (const k in obj) yield obj[k];
+export function* valuesIterator<T>(obj: Record<string, T> | T[]) {
+  if (Array.isArray(obj)) {
+    for (const v of obj) yield v;
+  } else {
+    for (const k in obj) yield obj[k];
+  }
 }
 
 export const getFirstValue = <T>(obj: Record<string, T>): T | null => {

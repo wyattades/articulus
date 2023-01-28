@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { Matter } from 'lib/physics';
 import { circle4Points } from 'lib/utils';
 import { config } from 'src/const';
+import type { BaseScene } from 'src/scenes/Scene';
 
 import Part from './Part';
 
@@ -13,7 +14,14 @@ export default class Wheel extends Part {
   strokeWidth = 2;
   activeSpinDir = 0;
 
-  constructor(scene, x, y, radius = 30 * config.gameScale) {
+  radius: number;
+
+  constructor(
+    scene: BaseScene,
+    x: number,
+    y: number,
+    radius = 30 * config.gameScale,
+  ) {
     super(scene, x, y);
 
     this.radius = radius;
@@ -21,15 +29,17 @@ export default class Wheel extends Part {
   }
 
   render() {
-    this.gfx.lineStyle(this.strokeWidth, this.strokeColor);
-    this.gfx.fillStyle(this.fillColor);
-    this.gfx.fillCircle(0, 0, this.radius);
-    this.gfx.strokeCircle(0, 0, this.radius);
+    const gfx = this.gfx!;
+    gfx.lineStyle(this.strokeWidth, this.strokeColor);
+    gfx.fillStyle(this.fillColor);
+    gfx.fillCircle(0, 0, this.radius);
+    gfx.strokeCircle(0, 0, this.radius);
   }
 
+  // @ts-expect-error override method returntype
   toJSON() {
     return {
-      type: this.constructor.type,
+      type: this.klass.type,
       x: this.x,
       y: this.y,
       radius: this.radius,
@@ -37,7 +47,10 @@ export default class Wheel extends Part {
     };
   }
 
-  static fromJSON(scene, { x, y, radius, rotation }) {
+  static fromJSON(
+    scene: BaseScene,
+    { x, y, radius, rotation }: ReturnType<typeof this.prototype.toJSON>,
+  ) {
     const obj = new this(scene, x, y, radius);
     obj.rotation = rotation;
     return obj;
@@ -69,22 +82,25 @@ export default class Wheel extends Part {
   }
 
   applyTorque = () => {
-    this.body.torque = this.spinDir * this.appliedTorque;
+    this.body!.torque = this.spinDir * this.appliedTorque;
   };
 
   capSpeed = () => {
-    const vel = this.body.angularVelocity;
+    const vel = this.body!.angularVelocity;
     if (Math.abs(vel) > this.maxSpeed)
-      Matter.Body.setAngularVelocity(this.body, Math.sign(vel) * this.maxSpeed);
+      Matter.Body.setAngularVelocity(
+        this.body!,
+        Math.sign(vel) * this.maxSpeed,
+      );
   };
 
-  onConnect(anchorId) {
+  onConnect(anchorId: number) {
     if (
       this.spinDir !== 0 &&
       anchorId === 0 &&
       this.activeSpinDir !== this.spinDir
     ) {
-      this.stopSpinning(anchorId);
+      this.stopSpinning();
 
       this.activeSpinDir = this.spinDir;
       Matter.Events.on(
@@ -100,7 +116,7 @@ export default class Wheel extends Part {
     }
   }
 
-  onDisconnect(anchorId) {
+  onDisconnect(anchorId: number) {
     if (anchorId === 0 && this.getConnectedObjects(0).length === 0) {
       this.stopSpinning();
     }

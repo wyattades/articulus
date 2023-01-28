@@ -4,12 +4,15 @@ import { valuesIterator } from 'lib/utils';
 import { Matter } from 'lib/physics';
 import { config } from 'src/const';
 import { COLORS } from 'src/styles/theme';
+import type { BaseScene } from 'src/scenes/Scene';
 
 import Part from './Part';
 
-const anyNonemptyArrayValue = (objOfArrays) => {
-  for (const val of valuesIterator(objOfArrays))
-    if (val.length > 0) return true;
+const anyNonemptyArrayValue = (
+  arrayOfArrays: (unknown[] | undefined)[],
+): boolean => {
+  for (const val of valuesIterator(arrayOfArrays))
+    if (val && val.length > 0) return true;
   return false;
 };
 
@@ -34,7 +37,9 @@ export default class Thruster extends Part {
   thrustDir = 0;
   thrustForce = config.thruster.thrustForce;
 
-  constructor(scene, x, y) {
+  emitter: Phaser.GameObjects.Particles.ParticleEmitter;
+
+  constructor(scene: BaseScene, x: number, y: number) {
     super(scene, x, y);
 
     const particleTextureKey = 'particles:cloud';
@@ -49,7 +54,7 @@ export default class Thruster extends Part {
     const colors = [0xffffff, 0xeeeeee, 0xdddddd];
 
     this.emitter = this.addParticles(particleTextureKey, 0, {
-      follow: this,
+      follow: this as unknown as Phaser.GameObjects.GameObject,
       x: {
         onEmit: () => Math.cos(this.rotation + Math.PI / 2) * 30,
       },
@@ -78,22 +83,13 @@ export default class Thruster extends Part {
   }
 
   render() {
-    this.gfx.lineStyle(this.strokeWidth, this.strokeColor);
-    this.gfx.fillStyle(this.fillColor);
+    const gfx = this.gfx!;
+    gfx.lineStyle(this.strokeWidth, this.strokeColor);
+    gfx.fillStyle(this.fillColor);
 
-    this.gfx.fillRect(
-      -this.width / 2,
-      -this.height / 2,
-      this.width,
-      this.height,
-    );
-    this.gfx.strokeRect(
-      -this.width / 2,
-      -this.height / 2,
-      this.width,
-      this.height,
-    );
-    this.gfx.fillRect(
+    gfx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    gfx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    gfx.fillRect(
       -this.width / 2 - 6 * config.gameScale,
       this.height / 2,
       this.width + 12 * config.gameScale,
@@ -101,16 +97,20 @@ export default class Thruster extends Part {
     );
   }
 
+  // @ts-expect-error override method returntypeß
   toJSON() {
     return {
-      type: this.constructor.type,
+      type: this.klass.type,
       x: this.x,
       y: this.y,
       rotation: this.rotation,
     };
   }
 
-  static fromJSON(scene, { x, y, rotation }) {
+  static fromJSON(
+    scene: BaseScene,
+    { x, y, rotation }: ReturnType<typeof this.prototype.toJSON>,
+  ) {
     const obj = new this(scene, x, y);
     obj.rotation = rotation;
     return obj;
@@ -125,8 +125,8 @@ export default class Thruster extends Part {
     const norm = Matter.Vector.create(Math.cos(a), Math.sin(a));
 
     Matter.Body.applyForce(
-      this.body,
-      Matter.Vector.add(this.body.position, Matter.Vector.mult(norm, 20)),
+      this.body!,
+      Matter.Vector.add(this.body!.position, Matter.Vector.mult(norm, 20)),
       Matter.Vector.mult(norm, this.thrustForce),
     );
   };
@@ -159,14 +159,14 @@ export default class Thruster extends Part {
     this.emitter.start();
   }
 
-  onConnect(_anchorId) {
+  onConnect() {
     if (this.thrustDir === 0) {
       this.stopThrust();
       this.startThrust();
     }
   }
 
-  onDisconnect(_anchorId) {
+  onDisconnect() {
     if (
       this.thrustDir !== 0 &&
       !anyNonemptyArrayValue(this.getConnectedObjects())

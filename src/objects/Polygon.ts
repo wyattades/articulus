@@ -1,13 +1,21 @@
 import Phaser from 'phaser';
 
 import { factoryMapNumber } from 'lib/utils';
+import type { BaseScene } from 'src/scenes/Scene';
 
 import { Shape } from './Shape';
 
 export class Polygon extends Shape {
   static type = 'polygon';
 
-  constructor(scene, x, y, polygon = new Phaser.Geom.Polygon()) {
+  polygon: Phaser.Geom.Polygon;
+
+  constructor(
+    scene: BaseScene,
+    x: number,
+    y: number,
+    polygon = new Phaser.Geom.Polygon(),
+  ) {
     super(scene, x, y);
 
     // points relative to this.x, this.y, and this.rotation.
@@ -21,7 +29,7 @@ export class Polygon extends Shape {
     ).join(' ')}:${this._selected ? 1 : 0}`;
   }
 
-  getBounds(bounds) {
+  getBounds(bounds?: Phaser.Geom.Rectangle) {
     bounds = bounds || (this._bounds ||= new Phaser.Geom.Rectangle());
 
     if (this.polygon.points.length === 0) {
@@ -48,7 +56,15 @@ export class Polygon extends Shape {
     this.setSize(bounds.width, bounds.height);
   }
 
-  mutateBounds(bounds, iBounds, iPoints, _deltaRotation) {
+  mutateBounds(
+    bounds: Phaser.Geom.Rectangle,
+    iBounds: Phaser.Geom.Rectangle,
+    iPoints?: Point[],
+    // _deltaRotation: number,
+  ) {
+    if (!iPoints)
+      throw new Error('iPoints is required in Polygon.mutateBounds');
+
     const mapX = factoryMapNumber(
       iBounds.x,
       iBounds.right,
@@ -112,23 +128,25 @@ export class Polygon extends Shape {
   }
 
   render() {
-    this.gfx.fillStyle(this.fillColor, this.fillOpacity);
-    this.gfx.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
+    const gfx = this.gfx!;
+    gfx.fillStyle(this.fillColor, this.fillOpacity);
+    gfx.lineStyle(this.strokeWidth, this.strokeColor, this.strokeOpacity);
 
-    this.gfx.beginPath();
+    gfx.beginPath();
     const points = this.polygon.points;
-    this.gfx.moveTo(points[0].x, points[0].y);
+    gfx.moveTo(points[0].x, points[0].y);
     for (let i = 1; i < points.length; i++) {
-      this.gfx.lineTo(points[i].x, points[i].y);
+      gfx.lineTo(points[i].x, points[i].y);
     }
-    this.gfx.closePath();
-    this.gfx.fillPath();
-    this.gfx.strokePath();
+    gfx.closePath();
+    gfx.fillPath();
+    gfx.strokePath();
   }
 
+  // @ts-expect-error override method returntype
   toJSON() {
     return {
-      type: this.constructor.type,
+      type: this.klass.type,
       x: this.x,
       y: this.y,
       rotation: this.rotation,
@@ -136,13 +154,22 @@ export class Polygon extends Shape {
     };
   }
 
-  static fromJSON(scene, { type: _t, x, y, points, ...rest }) {
+  static fromJSON(
+    scene: BaseScene,
+    {
+      type: _t,
+      x,
+      y,
+      points,
+      ...rest
+    }: ReturnType<typeof this.prototype.toJSON>,
+  ) {
     const obj = new this(scene, x, y);
 
     obj.polygon = new Phaser.Geom.Polygon(points);
 
     for (const k in rest) {
-      obj[k] = rest[k];
+      obj[k as keyof typeof rest] = rest[k as keyof typeof rest];
     }
 
     const bounds = Phaser.Geom.Polygon.GetAABB(obj.polygon);
