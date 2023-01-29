@@ -53,8 +53,8 @@ export const fromJSON = (
   // TODO: fix types
   const obj = Klass.fromJSON(scene, json as any) as ObjectInstance;
 
-  // TODO: this ignores Line!!!!
-  if (!validPoint(obj)) return null;
+  // NOTE: this ignores `Line`
+  if ('x' in obj && 'y' in obj && !validPoint(obj)) return null;
 
   obj.id = json.id;
 
