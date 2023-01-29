@@ -8,6 +8,7 @@ import { settingsSaver } from 'lib/saver';
 import EditorScene from 'src/scenes/Editor';
 import { FlashText } from 'components/FlashText';
 import { Polygon } from 'src/objects/Polygon';
+import { AuthMenu } from 'components/Auth';
 
 const EditUI: React.FC<{ mapKey?: string }> = () => {
   const game = useGame();
@@ -79,6 +80,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
       </div>
 
       <div className="pointerevents-pass absolute right-0 top-0 p-4 space-y-2 flex flex-col">
+        <AuthMenu />
         <button
           type="button"
           className="ui-tool-button"

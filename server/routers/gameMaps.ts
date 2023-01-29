@@ -61,7 +61,7 @@ export default router({
         id: l.id,
         slug: l.slug,
         name: l.name,
-        isPublic: false,
+        isPublic: l.isPublic,
         mine: true,
         user: null,
       })),
@@ -69,7 +69,7 @@ export default router({
         id: l.id,
         slug: l.slug,
         name: l.name,
-        isPublic: true,
+        isPublic: l.isPublic,
         mine: false,
         user: {
           id: l.user.id,

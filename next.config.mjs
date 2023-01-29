@@ -6,8 +6,6 @@ const nextConfig = {
     HOST_URL: process.env.VERCEL_URL
       ? 'https://articulus.vercel.app'
       : 'http://localhost:3000',
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_KEY: process.env.SUPABASE_KEY,
   },
 
   eslint: {

@@ -4,6 +4,7 @@ import Router from 'next/router';
 import type { GameBuild, GameMap } from '@prisma/client';
 import { getSession } from 'next-auth/react';
 import type { inferAsyncReturnType } from '@trpc/server';
+import { TRPCClientError } from '@trpc/client';
 
 import { validPoint } from 'lib/utils';
 import { OBJECT_TYPE_MAP, ObjectInstance } from 'src/objects';
@@ -195,6 +196,9 @@ export class BuildSaver {
 
     const physics = serializePhysics(scene);
 
+    // TODO: save locally?
+    if (!(await getUserId())) return;
+
     await trpc.gameBuilds.update.mutate({
       id: this.id,
       //  name: this.name,
@@ -247,7 +251,7 @@ export class MapSaver {
   }
 
   async update(updates: { name?: string; isPublic?: boolean }) {
-    if (!this.id) return;
+    if (!this.id) throw new Error('No gameMap id');
 
     await trpc.gameMaps.update.mutate({
       id: this.id,
@@ -268,7 +272,7 @@ export class MapSaver {
   }
 
   async delete() {
-    if (!this.id) return;
+    if (!this.id) throw new Error('No gameMap id');
 
     await trpc.gameMaps.delete.mutate({
       id: this.id,
@@ -303,19 +307,28 @@ export class MapSaver {
   }
 
   async load() {
-    if (!this.id && !this.slug) throw new Error('No map id');
+    if (!this.id && !this.slug) throw new Error('No gameMap id');
 
-    const map = await trpc.gameMaps.get.query({
-      id: this.id ?? undefined,
-      slug: this.slug ?? undefined,
-    });
+    try {
+      const map = await trpc.gameMaps.get.query({
+        id: this.id ?? undefined,
+        slug: this.slug ?? undefined,
+      });
 
-    this.id = map.id;
-    this.meta = _.omit(map, 'data');
+      this.id = map.id;
+      this.meta = _.omit(map, 'data');
 
-    return {
-      objects: map.data.objects,
-    };
+      return {
+        objects: map.data.objects,
+      };
+    } catch (err) {
+      if (err instanceof TRPCClientError && err.data?.code === 'NOT_FOUND') {
+        window.alert('Oops! Map not found!');
+        Router.push('/');
+        return { objects: [] };
+      }
+      throw err;
+    }
   }
 
   async save(group: Phaser.GameObjects.Group) {
@@ -332,6 +345,14 @@ export class MapSaver {
     });
 
     const userId = await getUserId();
+
+    if (!userId) {
+      localStorage.setItem(
+        'articulus:unauthed-map',
+        JSON.stringify({ objects }),
+      );
+      return;
+    }
 
     const isFork = this.id && this.meta?.user && this.meta.user.id !== userId;
 
