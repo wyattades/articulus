@@ -32,7 +32,7 @@ export default class PenTool extends Tool {
     }
 
     for (const poly of fpoly.splitToIslands()) {
-      const shape = new Polygon(this.scene);
+      const shape = new Polygon(this.scene, 0, 0);
       shape.polygon.setTo(poly.vertices);
 
       shape.localizePoints();
