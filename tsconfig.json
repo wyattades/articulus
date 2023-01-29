@@ -12,7 +12,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "skipLibCheck": true,
     "strict": true,
-    "checkJs": false,
+    "checkJs": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "module": "esnext",

@@ -1,17 +1,12 @@
 import Phaser from 'phaser';
 
-import {
-  adjustBrightness,
-  getBoundPoints,
-  midpoint,
-  nextId,
-  setNextId,
-  valuesIterator,
-} from 'lib/utils';
+import { midpoint, nextId, setNextId, valuesIterator } from 'lib/utils';
+import { getBoundPoints } from 'lib/utils/phaser';
+import { adjustBrightness } from 'lib/utils/color';
 import { deleteConnections, Matter } from 'lib/physics';
 import { config, CONNECTOR_RADIUS } from 'src/const';
 import type { BaseScene } from 'src/scenes/Scene';
-import type { Geom } from 'src/lib/geom';
+import type { Geom } from 'lib/geom';
 
 const texturePadding = 20 * config.gameScale;
 

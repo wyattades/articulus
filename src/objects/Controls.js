@@ -1,13 +1,10 @@
 import Phaser from 'phaser';
 
-import {
-  addHoverCursor,
-  factoryRotateAround,
-  getObjectsBounds,
-} from 'src/lib/utils';
+import { factoryRotateAround } from 'lib/utils';
+import { addHoverCursor, getObjectsBounds } from 'lib/utils/phaser';
+import { RotatedRect } from 'lib/rotatedRect';
 import { COLORS } from 'src/styles/theme';
 import { config } from 'src/const';
-import { RotatedRect } from 'src/lib/rotatedRect';
 
 const ROTATOR_OFFSET = 20 * config.gameScale;
 const ANCHOR_SIZE = 12 * config.gameScale;

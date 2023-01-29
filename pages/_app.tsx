@@ -2,6 +2,7 @@ import Head from 'next/head';
 import { DefaultSeo } from 'next-seo';
 import type { AppProps } from 'next/app';
 import Script from 'next/script';
+import { SessionProvider } from 'next-auth/react';
 
 import { GameProvider } from 'components/GameProvider';
 // import { Footer } from 'components/Footer';
@@ -10,7 +11,10 @@ import 'src/styles/index.scss';
 
 const HOST_URL = process.env.HOST_URL;
 
-const App: React.FC<AppProps> = ({ Component, pageProps }) => {
+const App: React.FC<AppProps> = ({
+  Component,
+  pageProps: { session, ...pageProps },
+}) => {
   return (
     <>
       <Head>
@@ -65,11 +69,13 @@ const App: React.FC<AppProps> = ({ Component, pageProps }) => {
         }}
       />
 
-      <GameProvider>
-        <Component {...pageProps} />
+      <SessionProvider session={session}>
+        <GameProvider>
+          <Component {...pageProps} />
 
-        {/* <Footer /> */}
-      </GameProvider>
+          {/* <Footer /> */}
+        </GameProvider>
+      </SessionProvider>
     </>
   );
 };

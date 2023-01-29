@@ -1,10 +1,11 @@
 import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
 
-import { addHoverCursor, EventManager } from 'src/lib/utils';
 import { Polygon } from 'src/objects/Polygon';
 import type { BaseScene } from 'src/scenes/Scene';
-import { minDistance } from 'src/lib/minDistance';
+import { minDistance } from 'lib/minDistance';
+import { addHoverCursor } from 'lib/utils/phaser';
+import { EventManager } from 'lib/utils/eventManager';
 
 import Tool from './Tool';
 
@@ -116,7 +117,7 @@ export default class EditPointsTool extends Tool {
 
     const newParts = [];
     for (const poly of fpoly.splitToIslands()) {
-      const part = new Polygon(this.scene);
+      const part = new Polygon(this.scene, 0, 0);
       part.polygon.setTo(poly.vertices);
 
       part.localizePoints();

@@ -1,6 +1,6 @@
 import { stiffConnect } from 'lib/physics';
 import { Wheel } from 'src/objects';
-import { intersectsOtherSolid } from 'lib/utils';
+import { intersectsOtherSolid } from 'lib/utils/phaser';
 
 import Tool from './Tool';
 

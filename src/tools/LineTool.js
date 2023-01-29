@@ -1,5 +1,6 @@
 import Line from 'src/objects/Line';
-import { intersectsOtherSolid, anySame } from 'lib/utils';
+import { anySame } from 'lib/utils';
+import { intersectsOtherSolid } from 'lib/utils/phaser';
 
 import PlaceTool from './PlaceTool';
 

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import { getTopObject } from 'lib/utils';
+import { getTopObject } from 'lib/utils/phaser';
 import { intersectsGeoms } from 'lib/intersects';
 import { Part } from 'src/objects';
 
@@ -57,11 +57,14 @@ export default class BoxTool extends Tool {
       y = p.y;
     }
 
-    this.box = new Phaser.Geom.Rectangle(x, y, 1, 1) as NonNullable<
-      typeof this['box']
-    >;
-    this.box.ix = x;
-    this.box.iy = y;
+    const box = (this.box = new Phaser.Geom.Rectangle(
+      x,
+      y,
+      1,
+      1,
+    ) as NonNullable<(typeof this)['box']>);
+    box.ix = x;
+    box.iy = y;
 
     if (this.allowStartOverlapping || !getTopObject(this.scene, x, y)) {
       this.shape = this.createShape();

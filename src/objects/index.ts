@@ -96,7 +96,7 @@ const OBJECTS = [
   GoalObject,
 ] as const;
 
-export type ObjectType = typeof OBJECTS[number];
+export type ObjectType = (typeof OBJECTS)[number];
 
 export type ObjectInstance = InstanceType<ObjectType>;
 

@@ -2,9 +2,10 @@ import { useRef, useState } from 'react';
 import * as _ from 'lodash-es';
 import { useAsync } from 'react-use';
 import clsx from 'clsx';
+import { signIn, signOut, useSession } from 'next-auth/react';
 
 import { useGame } from 'components/GameProvider';
-import { MapSaver } from 'src/lib/saver';
+import { MapSaver } from 'lib/saver';
 
 const useMapMetas = () => {
   const [i, setI] = useState(0);
@@ -37,6 +38,51 @@ const InlineInput: React.FC<{
   );
 };
 
+const AuthMenu = () => {
+  const session = useSession();
+
+  if (session.status === 'loading') return <p>Loading...</p>;
+
+  if (session.status === 'authenticated')
+    return (
+      <>
+        <button
+          type="button"
+          className="ui-tool-button ui-tool-button--light"
+          onClick={() => {
+            signOut();
+          }}
+        >
+          Logout
+        </button>
+        {session.data.user ? (
+          <>
+            <span className="text-white mr-2 ml-4">
+              {session.data.user.name}
+            </span>
+            <img
+              src={session.data.user.image!}
+              className="inline-block w-10 h-10 rounded-full"
+              alt="profile"
+            />
+          </>
+        ) : null}
+      </>
+    );
+
+  return (
+    <button
+      type="button"
+      className="ui-tool-button ui-tool-button--light"
+      onClick={() => {
+        signIn('discord');
+      }}
+    >
+      Login with Discord
+    </button>
+  );
+};
+
 const MenuUI: React.FC = () => {
   const [allLevels, revalidateLevels] = useMapMetas();
 
@@ -46,16 +92,7 @@ const MenuUI: React.FC = () => {
 
   return (
     <div className="ui-wrap container py-8">
-      <button
-        type="button"
-        className="ui-tool-button ui-tool-button--light absolute top-4 left-4"
-        onClick={() => {
-          localStorage.removeItem('articulus:user_id');
-          window.location.reload();
-        }}
-      >
-        Logout
-      </button>
+      <AuthMenu />
 
       <h1 className="ui-markup text-5xl p-4 text-center mb-10">Articulus</h1>
 
@@ -102,12 +139,12 @@ const MenuUI: React.FC = () => {
                             value={level.name || '???'}
                             className="ui-markup text-xl mb-4"
                             onUpdate={async (newName) => {
-                              await new MapSaver(level.id).setName(newName);
+                              await new MapSaver(level).setName(newName);
                             }}
                           />
                           {!level.mine ? (
                             <p className="ui-markup mb-4">
-                              By {level.author || '???'}
+                              By {level.user?.username || '???'}
                             </p>
                           ) : null}
                           <div className="flex space-x-4">
@@ -115,7 +152,7 @@ const MenuUI: React.FC = () => {
                               type="button"
                               className="ui-tool-button"
                               onClick={() =>
-                                game.setScene('Play', { mapKey: level.id })
+                                game.setScene('Play', { mapKey: level.slug })
                               }
                             >
                               Play
@@ -124,7 +161,7 @@ const MenuUI: React.FC = () => {
                               type="button"
                               className="ui-tool-button"
                               onClick={() =>
-                                game.setScene('Editor', { mapKey: level.id })
+                                game.setScene('Editor', { mapKey: level.slug })
                               }
                             >
                               {level.mine ? 'Edit' : 'Fork'}
@@ -136,13 +173,14 @@ const MenuUI: React.FC = () => {
                                 className="ui-tool-button ui-tool-button--danger"
                                 onClick={async () => {
                                   if (
+                                    // eslint-disable-next-line no-alert
                                     !window.confirm(
                                       `Are you sure you want to delete "${level.name}"?`,
                                     )
                                   )
                                     return;
 
-                                  await new MapSaver(level.id).delete();
+                                  await new MapSaver(level).delete();
                                   await revalidateLevels();
                                 }}
                               >
@@ -155,9 +193,9 @@ const MenuUI: React.FC = () => {
                               <label className="ui-markup whitespace-nowrap">
                                 <input
                                   type="checkbox"
-                                  checked={level.is_public}
+                                  checked={level.isPublic}
                                   onChange={async (e) => {
-                                    await new MapSaver(level.id).setPublic(
+                                    await new MapSaver(level).setPublic(
                                       e.target.checked,
                                     );
                                     await revalidateLevels();

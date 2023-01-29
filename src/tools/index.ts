@@ -126,7 +126,7 @@ export const TOOLS = {
 
 export type ToolKey = keyof typeof TOOLS;
 
-export type ToolClassFor<TK extends ToolKey> = typeof TOOLS[TK]['ToolClass'];
+export type ToolClassFor<TK extends ToolKey> = (typeof TOOLS)[TK]['ToolClass'];
 
 export type ExtraArgsForTool<TK extends ToolKey> =
   ToolClassFor<TK> extends abstract new (

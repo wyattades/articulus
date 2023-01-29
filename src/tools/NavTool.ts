@@ -1,4 +1,5 @@
-import { EventManager, constrain } from 'lib/utils';
+import { constrain } from 'lib/utils';
+import { EventManager } from 'lib/utils/eventManager';
 
 import Tool from './Tool';
 

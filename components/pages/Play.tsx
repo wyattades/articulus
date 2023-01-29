@@ -7,7 +7,7 @@ import {
 } from 'react-icons/io5';
 
 import { useGame } from 'components/GameProvider';
-import { colorInverse, colorIntToHex } from 'src/lib/utils';
+import { colorInverse, colorIntToHex } from 'lib/utils/color';
 import { PLAY_TOOL_TYPES, TOOLS } from 'src/tools';
 import { useScene } from 'components/game/Scene';
 import { useSubscribe } from 'hooks/useSubscribe';

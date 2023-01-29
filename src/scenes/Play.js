@@ -7,14 +7,10 @@ import { BuildSaver, MapSaver, settingsSaver } from 'lib/saver';
 import { COLORS } from 'src/styles/theme';
 import ToolManager from 'src/tools/ToolManager';
 import { MAX_PARTS, CONNECTOR_RADIUS } from 'src/const';
-import {
-  fitCameraToObjs,
-  getObjectsBounds,
-  TEMP_RECT,
-  TEMP_RECT2,
-  validPoint,
-} from 'lib/utils';
-import { clonePhysics, Matter } from 'src/lib/physics';
+import { validPoint } from 'lib/utils';
+import { fitCameraToObjs, getObjectsBounds } from 'lib/utils/phaser';
+import { TEMP_RECT, TEMP_RECT2 } from 'lib/utils/temp';
+import { clonePhysics, Matter } from 'lib/physics';
 import { GoalObject, GoalZone } from 'src/objects';
 
 import { BaseScene } from './Scene';
@@ -31,7 +27,7 @@ export default class Play extends BaseScene {
 
   init(data) {
     this.mapKey = data.mapKey;
-    this.mapSaver = this.mapKey ? new MapSaver(this.mapKey) : null;
+    this.mapSaver = this.mapKey ? new MapSaver({ slug: this.mapKey }) : null;
     this.buildSaver = new BuildSaver();
 
     this.selected = [];
@@ -254,13 +250,13 @@ export default class Play extends BaseScene {
   setCachedBuildId() {
     if (!this.buildSaver?.id) return;
 
-    const mapKey = this.mapSaver?.id || '__default';
+    const mapId = this.mapSaver?.id || '__default';
 
     localStorage.setItem(
       'articulus:map_latest_builds',
       JSON.stringify({
         ...this.cachedBuildIds(),
-        [mapKey]: this.buildSaver.id,
+        [mapId]: this.buildSaver.id,
       }),
     );
   }
@@ -275,9 +271,9 @@ export default class Play extends BaseScene {
       fitCameraToObjs(this.cameras.main, this.terrainGroup.getChildren());
     }
 
-    const mapKey = this.mapSaver?.id || '__default';
+    const mapId = this.mapSaver?.id || '__default';
 
-    const buildId = this.cachedBuildIds()[mapKey];
+    const buildId = this.cachedBuildIds()[mapId];
     if (buildId) {
       this.buildSaver.id = buildId;
 

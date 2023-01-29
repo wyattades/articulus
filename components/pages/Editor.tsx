@@ -1,10 +1,10 @@
 import { useGame } from 'components/GameProvider';
-import { colorInverse, colorIntToHex } from 'src/lib/utils';
+import { colorInverse, colorIntToHex } from 'lib/utils/color';
 import { EDITOR_TOOL_TYPES, TOOLS } from 'src/tools';
 import { useScene } from 'components/game/Scene';
 import { useSubscribe } from 'hooks/useSubscribe';
 import { PointerPos } from 'components/PointerPos';
-import { settingsSaver } from 'src/lib/saver';
+import { settingsSaver } from 'lib/saver';
 import EditorScene from 'src/scenes/Editor';
 import { FlashText } from 'components/FlashText';
 import { Polygon } from 'src/objects/Polygon';
@@ -19,7 +19,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
     () => !!settingsSaver.get('snapping'),
   );
 
-  const activeToolType: string = useSubscribe(
+  const activeToolType = useSubscribe(
     editScene.events,
     'setTool',
     () => editScene.tm.activeToolType,
@@ -30,6 +30,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
     'setSelected',
     () => editScene.selected,
   );
+  const firstSelectedItem = selectedItems?.[0];
 
   const pendingPolygon = useSubscribe(
     editScene.events,
@@ -41,14 +42,15 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
   const editingPolygon = activeToolType === 'edit_points';
 
   const saveLevel = async () => {
-    let mapName = editScene.mapSaver.name;
-    if (!mapName) {
-      mapName = window.prompt('Enter a map name:', '');
-      if (mapName) editScene.mapSaver.setName(mapName, false);
-      else return editScene.mapSaver.id;
-    }
+    // let mapName = editScene.mapSaver.name;
+    // if (!mapName) {
+    //   mapName = window.prompt('Enter a map name:', '');
+    //   if (mapName) editScene.mapSaver.setName(mapName, false);
+    //   else return editScene.mapSaver.id;
+    // }
+    // TODO: prompt for map name
     await editScene.saveLevel(true);
-    return editScene.mapSaver.id;
+    return editScene.mapSaver.slug;
   };
 
   return (
@@ -111,12 +113,13 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
 
       {selectedItems?.length ? (
         <div className="pointerevents-pass absolute left-0 bottom-0 p-4 space-y-2 flex flex-col">
-          {selectedItems.length === 1 && selectedItems[0] instanceof Polygon ? (
+          {selectedItems.length === 1 &&
+          firstSelectedItem instanceof Polygon ? (
             <button
               type="button"
               className="ui-tool-button"
               onClick={() =>
-                editScene.tm.setTool('edit_points', selectedItems[0])
+                editScene.tm.setTool('edit_points', firstSelectedItem)
               }
             >
               Edit points

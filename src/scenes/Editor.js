@@ -3,7 +3,11 @@ import Phaser from 'phaser';
 import ToolManager from 'src/tools/ToolManager';
 import { MapSaver, settingsSaver } from 'lib/saver';
 import { EDITOR_TOOL_TYPES } from 'src/tools';
-import { fitCameraToObjs, groupByIntersection, mergeGeoms } from 'lib/utils';
+import {
+  fitCameraToObjs,
+  groupByIntersection,
+  mergeGeoms,
+} from 'lib/utils/phaser';
 import { config } from 'src/const';
 import { Polygon } from 'src/objects/Polygon';
 
@@ -12,6 +16,9 @@ import { BaseScene } from './Scene';
 export default class Editor extends BaseScene {
   /** @type {MapSaver} */
   mapSaver;
+
+  /** @type {ToolManager} */
+  tm;
 
   constructor() {
     super({
@@ -29,7 +36,7 @@ export default class Editor extends BaseScene {
   init(data) {
     this.mapKey = data.mapKey;
 
-    this.mapSaver = new MapSaver(this.mapKey);
+    this.mapSaver = new MapSaver({ slug: this.mapKey });
 
     this.selected = [];
   }
@@ -158,15 +165,17 @@ export default class Editor extends BaseScene {
     this.enableSnapping(!!settingsSaver.get('snapping'));
 
     this.parts = this.add.group();
-    this.mapSaver.load().then((mapData) => {
-      if (!this.scene.isActive()) return;
 
-      if (mapData) {
-        MapSaver.loadEditorParts(mapData, this.parts);
+    if (this.mapKey)
+      this.mapSaver.load().then((mapData) => {
+        if (!this.scene.isActive()) return;
 
-        fitCameraToObjs(this.cameras.main, this.parts.getChildren());
-      }
-    });
+        if (mapData) {
+          MapSaver.loadEditorParts(mapData, this.parts);
+
+          fitCameraToObjs(this.cameras.main, this.parts.getChildren());
+        }
+      });
 
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 

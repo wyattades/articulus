@@ -1,13 +1,9 @@
 /* eslint-disable consistent-return */
 import Phaser from 'phaser';
 
-import {
-  constrain,
-  EventManager,
-  factoryRotateAround,
-  midpoint,
-  TEMP_RECT,
-} from 'lib/utils';
+import { constrain, factoryRotateAround, midpoint } from 'lib/utils';
+import { EventManager } from 'lib/utils/eventManager';
+import { TEMP_RECT } from 'lib/utils/temp';
 import Controls from 'src/objects/Controls';
 import type { Part } from 'src/objects';
 

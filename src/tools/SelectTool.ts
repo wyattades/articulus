@@ -1,6 +1,6 @@
 import * as _ from 'lodash-es';
 
-import { EventManager } from 'lib/utils';
+import { EventManager } from 'lib/utils/eventManager';
 import type { Part } from 'src/objects';
 
 import BoxTool from './BoxTool';

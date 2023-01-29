@@ -1,6 +1,6 @@
 import Flatten from '@flatten-js/core';
 
-import { EventManager } from 'src/lib/utils';
+import { EventManager } from 'lib/utils/eventManager';
 import { Polygon } from 'src/objects/Polygon';
 
 import Tool from './Tool';

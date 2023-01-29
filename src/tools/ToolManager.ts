@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import { EventManager } from 'lib/utils';
+import { EventManager } from 'lib/utils/eventManager';
 import type { BaseScene } from 'src/scenes/Scene';
 
 import { TOOLS, Tool, ToolKey, ExtraArgsForTool, ToolClassFor } from '.';

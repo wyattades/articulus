@@ -1,6 +1,7 @@
 import * as _ from 'lodash-es';
 
-import { getTopObject, valuesIterator } from 'lib/utils';
+import { valuesIterator } from 'lib/utils';
+import { getTopObject } from 'lib/utils/phaser';
 import {
   getConnectedObjects,
   serializePhysics,

@@ -264,10 +264,10 @@ const containsPointNames = [
 
 const ContainsPoint = (
   point: Point,
-  geom: InstanceType<typeof Phaser.Geom[typeof containsPointNames[number]]>,
+  geom: InstanceType<(typeof Phaser.Geom)[(typeof containsPointNames)[number]]>,
 ) => geom.contains(point.x, point.y);
 
-type GeomName = typeof GEOM_NAMES[keyof typeof GEOM_NAMES];
+type GeomName = (typeof GEOM_NAMES)[keyof typeof GEOM_NAMES];
 
 // All available Geom intersect algorithms
 const Intersects: {
@@ -300,7 +300,7 @@ const GEOM_INDEXED_NAMES = Object.entries(GEOM_NAMES).reduce(
     arr[Number(type)] = name;
     return arr;
   },
-  [] as (typeof GEOM_NAMES[number] | undefined)[],
+  [] as ((typeof GEOM_NAMES)[number] | undefined)[],
 );
 
 const INTERSECT_MATRIX = GEOM_INDEXED_NAMES.map((a) =>

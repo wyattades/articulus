@@ -17,10 +17,10 @@ export const GEOM_NAMES = {
 
 export const GEOM_TYPES = _.mapValues(
   GEOM_NAMES,
-  (name) => G[name as typeof GEOM_NAMES[keyof typeof GEOM_NAMES]],
+  (name) => G[name as (typeof GEOM_NAMES)[keyof typeof GEOM_NAMES]],
 );
 
-export type GeomType = typeof GEOM_TYPES[keyof typeof GEOM_TYPES];
+export type GeomType = (typeof GEOM_TYPES)[keyof typeof GEOM_TYPES];
 export type Geom = InstanceType<GeomType>;
 
 // TODO: transforms!
