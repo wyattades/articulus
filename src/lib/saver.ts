@@ -160,7 +160,7 @@ export class BuildSaver {
       group.add(obj);
     }
 
-    if (physics) deserializePhysics(group.scene, physics);
+    if (physics) deserializePhysics(group.scene as BaseScene, physics);
   }
 
   id: GameBuild['id'] | null = null;

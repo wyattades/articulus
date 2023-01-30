@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import * as _ from 'lodash-es';
+import type MatterType from 'matter-js';
 
 import {
   nextId,
@@ -9,18 +10,13 @@ import {
   valuesIterator,
 } from 'lib/utils';
 import { config, CONNECTOR_RADIUS } from 'src/const';
+import type { Part } from 'src/objects';
+import { BaseScene } from 'src/scenes/Scene';
 
-/**
- * @type {typeof import('matter-js')}
- */
-export const Matter = Phaser.Physics.Matter.Matter;
+export const Matter = (Phaser.Physics.Matter as any)
+  .Matter as typeof MatterType;
 
-/**
- * @param {FC.Joint} joint
- * @param {FC.Body} body
- * @return {{ x: number: y: number }}
- */
-export const getJointPos = (joint) => {
+export const getJointPos = (joint: FC.Joint): Point | null => {
   const a = getFirstValue(joint.bodies);
   if (!a) return null;
 
@@ -29,7 +25,13 @@ export const getJointPos = (joint) => {
   return body.gameObject.getAnchorById(anchorId);
 };
 
-const allConnectedBodies = (body, res = [], hitIds = {}) => {
+const allConnectedBodies = (
+  body: FC.Body,
+  res: FC.Body[] = [],
+  hitIds: {
+    [bodyId in number]?: boolean;
+  } = {},
+) => {
   for (const joint of valuesIterator(body.collisionFilter.joints)) {
     for (const [_anchorId, connectedBody] of valuesIterator(joint.bodies)) {
       if (hitIds[connectedBody.id]) continue;
@@ -44,14 +46,13 @@ const allConnectedBodies = (body, res = [], hitIds = {}) => {
   return res;
 };
 
-/**
- * @param {FC.GameObject | FC.GameObject[]} objs
- * @return {FC.GameObject[]}
- */
-export const getConnectedObjects = (objs, includeSelf = true) => {
+export const getConnectedObjects = (
+  objs: Part | Part[],
+  includeSelf = true,
+): Part[] => {
   objs = _.flatten([objs]);
 
-  const bodies = [],
+  const bodies: FC.Body[] = [],
     hitIds = {};
 
   for (const obj of objs)
@@ -61,49 +62,43 @@ export const getConnectedObjects = (objs, includeSelf = true) => {
   return (includeSelf ? _.union : _.difference)(connected, objs);
 };
 
-/**
- * @param {FC.GameObject} obj
- * @param {number} x
- * @param {number} y
- * @return {FC.Joint | null}
- */
-const getObjectJointAt = (obj, x, y) => {
+const getObjectJointAt = (obj: Part, x: number, y: number): FC.Joint | null => {
   if (!obj.body) return null;
 
   for (const joint of valuesIterator(obj.body.collisionFilter.joints)) {
     const pos = getJointPos(joint);
-    if (Phaser.Math.Distance.Squared(pos.x, pos.y, x, y) <= 1) return joint;
+    if (pos && Phaser.Math.Distance.Squared(pos.x, pos.y, x, y) <= 1)
+      return joint;
   }
 
   return null;
 };
 
-/**
- * @param {FC.Anchor} y
- * @param {FC.GameObject | FC.Joint} objOrJoint
- * @return {FC.AnchorJoint}
- */
-export const createAnchorJoint = (anchor, objOrJoint) => {
-  if (objOrJoint.bodies) return { ...anchor, joint: objOrJoint };
+export const createAnchorJoint = (
+  anchor: FC.Anchor,
+  objOrJoint: Part | FC.Joint,
+): FC.AnchorJoint => {
+  if ('bodies' in objOrJoint && objOrJoint.bodies)
+    return { ...anchor, joint: objOrJoint };
   else return { ...anchor, obj: objOrJoint };
 };
 
 /**
  * Runs on every tick, must be performant
- * @param {Phaser.Scene} scene
- * @param {number} x
- * @param {number} y
- * @param {FC.GameObject} [ignore=null]
- * @return {FC.AnchorJoint}
  */
-export const getHoveredJoint = (scene, x, y, ignore = null) => {
+export const getHoveredJoint = (
+  scene: BaseScene,
+  x: number,
+  y: number,
+  ignore: Part | null = null,
+) => {
   const hoverDist = constrain(
     (CONNECTOR_RADIUS * 1.75) / scene.cameras.main.zoom,
     CONNECTOR_RADIUS,
     CONNECTOR_RADIUS * 2,
   );
 
-  for (const child of scene.parts.getChildren()) {
+  for (const child of scene.parts.getChildren() as unknown as Part[]) {
     if (ignore === child) continue;
 
     const anchor = child.getHoveredAnchor(x, y, hoverDist);
@@ -119,21 +114,21 @@ export const getHoveredJoint = (scene, x, y, ignore = null) => {
 
 /**
  * Resets the MatterJS connections for a joint's bodies
- * @param {Phaser.Scene} scene
- * @param {FC.Joint} joint
- * @param {{ x: number, y: number }} [point=null]
- * @return {boolean}
  */
-export const reconnect = (scene, joint, point = null) => {
+export const reconnect = (
+  scene: BaseScene,
+  joint: FC.Joint,
+  point: Point | null = null,
+): boolean => {
   if (!point) point = getJointPos(joint);
   if (!point) return false;
 
   const { x, y } = point;
 
   while (joint.constraints.length > 0)
-    scene.matter.world.removeConstraint(joint.constraints.pop());
+    scene.matter.world.removeConstraint(joint.constraints.pop()!);
 
-  const [, bodyA] = getFirstValue(joint.bodies);
+  const [, bodyA] = getFirstValue(joint.bodies)!; // unsafe?
 
   for (const [anchorId, bodyB] of valuesIterator(joint.bodies)) {
     bodyB.collisionFilter.joints[joint.id] = joint;
@@ -141,8 +136,9 @@ export const reconnect = (scene, joint, point = null) => {
 
     if (bodyB.id !== bodyA.id) {
       const c = scene.matter.add.constraint(
-        bodyA,
-        bodyB,
+        // override matter's native body into phaser's matter body
+        bodyA as unknown as MatterJS.BodyType,
+        bodyB as unknown as MatterJS.BodyType,
         0,
         config.physics.jointStiffness,
         {
@@ -169,11 +165,10 @@ export const reconnect = (scene, joint, point = null) => {
 };
 
 const oldCanCollide = Matter.Detector.canCollide;
-/**
- * @param {FC.CollisionFilter} filterA
- * @param {FC.CollisionFilter} filterB
- */
-Matter.Detector.canCollide = (filterA, filterB) => {
+Matter.Detector.canCollide = (
+  filterA: FC.CollisionFilter,
+  filterB: FC.CollisionFilter,
+) => {
   if ((filterA.noCollide && filterB.id) || (filterB.noCollide && filterA.id))
     return false;
 
@@ -187,7 +182,7 @@ Matter.Detector.canCollide = (filterA, filterB) => {
   return oldCanCollide(filterA, filterB);
 };
 
-const createJoint = () => {
+const createJoint = (): FC.Joint => {
   const newId = nextId();
   const joint = {
     id: newId,
@@ -199,13 +194,16 @@ const createJoint = () => {
 
 /**
  * Connects two `anchorJoint`s
- * @param {Phaser.Scene} scene
- * @param {FC.AnchorJoint} anchorJoint
- * @param {FC.GameObject} obj
- * @param {number} anchorId
  */
-export const stiffConnect = (scene, anchorJoint, obj, anchorId) => {
-  const newBodies = [[anchorId, obj.body]];
+export const stiffConnect = (
+  scene: BaseScene,
+  anchorJoint: FC.AnchorJoint,
+  obj: Part,
+  anchorId: number,
+) => {
+  if (!obj.body) throw new Error('stiffConnect: Object has no body');
+
+  const newBodies: [anchorId: number, body: FC.Body][] = [[anchorId, obj.body]];
   const joint = anchorJoint.joint || createJoint();
   if (anchorJoint.obj) {
     newBodies.push([anchorJoint.id, anchorJoint.obj.body]);
@@ -220,10 +218,11 @@ export const stiffConnect = (scene, anchorJoint, obj, anchorId) => {
 
 /**
  * Delete all of the body's connections
- * @param {Phaser.Scene} scene
- * @param {FC.Body | FC.Matter['Body']} body
  */
-export const deleteConnections = (scene, body) => {
+export const deleteConnections = (
+  scene: BaseScene,
+  body: FC.Body, // | FC.Matter['Body'],
+) => {
   for (const jId in body.collisionFilter.joints) {
     const joint = body.collisionFilter.joints[jId];
     delete joint.bodies[body.id];
@@ -240,17 +239,20 @@ export const deleteConnections = (scene, body) => {
     }
   }
 
-  body.collisionFilter.joints = null;
+  body.collisionFilter.joints = {}; // should this be `= null`
 };
 
 /**
  * Clone the physics settings from one set of game objects (fromObjs) to another (toObjs)
- * @param {Phaser.Scene} scene
- * @param {FC.GameObject[]} fromObjs
- * @param {FC.GameObject[]} toObjs
  */
-export const clonePhysics = (scene, fromObjs, toObjs) => {
-  const jointDatas = {};
+export const clonePhysics = (
+  scene: BaseScene,
+  fromObjs: Part[],
+  toObjs: Part[],
+) => {
+  const jointDatas: {
+    [jointId in number]: [anchorId: number, body: FC.Body][];
+  } = {};
 
   const len = fromObjs.length;
   for (let i = 0; i < len; i++) {
@@ -265,7 +267,7 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
 
       const anchorId = joint.bodies[from.body.id][0];
 
-      jointData.push([anchorId, to.body]);
+      jointData.push([anchorId, to.body!]);
     }
   }
 
@@ -284,16 +286,23 @@ export const clonePhysics = (scene, fromObjs, toObjs) => {
   }
 };
 
-/** @typedef {{ joints: { x: number, y: number, connections: { objId: number, anchorId: number }[] }[] }} SerialPhysics */
+type SerialJoint = {
+  // x: number;
+  // y: number;
+  connections: { objId: number; anchorId: number }[];
+};
+export type SerialPhysics = {
+  joints: SerialJoint[];
+};
 
-/**
- * @param {Phaser.Scene} scene
- * @return {SerialPhysics}
- */
-export const serializePhysics = (scene) => {
-  const jointMap = {};
-  const bodyMap = {};
-  for (const part of scene.parts.getChildren()) {
+export const serializePhysics = (scene: BaseScene): SerialPhysics => {
+  const jointMap: {
+    [id in number]: FC.Joint;
+  } = {};
+  const bodyMap: {
+    [id in number]: FC.Body;
+  } = {};
+  for (const part of scene.parts.getChildren() as unknown as Part[]) {
     if (part.body) {
       bodyMap[part.body.id] = part.body;
       for (const j of valuesIterator(part.body.collisionFilter.joints)) {
@@ -302,7 +311,7 @@ export const serializePhysics = (scene) => {
     } else console.warn('serializePhysics: Missing body!', part);
   }
 
-  const sJoints = [];
+  const sJoints: SerialJoint[] = [];
 
   for (const joint of valuesIterator(jointMap)) {
     const bodies = Object.values(joint.bodies).filter(
@@ -323,13 +332,11 @@ export const serializePhysics = (scene) => {
   return { joints: sJoints };
 };
 
-/**
- * @param {Phaser.Scene} scene
- * @param {SerialPhysics} data
- */
-export const deserializePhysics = (scene, data) => {
-  const objMap = {};
-  for (const obj of scene.parts.getChildren()) {
+export const deserializePhysics = (scene: BaseScene, data: SerialPhysics) => {
+  const objMap: {
+    [id in number]: Part;
+  } = {};
+  for (const obj of scene.parts.getChildren() as unknown as Part[]) {
     objMap[obj.id] = obj;
   }
 

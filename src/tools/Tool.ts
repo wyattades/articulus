@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { getHoveredJoint } from 'lib/physics';
-import type { ObjectType } from 'src/objects';
+import type { ObjectType, Part } from 'src/objects';
 import type { BaseScene } from 'src/scenes/Scene';
 
 export default abstract class Tool {
   constructor(readonly scene: BaseScene, readonly toolKey: string) {}
 
   // drawObj is in PlaceTool
-  drawObj: { obj: FC.GameObject } | null = null;
+  drawObj: { obj: Part } | null = null;
 
   ShapeClass?: ObjectType;
 

@@ -26,7 +26,7 @@ declare namespace FC {
 
   export type Body = Matter.Body & {
     id: number;
-    gameObject: GameObject;
+    gameObject: Part;
     collisionFilter: {
       id?: number;
       noCollide?: boolean;
@@ -36,17 +36,17 @@ declare namespace FC {
 
   export type CollisionFilter = Body['collisionFilter'];
 
-  export type GameObject = Override<
-    Phaser.GameObjects.GameObject,
-    {
-      body: Body;
-    }
-  >;
+  // export type GameObject = Override<
+  //   Phaser.GameObjects.GameObject,
+  //   {
+  //     body: Body;
+  //   }
+  // >;
 
   export type Joint = {
     id: number;
     bodies: Record<number, [anchorId: number, body: Body]>;
-    constraints: Matter.Constraint[];
+    constraints: Matter.ConstraintType[];
   };
 
   export type Anchor = {
@@ -59,8 +59,10 @@ declare namespace FC {
     (
       | {
           obj: GameObject;
+          joint?: never;
         }
       | {
+          obj?: never;
           joint: Joint;
         }
     );

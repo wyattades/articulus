@@ -282,11 +282,9 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
     anchorId?: AnchorId,
     includeSelf = false,
   ) {
-    type Return = AnchorId extends number
-      ? FC.GameObject[]
-      : (FC.GameObject[] | undefined)[];
+    type Return = AnchorId extends number ? Part[] : (Part[] | undefined)[];
 
-    const anchorObjs: FC.GameObject[][] | null =
+    const anchorObjs: Part[][] | null =
       anchorId == null
         ? Array.from({ length: this.anchorCount }, () => [])
         : null;
@@ -312,7 +310,7 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
     return (anchorObjs || []) as Return;
   }
 
-  *anchors(): Generator<Point, void, unknown> {
+  *anchors(): Generator<FC.Anchor, void, unknown> {
     // empty
   }
 
@@ -324,7 +322,7 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
     return null;
   }
 
-  getHoveredAnchor(x: number, y: number, dist: number) {
+  getHoveredAnchor(x: number, y: number, dist: number): FC.Anchor | null {
     dist *= dist;
 
     for (const anchor of this.anchors())
