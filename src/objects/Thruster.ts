@@ -183,14 +183,16 @@ export default class Thruster extends Part {
   *anchors() {
     let i = 0;
 
-    yield { x: this.x, y: this.y, id: i++ };
+    yield { x: this.x, y: this.y, id: i };
+    i++; // NOTE: putting `i++` inline causes a syntax bug ("invalid increment/decrement operand")
 
     const a = this.rotation + Math.PI / 2;
     const offset = 20 * config.gameScale;
     const sx = Math.cos(a) * offset;
     const sy = Math.sin(a) * offset;
 
-    yield { x: this.x + sx, y: this.y + sy, id: i++ };
+    yield { x: this.x + sx, y: this.y + sy, id: i };
+    i++;
 
     // yield { x: this.x + cx, y: this.y - cy, id: 0 };
     // yield { x: this.x - cx, y: this.y + cy, id: 1 };

@@ -149,9 +149,12 @@ export default class Wheel extends Part {
   *anchors() {
     let i = 0;
 
-    yield { x: this.x, y: this.y, id: i++ };
+    yield { x: this.x, y: this.y, id: i };
+    i++; // NOTE: putting `i++` inline causes a syntax bug ("invalid increment/decrement operand")
 
-    for (const [dx, dy] of circle4Points(this.radius, this.rotation))
-      yield { x: this.x + dx, y: this.y + dy, id: i++ };
+    for (const [dx, dy] of circle4Points(this.radius, this.rotation)) {
+      yield { x: this.x + dx, y: this.y + dy, id: i };
+      i++;
+    }
   }
 }
