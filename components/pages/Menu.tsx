@@ -25,12 +25,17 @@ const MenuUI: React.FC = () => {
   const session = useSession();
 
   return (
-    <div className="ui-wrap container py-8">
-      <AuthMenu onLogout={revalidateLevels} />
+    <div className="ui-wrap container py-8 px-6">
+      <div className="flex justify-between items-start mb-8">
+        <div className="flex-1">
+          <AuthMenu onLogout={revalidateLevels} />
+        </div>
 
-      <h1 className="ui-markup text-5xl p-4 text-center mb-10">Articulus</h1>
+        <h1 className="ui-markup text-5xl text-center">Articulus</h1>
+        <div className="flex-1" />
+      </div>
 
-      <div className="flex justify-end space-x-4 p-4">
+      <div className="flex justify-end space-x-4 py-4">
         <button
           type="button"
           className="ui-tool-button"
@@ -61,7 +66,7 @@ const MenuUI: React.FC = () => {
             return (
               <div key={groupKey} className="mb-10">
                 <p className="ui-markup text-3xl">{title}</p>
-                <div className="p-4">
+                <div className="py-4">
                   {!levels?.length ? (
                     <p className="ui-markup text-center py-8">
                       Nothing here yet!
