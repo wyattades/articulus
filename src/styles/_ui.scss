@@ -1,5 +1,5 @@
 @mixin button-base {
-  @include monospace;
+  @apply font-mono;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 0;
@@ -10,7 +10,7 @@
 }
 
 .ui-markup {
-  @include monospace;
+  @apply font-mono;
   color: white;
   font-weight: bold;
 }
@@ -47,6 +47,10 @@
   &--light {
     background: #bababa;
     color: #000000;
+  }
+  &--success {
+    background: #0b990b;
+    color: white;
   }
 }
 

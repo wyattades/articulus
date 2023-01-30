@@ -175,6 +175,8 @@ export default class Editor extends BaseScene {
 
           fitCameraToObjs(this.cameras.main, this.parts.getChildren());
         }
+
+        this.events.emit('mapLoaded');
       });
 
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);

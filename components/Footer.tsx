@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
   return (
     <div>
       <span>
-        <strong className="monospace">Articulus</strong> made with ❤ by{' '}
+        <strong className="font-mono">Articulus</strong> made with ❤ by{' '}
         <a href="https://wyattades.com">wyattades</a>
       </span>
       <i className="dot" />

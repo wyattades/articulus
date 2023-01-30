@@ -4,14 +4,6 @@
 
 // @import 'https://unpkg.com/normalize.css';
 
-@mixin monospace {
-  font-family: 'Courier New', Courier, monospace;
-}
-
-.monospace {
-  @include monospace;
-}
-
 @import 'ui';
 
 * {
@@ -56,7 +48,7 @@ body {
 
 #title {
   display: inline-flex;
-  @include monospace;
+  @apply font-mono;
   color: white;
   font-size: 2.5rem;
 
@@ -67,7 +59,7 @@ body {
 
 #directions {
   @extend .ui-box;
-  @include monospace;
+  @apply font-mono;
 
   font-size: 1rem;
   background: #373737;

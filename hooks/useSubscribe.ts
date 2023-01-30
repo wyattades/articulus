@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 export const useSubscribe = <V>(
   emitter: any,
   eventName: string | string[],
-  mapValue: (arg?: any) => V,
+  mapValue: (arg?: any) => V = _.identity,
   runMapValueOnUpdate = false,
 ): V => {
   const [value, setValue] = useState(mapValue);

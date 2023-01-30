@@ -144,7 +144,7 @@ const PlayUI: React.FC<{ mapKey?: string }> = ({ mapKey }) => {
         </button>
         <button
           type="button"
-          className="ui-tool-button"
+          className="ui-tool-button ui-tool-button--success"
           onClick={() => game.setScene('Editor', { mapKey })}
         >
           Edit

@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 import { useGame } from 'components/GameProvider';
 import { colorInverse, colorIntToHex } from 'lib/utils/color';
 import { EDITOR_TOOL_TYPES, TOOLS } from 'src/tools';
@@ -9,6 +11,35 @@ import EditorScene from 'src/scenes/Editor';
 import { FlashText } from 'components/FlashText';
 import { Polygon } from 'src/objects/Polygon';
 import { AuthMenu } from 'components/Auth';
+import { useOnClickOutside } from 'hooks/useOnClickOutside';
+
+const NameInput: React.FC<{
+  value: string;
+  disabled?: boolean;
+  onUpdate: (newName: string) => void;
+}> = ({ value, disabled, onUpdate }) => {
+  const editNameRef = useRef<HTMLInputElement>(null);
+  useOnClickOutside(editNameRef, async () => {
+    editNameRef.current?.blur();
+  });
+
+  useEffect(() => {
+    if (editNameRef.current) editNameRef.current.value = value;
+  }, [value]);
+
+  return (
+    <input
+      ref={editNameRef}
+      type="text"
+      disabled={disabled}
+      className="font-mono border-2 border-gray-600 font-semibold px-2 py-1 h-10 bg-white text-black block"
+      defaultValue={value ?? 'Untitled'}
+      onBlur={(e) => {
+        onUpdate(e.target.value);
+      }}
+    />
+  );
+};
 
 const EditUI: React.FC<{ mapKey?: string }> = () => {
   const game = useGame();
@@ -39,6 +70,9 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
     () => !!editScene.tm.getTool('polygon_shape')?.pending,
     true,
   );
+
+  // this makes sure NameInput is updated when the map is loaded
+  useSubscribe(editScene.events, 'mapLoaded');
 
   const editingPolygon = activeToolType === 'edit_points';
 
@@ -79,7 +113,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
         })}
       </div>
 
-      <div className="pointerevents-pass absolute right-0 top-0 p-4 space-y-2 flex flex-col">
+      <div className="pointerevents-pass absolute right-0 top-0 p-4 space-y-2 flex flex-col items-stretch">
         <AuthMenu />
         <button
           type="button"
@@ -93,7 +127,7 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
         </button>
         <button
           type="button"
-          className="ui-tool-button"
+          className="ui-tool-button ui-tool-button--success"
           onClick={async () => {
             const savedKey = await saveLevel();
             game.setScene('Play', { mapKey: savedKey });
@@ -111,6 +145,14 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
         >
           Grid Snapping?
         </button>
+
+        <NameInput
+          disabled={!editScene.mapSaver.meta?.mine}
+          value={editScene.mapSaver.meta?.name || ''}
+          onUpdate={async (newName) => {
+            await editScene.mapSaver.setName(newName);
+          }}
+        />
       </div>
 
       {selectedItems?.length ? (

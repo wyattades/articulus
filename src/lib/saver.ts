@@ -7,6 +7,7 @@ import type { inferAsyncReturnType } from '@trpc/server';
 import { TRPCClientError } from '@trpc/client';
 
 import { validPoint } from 'lib/utils';
+import { EventManager } from 'lib/utils/eventManager';
 import { OBJECT_TYPE_MAP, ObjectInstance } from 'src/objects';
 import {
   serializePhysics,

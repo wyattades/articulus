@@ -78,7 +78,7 @@ const MenuUI: React.FC = () => {
                           <div key={level.id} className="ui-box">
                             <InlineInput
                               value={level.name || '???'}
-                              className="ui-markup text-xl mb-4"
+                              className="ui-markup -mx-2 text-xl mb-4"
                               disabled={!level.mine}
                               onUpdate={async (newName) => {
                                 await new MapSaver(level).setName(newName);
