@@ -1,22 +1,24 @@
 import * as _ from 'lodash-es';
 
+import {
+  deserializePhysics,
+  getConnectedObjects,
+  getJointPos,
+  serializePhysics,
+} from 'lib/physics';
+import { fromJSON } from 'lib/saver';
 import { valuesIterator } from 'lib/utils';
 import { getTopObject } from 'lib/utils/phaser';
-import {
-  getConnectedObjects,
-  serializePhysics,
-  deserializePhysics,
-  getJointPos,
-} from 'lib/physics';
-import { Line, Rectangle } from 'src/objects';
-import { fromJSON } from 'lib/saver';
+import { Line, Part, Rectangle } from 'src/objects';
 
 import Tool from './Tool';
 
 export default class DragTool extends Tool {
-  setDragging(objects, x, y) {
+  setDragging(objects: null): void;
+  setDragging(objects: Part[] | null, x: number, y: number): void;
+  setDragging(objects: Part[] | null, x?: number, y?: number) {
     let activeDrag = null;
-    if (objects?.length) {
+    if (objects?.length && x != null && y != null) {
       activeDrag = {
         x,
         y,
@@ -32,45 +34,45 @@ export default class DragTool extends Tool {
     this.scene.events.emit('setDragging', activeDrag);
   }
 
-  setDraggingAnchor(anchorJoint, x, y) {
+  setDraggingAnchor(anchorJoint: FC.AnchorJoint, x: number, y: number) {
     if (!anchorJoint) {
       this.scene.activeDrag = null;
       return;
     }
 
+    // completely recreate the scene after placing
     // TODO: this is horribly inefficient
     const afterPlace = () => {
       const sobjs = this.scene.parts.getChildren().map((p) => {
-        const sobj = p.toJSON();
-        sobj.id = p.id;
-        return sobj;
+        return Object.assign(p.toSaveJSON(), { id: p.id });
       });
       const physData = serializePhysics(this.scene);
       this.scene.parts.clear(true, true);
       for (const sobj of sobjs) {
         const obj = fromJSON(this.scene, sobj, true);
-        if (obj) this.scene.parts.add(obj);
+        if (obj instanceof Part) this.scene.parts.add(obj);
         else console.warn('failed to recompute in afterPlace', sobj);
       }
       deserializePhysics(this.scene, physData);
     };
 
-    let dragging;
+    let dragging: [Point, number, FC.Body][];
 
     if (anchorJoint.obj) {
-      dragging = [[anchorJoint, anchorJoint.id, anchorJoint.obj.body]];
+      dragging = [[anchorJoint, anchorJoint.id, anchorJoint.obj.body!]];
     } else {
       dragging = Object.values(anchorJoint.joint.bodies).map(
         ([anchorId, body]) => [anchorJoint, anchorId, body],
       );
     }
 
-    const more = [];
+    const more: typeof dragging = [];
     for (const [_1, _2, body] of dragging) {
       const obj = body.gameObject;
       if (!(obj instanceof Line)) {
         for (const joint of valuesIterator(body.collisionFilter.joints)) {
           const pos = getJointPos(joint);
+          if (!pos) continue; // maybe not?
           for (const [anchorId, body2] of Object.values(joint.bodies)) {
             more.push([pos, anchorId, body2]);
           }
@@ -78,16 +80,16 @@ export default class DragTool extends Tool {
       }
     }
 
-    const setStart = (nobj, nx, ny) => {
+    const setStart = (nobj: Line, nx: number, ny: number) => {
       nobj.setStart(nx, ny);
       nobj.rerender();
     };
-    const setEnd = (nobj, nx, ny) => {
+    const setEnd = (nobj: Line, nx: number, ny: number) => {
       nobj.setEnd(nx, ny);
       nobj.rerender();
     };
 
-    dragging = _.uniqBy([...dragging, ...more], (a) => a[2])
+    const draggingObjs = _.uniqBy([...dragging, ...more], (a) => a[2])
       .map(([pos, anchorId, body]) => {
         const obj = body.gameObject;
         if (!obj) {
@@ -97,8 +99,12 @@ export default class DragTool extends Tool {
 
         if (obj instanceof Line) {
           return {
-            customUpdate: anchorId === 0 ? setStart : setEnd,
-            obj,
+            customUpdate: (anchorId === 0 ? setStart : setEnd) as (
+              nobj: Part,
+              nx: number,
+              ny: number,
+            ) => void,
+            obj: obj as unknown as Part,
             dx: pos.x - x,
             dy: pos.y - y,
           };
@@ -110,17 +116,17 @@ export default class DragTool extends Tool {
           };
         }
       })
-      .filter(Boolean);
+      .filter((a): a is NonNullable<typeof a> => a != null);
 
     this.scene.activeDrag = {
       afterPlace,
-      dragging,
+      dragging: draggingObjs,
       x,
       y,
     };
   }
 
-  handlePointerDown(x, y) {
+  handlePointerDown(x: number, y: number) {
     const cursor = this.scene.cursor;
     const anchorJoint = cursor?.visible && cursor.getData('connectAnchorJoint');
     if (anchorJoint) {
@@ -145,7 +151,7 @@ export default class DragTool extends Tool {
     }
   }
 
-  handlePointerMove(x, y) {
+  handlePointerMove(x: number, y: number) {
     this.refreshCursor(x, y);
 
     const { activeDrag } = this.scene;
@@ -177,7 +183,7 @@ export default class DragTool extends Tool {
     }
   }
 
-  handlePointerUp(x, y) {
+  handlePointerUp(x: number, y: number) {
     const { activeDrag } = this.scene;
 
     if (!activeDrag) return;

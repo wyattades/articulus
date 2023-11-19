@@ -1,6 +1,7 @@
+import type { inferAsyncReturnType } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next';
 import { getServerSession } from 'next-auth';
-import { inferAsyncReturnType, initTRPC, TRPCError } from '@trpc/server';
 
 import { authOptions } from 'pages/api/auth/[...nextauth]';
 
@@ -9,7 +10,7 @@ export const createContext = async ({ req, res }: CreateNextContextOptions) => {
 
   const user = session?.user
     ? {
-        id: session.user.id as string,
+        id: session.user.id,
       }
     : null;
 

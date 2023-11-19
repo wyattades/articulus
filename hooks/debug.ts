@@ -1,6 +1,6 @@
 import { useScene } from 'components/game/Scene';
-import { settingsSaver } from 'lib/saver';
 import { useSubscribe } from 'hooks/useSubscribe';
+import { settingsSaver } from 'lib/saver';
 
 export const useIsDebug = () => {
   const scene = useScene();

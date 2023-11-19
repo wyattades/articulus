@@ -1,8 +1,8 @@
-import Head from 'next/head';
+import { SessionProvider } from 'next-auth/react';
 import { DefaultSeo } from 'next-seo';
 import type { AppProps } from 'next/app';
+import Head from 'next/head';
 import Script from 'next/script';
-import { SessionProvider } from 'next-auth/react';
 
 import { GameProvider } from 'components/GameProvider';
 // import { Footer } from 'components/Footer';

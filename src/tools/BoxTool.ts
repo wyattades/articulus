@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
-import { getTopObject } from 'lib/utils/phaser';
 import { intersectsGeoms } from 'lib/intersects';
+import { getTopObject } from 'lib/utils/phaser';
 import { Part } from 'src/objects';
 
 import Tool from './Tool';

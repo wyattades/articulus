@@ -1,15 +1,20 @@
 import { stiffConnect } from 'lib/physics';
-import { Wheel } from 'src/objects';
 import { intersectsOtherSolid } from 'lib/utils/phaser';
+import type { Part } from 'src/objects';
+import { Wheel } from 'src/objects';
 
 import Tool from './Tool';
 
+export type DrawObj = {
+  obj: Part; // Phaser.GameObjects.GameObject;
+  startAnchorJoint?: FC.AnchorJoint;
+};
+
 export default class PlaceTool extends Tool {
-  /** @type {{ obj: FC.GameObject, startAnchorJoint?: FC.AnchorJoint }} */
-  drawObj = null;
+  drawObj: DrawObj | null = null;
 
   // Overridden by LineTool
-  canPlaceObject(drawObj) {
+  canPlaceObject(drawObj: DrawObj) {
     const cursor = this.scene.cursor;
 
     const anchorJoint = cursor?.visible && cursor.getData('connectAnchorJoint');
@@ -19,7 +24,7 @@ export default class PlaceTool extends Tool {
         if (anchorJoint.obj instanceof Wheel) return false;
       } else if (
         anchorJoint.joint &&
-        Object.values(anchorJoint.joint.bodies).find(
+        Object.values(anchorJoint.joint.bodies).some(
           ([, body]) => body.gameObject instanceof Wheel,
         )
       )
@@ -36,7 +41,7 @@ export default class PlaceTool extends Tool {
     return true;
   }
 
-  *getConnections(_drawObj) {
+  *getConnections(_drawObj: DrawObj): Generator<[FC.AnchorJoint, number]> {
     const cursor = this.scene.cursor;
 
     const anchorJoint = cursor?.visible && cursor.getData('connectAnchorJoint');
@@ -72,7 +77,7 @@ export default class PlaceTool extends Tool {
     return drawObj;
   }
 
-  handlePointerDown(x, y) {
+  handlePointerDown(x: number, y: number) {
     const objExisted = this.activateObject(true);
     const cursor = this.scene.cursor;
 
@@ -82,7 +87,8 @@ export default class PlaceTool extends Tool {
         y = cursor.y;
       }
 
-      const obj = new this.ShapeClass(this.scene, x, y);
+      if (!this.ShapeClass) throw new Error('ShapeClass not set');
+      const obj = new this.ShapeClass(this.scene, x, y) as Part;
       this.drawObj = { obj };
       obj.saveRender();
 
@@ -94,11 +100,11 @@ export default class PlaceTool extends Tool {
     }
   }
 
-  handleObjDrag(x, y) {
-    this.drawObj.obj.setPosition(x, y);
+  handleObjDrag(x: number, y: number) {
+    this.drawObj?.obj.setPosition(x, y);
   }
 
-  handlePointerMove(x, y) {
+  handlePointerMove(x: number, y: number) {
     const anchorJoint = this.refreshCursor(x, y);
     if (this.drawObj) {
       if (anchorJoint) {
@@ -109,7 +115,7 @@ export default class PlaceTool extends Tool {
     }
   }
 
-  handlePointerUp(x, y) {
+  handlePointerUp(x: number, y: number) {
     if (this.activateObject()) this.refreshCursor(x, y);
   }
 }

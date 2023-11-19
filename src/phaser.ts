@@ -198,4 +198,4 @@ const Phaser = {
 
 console.log('Load custom phaser');
 
-module.exports = Extend(false, Phaser, CONST);
+export default Extend(false, Phaser, CONST);

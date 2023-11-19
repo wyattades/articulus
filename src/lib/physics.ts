@@ -1,17 +1,18 @@
-import Phaser from 'phaser';
 import * as _ from 'lodash-es';
 import type MatterType from 'matter-js';
+import Phaser from 'phaser';
 
 import {
-  nextId,
   anySame,
-  getFirstValue,
   constrain,
+  getFirstValue,
+  nextId,
   valuesIterator,
 } from 'lib/utils';
-import { config, CONNECTOR_RADIUS } from 'src/const';
+import { CONNECTOR_RADIUS, config } from 'src/const';
 import type { Part } from 'src/objects';
-import { BaseScene } from 'src/scenes/Scene';
+import type { AnyScene } from 'src/scenes';
+import type { BaseScene } from 'src/scenes/Scene';
 
 export const Matter = (Phaser.Physics.Matter as any)
   .Matter as typeof MatterType;
@@ -80,7 +81,7 @@ export const createAnchorJoint = (
 ): FC.AnchorJoint => {
   if ('bodies' in objOrJoint && objOrJoint.bodies)
     return { ...anchor, joint: objOrJoint };
-  else return { ...anchor, obj: objOrJoint };
+  else return { ...anchor, obj: objOrJoint as Part };
 };
 
 /**
@@ -98,7 +99,7 @@ export const getHoveredJoint = (
     CONNECTOR_RADIUS * 2,
   );
 
-  for (const child of scene.parts.getChildren() as unknown as Part[]) {
+  for (const child of scene.parts.getChildren()) {
     if (ignore === child) continue;
 
     const anchor = child.getHoveredAnchor(x, y, hoverDist);
@@ -164,6 +165,7 @@ export const reconnect = (
   return true;
 };
 
+// eslint-disable-next-line @typescript-eslint/unbound-method
 const oldCanCollide = Matter.Detector.canCollide;
 Matter.Detector.canCollide = (
   filterA: FC.CollisionFilter,
@@ -206,7 +208,9 @@ export const stiffConnect = (
   const newBodies: [anchorId: number, body: FC.Body][] = [[anchorId, obj.body]];
   const joint = anchorJoint.joint || createJoint();
   if (anchorJoint.obj) {
-    newBodies.push([anchorJoint.id, anchorJoint.obj.body]);
+    const body = anchorJoint.obj.body;
+    if (!body) throw new Error('stiffConnect: AnchorJoint has no body');
+    newBodies.push([anchorJoint.id, body]);
   }
 
   for (const [aId, body] of newBodies) {
@@ -295,14 +299,14 @@ export type SerialPhysics = {
   joints: SerialJoint[];
 };
 
-export const serializePhysics = (scene: BaseScene): SerialPhysics => {
+export const serializePhysics = (scene: AnyScene): SerialPhysics => {
   const jointMap: {
     [id in number]: FC.Joint;
   } = {};
   const bodyMap: {
     [id in number]: FC.Body;
   } = {};
-  for (const part of scene.parts.getChildren() as unknown as Part[]) {
+  for (const part of scene.parts.getChildren()) {
     if (part.body) {
       bodyMap[part.body.id] = part.body;
       for (const j of valuesIterator(part.body.collisionFilter.joints)) {
@@ -336,7 +340,7 @@ export const deserializePhysics = (scene: BaseScene, data: SerialPhysics) => {
   const objMap: {
     [id in number]: Part;
   } = {};
-  for (const obj of scene.parts.getChildren() as unknown as Part[]) {
+  for (const obj of scene.parts.getChildren()) {
     objMap[obj.id] = obj;
   }
 

@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 
 import { EventManager } from 'lib/utils/eventManager';
-import type { BaseScene } from 'src/scenes/Scene';
+import type { AnyScene } from 'src/scenes';
 
-import { TOOLS, Tool, ToolKey, ExtraArgsForTool, ToolClassFor } from '.';
+import type { ExtraArgsForTool, Tool, ToolClassFor, ToolKey } from '.';
+import { TOOLS } from '.';
 
 export default class ToolManager {
   tools: Tool[] = []; // active tools
@@ -15,10 +16,11 @@ export default class ToolManager {
   eventManager: EventManager;
 
   constructor(
-    readonly scene: BaseScene,
+    readonly scene: AnyScene,
     initial: ToolKey,
     readonly topTypes: ToolKey[] = [],
   ) {
+    // @ts-expect-error idk
     this.setTool(initial);
 
     this.scene.input
@@ -77,7 +79,8 @@ export default class ToolManager {
           : // @ts-expect-error missing args
             new ToolClass(this.scene, type);
 
-      if ('ShapeClass' in toolData) tool.ShapeClass = toolData.ShapeClass;
+      if ('ShapeClass' in toolData && toolData.ShapeClass)
+        tool.ShapeClass = toolData.ShapeClass;
 
       return tool;
     });

@@ -19,7 +19,7 @@
     "build": "NODE_ENV=production next build",
     "db:up": "dbmate up",
     "db:migrate": "dbmate migrate",
-    "check-types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . --cache --ignore-path=.gitignore"
   },
   "dependencies": {
@@ -30,33 +30,34 @@
     "@trpc/next": "^10.9.0",
     "@trpc/server": "^10.9.0",
     "autoprefixer": "^10.4.13",
-    "clsx": "^1.2.1",
+    "clsx": "^2.0.0",
     "lodash-es": "^4.17.21",
     "next": "^13.1.6",
     "next-auth": "^4.19.0",
     "next-seo": "^5.15.0",
     "phaser": "3.60.0-beta.9",
-    "postcss": "^8.4.21",
+    "postcss": "^8.4.31",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-icons": "^4.7.1",
+    "react-icons": "^4.12.0",
     "react-use": "^17.4.0",
-    "sass": "^1.57.1",
+    "sass": "^1.69.5",
     "stats.js": "^0.17.0",
-    "tailwindcss": "^3.2.4",
-    "zod": "^3.20.2"
+    "tailwindcss": "^3.3.5",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/lodash-es": "^4.17.6",
+    "@types/lodash-es": "^4.17.11",
     "@types/matter-js": "0.18.2",
     "@types/node": "^18.11.18",
-    "@types/react": "^18.0.27",
-    "@types/stats.js": "^0.17.0",
-    "@wyattades/eslint-config": "^0.12.0",
-    "dotenv": "^16.0.3",
-    "eslint": "^8.32.0",
-    "prettier": "^2.8.3",
+    "@types/react": "^18.2.37",
+    "@types/stats.js": "^0.17.3",
+    "@wyattades/eslint-config": "^0.14.0",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "prettier-plugin-organize-imports": "3.2.4",
     "prisma": "^4.9.0",
-    "typescript": "^4.9.4"
+    "typescript": "^5.2.2"
   }
 }

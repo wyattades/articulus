@@ -1,28 +1,29 @@
-import * as _ from 'lodash-es';
-import Phaser from 'phaser';
-import Router from 'next/router';
 import type { GameBuild, GameMap } from '@prisma/client';
-import { getSession } from 'next-auth/react';
-import type { inferAsyncReturnType } from '@trpc/server';
 import { TRPCClientError } from '@trpc/client';
+import type { inferAsyncReturnType } from '@trpc/server';
+import * as _ from 'lodash-es';
+import { getSession } from 'next-auth/react';
+import Router from 'next/router';
+import Phaser from 'phaser';
 
 import { validPoint } from 'lib/utils';
-import { EventManager } from 'lib/utils/eventManager';
-import { OBJECT_TYPE_MAP, ObjectInstance } from 'src/objects';
-import {
-  serializePhysics,
-  deserializePhysics,
-  SerialPhysics,
-} from 'lib/physics';
-import type PlayScene from 'src/scenes/Play';
-import type EditorScene from 'src/scenes/Editor';
-import type { BaseScene } from 'src/scenes/Scene';
-import type { AuthSession } from 'pages/api/auth/[...nextauth]';
+// import { EventManager } from 'lib/utils/eventManager';
+import type { SerialPhysics } from 'lib/physics';
+import { deserializePhysics, serializePhysics } from 'lib/physics';
 import { trpc } from 'lib/trpc';
+import type { AuthSession } from 'pages/api/auth/[...nextauth]';
+import type { ObjectInstance, Part } from 'src/objects';
+import { OBJECT_TYPE_MAP } from 'src/objects';
+import type { AnyScene } from 'src/scenes';
+import type EditorScene from 'src/scenes/Editor';
+import type PlayScene from 'src/scenes/Play';
+import type { BaseScene, ObjectsGroup } from 'src/scenes/Scene';
+
+import type { Terrain } from './terrain';
 
 type GameObjJson = {
   id: number;
-} & ReturnType<ObjectInstance['toJSON']>;
+} & ReturnType<ObjectInstance['toSaveJSON']>;
 
 export type GameBuildData = {
   objects: GameObjJson[];
@@ -42,11 +43,11 @@ type GameBuildMeta = inferAsyncReturnType<
   typeof trpc.gameBuilds.allMetas.query
 >[number];
 
-export const fromJSON = (
+export const fromJSON = <T extends Part | Terrain>(
   scene: BaseScene,
   json: GameObjJson,
   enablePhysics = false,
-): Phaser.GameObjects.Sprite | null => {
+): T | null => {
   if (json?.id == null) return null;
 
   const Klass = OBJECT_TYPE_MAP[json.type];
@@ -63,7 +64,7 @@ export const fromJSON = (
   if (enablePhysics) obj.enablePhysics();
   obj.saveRender(); // must be after enablePhysics
 
-  return obj as any;
+  return obj as unknown as T;
 };
 
 const getUserId = async () => {
@@ -152,13 +153,13 @@ export class BuildSaver {
 
   static loadPlayParts(
     { objects, physics }: GameBuildData,
-    group: Phaser.GameObjects.Group,
+    group: ObjectsGroup<Part>,
   ) {
     for (const sobj of objects) {
       const obj = fromJSON(group.scene as BaseScene, sobj, true);
       if (!obj) continue;
 
-      group.add(obj);
+      group.add(obj as unknown as Part);
     }
 
     if (physics) deserializePhysics(group.scene as BaseScene, physics);
@@ -167,7 +168,7 @@ export class BuildSaver {
   id: GameBuild['id'] | null = null;
 
   async load() {
-    if (!this.id) return new Error('No gameBuild id');
+    if (!this.id) throw new Error('No gameBuild id');
 
     const gameBuild = await trpc.gameBuilds.get.query({
       id: this.id,
@@ -177,10 +178,10 @@ export class BuildSaver {
     return {
       objects: gameBuild.data.objects,
       physics: gameBuild.data.physics,
-    };
+    } as GameBuildData;
   }
 
-  async save(group: Phaser.GameObjects.Group) {
+  async save(group: ObjectsGroup<Part>) {
     this.queueSave.cancel();
 
     const scene = group.scene as PlayScene | EditorScene;
@@ -190,7 +191,7 @@ export class BuildSaver {
       group.getChildren() as unknown as ObjectInstance[],
       scene.worldBounds,
     ).map((obj) => {
-      const json = obj.toJSON() as GameObjJson;
+      const json = obj.toSaveJSON() as GameObjJson;
       json.id = obj.id;
       return json;
     });
@@ -283,31 +284,31 @@ export class MapSaver {
     this.meta = null;
   }
 
-  static loadPlayParts(
+  static loadPlayParts<T extends Part | Terrain>(
     { objects }: GameMapData,
-    group: Phaser.GameObjects.Group,
+    group: ObjectsGroup<T>,
   ) {
     for (const sobj of objects) {
-      const obj = fromJSON(group.scene as BaseScene, sobj, true);
+      const obj = fromJSON<T>(group.scene as BaseScene, sobj, true);
       if (!obj) continue;
 
       group.add(obj);
     }
   }
 
-  static loadEditorParts(
+  static loadEditorParts<T extends Part | Terrain>(
     { objects }: GameMapData,
-    group: Phaser.GameObjects.Group,
+    group: ObjectsGroup<T>,
   ) {
     for (const sobj of objects) {
-      const obj = fromJSON(group.scene as BaseScene, sobj);
+      const obj = fromJSON<T>(group.scene as BaseScene, sobj);
       if (!obj) continue;
 
       group.add(obj);
     }
   }
 
-  async load() {
+  async load(): Promise<GameMapData> {
     if (!this.id && !this.slug) throw new Error('No gameMap id');
 
     try {
@@ -321,26 +322,27 @@ export class MapSaver {
 
       return {
         objects: map.data.objects,
-      };
+      } as GameMapData;
     } catch (err) {
       if (err instanceof TRPCClientError && err.data?.code === 'NOT_FOUND') {
+        // eslint-disable-next-line no-alert
         window.alert('Oops! Map not found!');
-        Router.push('/');
+        void Router.push('/');
         return { objects: [] };
       }
       throw err;
     }
   }
 
-  async save(group: Phaser.GameObjects.Group) {
-    const scene = group.scene as PlayScene | EditorScene;
+  async save(group: ObjectsGroup<Part>) {
+    const scene = group.scene as AnyScene;
     if (!scene) return;
 
     const objects = withinBounds(
       group.getChildren() as unknown as ObjectInstance[],
       scene.worldBounds,
     ).map((obj) => {
-      const json = obj.toJSON() as GameObjJson;
+      const json = obj.toSaveJSON() as GameObjJson;
       json.id = obj.id;
       return json;
     });
@@ -377,7 +379,7 @@ export class MapSaver {
     // TODO: put this somewhere else?
     const currentSlug = Router.pathname.match(/\/edit\/([^/]+)/)?.[1];
     if (currentSlug !== map.slug) {
-      Router.replace(`/edit/${map.slug}`);
+      void Router.replace(`/edit/${map.slug}`);
     }
   }
 

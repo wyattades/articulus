@@ -1,13 +1,26 @@
 import Phaser from 'phaser';
 
+import { RotatedRect } from 'lib/rotatedRect';
 import { factoryRotateAround } from 'lib/utils';
 import { addHoverCursor, getObjectsBounds } from 'lib/utils/phaser';
-import { RotatedRect } from 'lib/rotatedRect';
-import { COLORS } from 'src/styles/theme';
 import { config } from 'src/const';
+import type Part from 'src/objects/Part';
+import type { BaseScene } from 'src/scenes/Scene';
+import { COLORS } from 'src/styles/theme';
 
 const ROTATOR_OFFSET = 20 * config.gameScale;
 const ANCHOR_SIZE = 12 * config.gameScale;
+
+type POffset = {
+  lx: number;
+  ly: number;
+  dx: number;
+  dy: number;
+};
+
+type ControlsChild =
+  | (Phaser.GameObjects.Shape & { poffset: POffset })
+  | (Phaser.GameObjects.Graphics & { poffset: POffset });
 
 export default class Controls extends Phaser.GameObjects.Group {
   x = 0;
@@ -16,25 +29,18 @@ export default class Controls extends Phaser.GameObjects.Group {
   height = 1;
   rotation = 0;
 
-  /** @type {Phaser.GameObjects.Rectangle[]} */
-  edgeObjs;
-  /** @type {Phaser.GameObjects.Rectangle} */
-  rotateObj;
+  edgeObjs!: (Phaser.GameObjects.Rectangle & { poffset: POffset })[];
+  rotateObj!: Phaser.GameObjects.Rectangle & { poffset: POffset };
+  borderObj!: Phaser.GameObjects.Graphics & { poffset: POffset };
 
-  /**
-   * @param {Phaser.Scene} scene
-   */
-  constructor(scene) {
+  constructor(scene: BaseScene) {
     super(scene);
     this.scene.add.existing(this);
     this.initChildren();
     this.setVisible(false);
   }
 
-  /**
-   * @param {Part[]} objs
-   */
-  updateFromBounds(objs) {
+  updateFromBounds(objs: Part[]) {
     if (objs.length === 1) {
       const obj = objs[0];
       // TODO: use .originX instead of 0.5? (idk, originX/originY are modified when a texture is created)
@@ -43,19 +49,19 @@ export default class Controls extends Phaser.GameObjects.Group {
       this.setRotation(obj.rotation, true);
     } else {
       const b = getObjectsBounds(objs);
-
-      this.setPosition(b.left, b.top, true);
-      this.setSize(b.width, b.height, true);
-      this.setRotation(0, true);
+      if (b) {
+        this.setPosition(b.left, b.top, true);
+        this.setSize(b.width, b.height, true);
+        this.setRotation(0, true);
+      }
     }
     this.updateChildren();
   }
 
   /**
    * Just updates Controls's bounding box and position
-   * @param {Part[]} selected
    */
-  setSelected(selected) {
+  setSelected(selected: Part[]) {
     if (selected?.length) {
       this.updateFromBounds(selected);
 
@@ -88,7 +94,7 @@ export default class Controls extends Phaser.GameObjects.Group {
     const center = { x: this.x + this.width / 2, y: this.y + this.height / 2 };
     const rotateAround = factoryRotateAround(center, this.rotation);
 
-    for (const obj of this.getChildren()) {
+    for (const obj of this.getChildren() as ControlsChild[]) {
       const p = rotateAround({
         x: this.width * obj.poffset.lx + obj.poffset.dx + center.x,
         y: this.height * obj.poffset.ly + obj.poffset.dy + center.y,
@@ -99,36 +105,32 @@ export default class Controls extends Phaser.GameObjects.Group {
     }
   }
 
-  setRotation(r, noUpdate = false) {
+  setRotation(r: number, noUpdate = false) {
     this.rotation = r;
     if (!noUpdate) this.updateChildrenRotation();
     return this;
   }
 
-  setSize(w, h, noUpdate = false) {
+  setSize(w: number, h: number, noUpdate = false) {
     this.width = w;
     this.height = h;
     if (!noUpdate) this.updateChildren();
     return this;
   }
 
-  setPosition(x, y, noUpdate = false) {
+  setPosition(x: number, y: number, noUpdate = false) {
     this.x = x;
     this.y = y;
     if (!noUpdate) this.updateChildren();
     return this;
   }
 
-  /**
-   * @param {Point} oppCorner
-   * @param {Phaser.GameObjects.Shape} obj
-   */
-  updateFromCorners(oppCorner, obj) {
+  updateFromCorners(oppCorner: Point, obj: Phaser.GameObjects.Shape) {
     const rect = RotatedRect.fromCorners(
       oppCorner,
       obj,
-      obj.originX,
-      obj.originY,
+      obj.originX as 0 | 1,
+      obj.originY as 0 | 1,
       this.rotation,
     );
 
@@ -138,17 +140,20 @@ export default class Controls extends Phaser.GameObjects.Group {
   }
 
   initChildren() {
-    this.borderObj = this.scene.add.graphics();
+    this.borderObj = Object.assign(this.scene.add.graphics(), {
+      poffset: { lx: 0, ly: 0, dy: 0, dx: 0 },
+    });
     this.add(this.borderObj);
-    this.borderObj.poffset = { lx: 0, ly: 0, dy: 0, dx: 0 };
 
-    this.rotateObj = this.scene.add
-      .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, COLORS.grey)
-      .setOrigin(0.5, 0.5)
-      .setInteractive();
+    this.rotateObj = Object.assign(
+      this.scene.add
+        .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, COLORS.grey)
+        .setOrigin(0.5, 0.5)
+        .setInteractive(),
+      { poffset: { lx: 0, ly: -0.5, dy: -ROTATOR_OFFSET, dx: 0 } },
+    );
     addHoverCursor(this.rotateObj, 'grab');
     this.add(this.rotateObj);
-    this.rotateObj.poffset = { lx: 0, ly: -0.5, dy: -ROTATOR_OFFSET, dx: 0 };
 
     this.edgeObjs = [];
     for (const [ox, oy, resizeAttr] of [
@@ -156,13 +161,14 @@ export default class Controls extends Phaser.GameObjects.Group {
       [0, 1, 'ne-resize'],
       [1, 0, 'sw-resize'],
       [0, 0, 'se-resize'],
-    ]) {
-      const obj = this.scene.add
-        .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, COLORS.grey)
-        .setOrigin(ox, oy)
-        .setInteractive();
-
-      obj.poffset = { lx: 0.5 - ox, ly: 0.5 - oy, dx: 0, dy: 0 };
+    ] as const) {
+      const obj = Object.assign(
+        this.scene.add
+          .rectangle(0, 0, ANCHOR_SIZE, ANCHOR_SIZE, COLORS.grey)
+          .setOrigin(ox, oy)
+          .setInteractive(),
+        { poffset: { lx: 0.5 - ox, ly: 0.5 - oy, dx: 0, dy: 0 } },
+      );
 
       addHoverCursor(obj, resizeAttr);
 

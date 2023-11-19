@@ -2,12 +2,13 @@ import Phaser from 'phaser';
 // eslint-disable-next-line import/no-named-as-default
 import Router from 'next/router';
 
-import PlayScene from 'src/scenes/Play';
-import EditorScene from 'src/scenes/Editor';
-import { BaseScene } from 'src/scenes/Scene';
 import { settingsSaver } from 'lib/saver';
+import EditorScene from 'src/scenes/Editor';
+import PlayScene from 'src/scenes/Play';
+import type { BaseScene } from 'src/scenes/Scene';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Window {
     gameCounter?: number;
   }
@@ -27,6 +28,10 @@ export default class Game extends Phaser.Game {
       physics: {
         default: 'matter',
         matter: {
+          // TODO: cross-platform consistent physics speed
+          runner: {
+            fps: 60,
+          },
           enableSleeping: true,
           debug: !!settingsSaver.get('debug'),
         },
@@ -84,6 +89,6 @@ export default class Game extends Phaser.Game {
         Play: mapKey ? `/play/${mapKey}` : '/play',
       }[key] || '/';
 
-    Router.push(url);
+    void Router.push(url);
   }
 }

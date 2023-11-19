@@ -49,7 +49,7 @@ export class RotatedRect extends Phaser.Geom.Rectangle {
     cornerB: Point,
     originX: 0 | 1,
     originY: 0 | 1,
-    rotation: number,
+    rotation: number, // radians
   ) {
     // NOTE: This won't work for non-corner edgeObjs
 
@@ -79,21 +79,30 @@ export class RotatedRect extends Phaser.Geom.Rectangle {
       originX === 1 && originY === 1
         ? cornerB
         : originX === 0 && originY === 0
-        ? cornerA
-        : originX === 1
-        ? // opposite x, same y
-          oppPoint(cornerA, originX, originY, rotation, newW, newH, true, false)
-        : // same x, opposite y
-          oppPoint(
-            cornerA,
-            originX,
-            originY,
-            rotation,
-            newW,
-            newH,
-            false,
-            true,
-          );
+          ? cornerA
+          : originX === 1
+            ? // opposite x, same y
+              oppPoint(
+                cornerA,
+                originX,
+                originY,
+                rotation,
+                newW,
+                newH,
+                true,
+                false,
+              )
+            : // same x, opposite y
+              oppPoint(
+                cornerA,
+                originX,
+                originY,
+                rotation,
+                newW,
+                newH,
+                false,
+                true,
+              );
 
     // this is the top-left corner of the UNROTATED rectangle
     const pos = Phaser.Math.RotateAround(

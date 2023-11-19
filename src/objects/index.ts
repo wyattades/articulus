@@ -1,14 +1,14 @@
-import { COLORS } from 'src/styles/theme';
 import { config } from 'src/const';
+import { COLORS } from 'src/styles/theme';
 
-import Part from './Part';
 import Line from './Line';
-import Wheel from './Wheel';
-import Thruster from './Thruster';
-import { Ellipse, Rectangle, GoalZone } from './Shape';
+import Part from './Part';
 import { Polygon } from './Polygon';
+import { Ellipse, GoalZone, Rectangle } from './Shape';
+import Thruster from './Thruster';
+import Wheel from './Wheel';
 
-export { Part, Line, Wheel, Thruster, Rectangle, Ellipse, Polygon, GoalZone };
+export { Ellipse, GoalZone, Line, Part, Polygon, Rectangle, Thruster, Wheel };
 
 export class Water extends Line {
   static type = 'water';
@@ -100,7 +100,10 @@ export type ObjectType = (typeof OBJECTS)[number];
 
 export type ObjectInstance = InstanceType<ObjectType>;
 
-export const OBJECT_TYPE_MAP = OBJECTS.reduce((m, el) => {
-  m[el.type] = el;
-  return m;
-}, {} as Record<string, ObjectType>);
+export const OBJECT_TYPE_MAP = OBJECTS.reduce(
+  (m, el) => {
+    m[el.type] = el;
+    return m;
+  },
+  {} as Record<string, ObjectType>,
+);

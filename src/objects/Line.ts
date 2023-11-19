@@ -93,8 +93,7 @@ export default class Line extends Part {
     gfx.strokeRect(-this.length / 2, -this.size / 2, this.length, this.size);
   }
 
-  // @ts-expect-error override method returntype
-  toJSON() {
+  toSaveJSON() {
     this.recomputeEnds();
 
     return {
@@ -109,7 +108,7 @@ export default class Line extends Part {
 
   static fromJSON(
     scene: BaseScene,
-    { x1, y1, x2, y2, size }: ReturnType<typeof this.prototype.toJSON>,
+    { x1, y1, x2, y2, size }: ReturnType<typeof this.prototype.toSaveJSON>,
   ) {
     return new this(scene, x1, y1, x2, y2, size);
   }

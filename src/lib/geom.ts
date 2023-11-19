@@ -1,7 +1,7 @@
 import * as _ from 'lodash-es';
 import Phaser from 'phaser';
 
-import { RotatedRect, ROTATED_RECT } from 'lib/rotatedRect';
+import { ROTATED_RECT, RotatedRect } from 'lib/rotatedRect';
 
 const G = { ...Phaser.Geom, ROTATED_RECT, RotatedRect };
 

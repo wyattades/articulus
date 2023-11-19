@@ -1,6 +1,6 @@
-import { router } from './utils';
-import gameMaps from './gameMaps';
 import gameBuilds from './gameBuilds';
+import gameMaps from './gameMaps';
+import { router } from './utils';
 
 export const appRouter = router({
   gameMaps,

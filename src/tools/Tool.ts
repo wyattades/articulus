@@ -4,7 +4,10 @@ import type { ObjectType, Part } from 'src/objects';
 import type { BaseScene } from 'src/scenes/Scene';
 
 export default abstract class Tool {
-  constructor(readonly scene: BaseScene, readonly toolKey: string) {}
+  constructor(
+    readonly scene: BaseScene,
+    readonly toolKey: string,
+  ) {}
 
   // drawObj is in PlaceTool
   drawObj: { obj: Part } | null = null;

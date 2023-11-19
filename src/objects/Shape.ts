@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
-import { config } from 'src/const';
 import { getEllipsePoints } from 'lib/utils';
+import { config } from 'src/const';
 import { COLORS } from 'src/styles/theme';
 
 import Part from './Part';

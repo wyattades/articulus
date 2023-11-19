@@ -25,7 +25,12 @@ export const Scene: React.FC<{
 
     game.scene.start(sceneKey, data);
 
-    game.waitForSceneReady(sceneKey).then(setScene);
+    game
+      .waitForSceneReady(sceneKey)
+      .then(setScene)
+      .catch((err) => {
+        console.error('Failed to load scene', err);
+      });
 
     return () => {
       if (game.destroyed) return;

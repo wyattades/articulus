@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
 
-import { valuesIterator } from 'lib/utils';
 import { Matter } from 'lib/physics';
+import { valuesIterator } from 'lib/utils';
 import { config } from 'src/const';
-import { COLORS } from 'src/styles/theme';
 import type { BaseScene } from 'src/scenes/Scene';
+import { COLORS } from 'src/styles/theme';
 
 import Part from './Part';
 
@@ -97,8 +97,7 @@ export default class Thruster extends Part {
     );
   }
 
-  // @ts-expect-error override method returntypeß
-  toJSON() {
+  toSaveJSON() {
     return {
       type: this.klass.type,
       x: this.x,
@@ -109,7 +108,7 @@ export default class Thruster extends Part {
 
   static fromJSON(
     scene: BaseScene,
-    { x, y, rotation }: ReturnType<typeof this.prototype.toJSON>,
+    { x, y, rotation }: ReturnType<typeof this.prototype.toSaveJSON>,
   ) {
     const obj = new this(scene, x, y);
     obj.rotation = rotation;

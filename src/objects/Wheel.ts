@@ -36,8 +36,7 @@ export default class Wheel extends Part {
     gfx.strokeCircle(0, 0, this.radius);
   }
 
-  // @ts-expect-error override method returntype
-  toJSON() {
+  toSaveJSON() {
     return {
       type: this.klass.type,
       x: this.x,
@@ -49,7 +48,7 @@ export default class Wheel extends Part {
 
   static fromJSON(
     scene: BaseScene,
-    { x, y, radius, rotation }: ReturnType<typeof this.prototype.toJSON>,
+    { x, y, radius, rotation }: ReturnType<typeof this.prototype.toSaveJSON>,
   ) {
     const obj = new this(scene, x, y, radius);
     obj.rotation = rotation;
@@ -69,12 +68,11 @@ export default class Wheel extends Part {
   appliedTorque = config.wheel.appliedTorque;
   maxSpeed = config.wheel.maxSpeed;
 
-  /** @type {Phaser.Types.Physics.Matter.MatterBodyConfig | null} */
   get physicsOptions() {
     return {
       density: config.wheel.density,
       friction: config.wheel.friction,
-    };
+    } satisfies Phaser.Types.Physics.Matter.MatterBodyConfig;
   }
 
   get geom() {

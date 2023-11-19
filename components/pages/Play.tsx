@@ -2,19 +2,19 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import { useState } from 'react';
 import {
-  IoPlaySharp as PlayIcon,
   IoPauseSharp as PauseIcon,
+  IoPlaySharp as PlayIcon,
 } from 'react-icons/io5';
 
+import { FlashText } from 'components/FlashText';
 import { useGame } from 'components/GameProvider';
-import { colorInverse, colorIntToHex } from 'lib/utils/color';
-import { PLAY_TOOL_TYPES, TOOLS } from 'src/tools';
+import { PointerPos } from 'components/PointerPos';
+import { Stats } from 'components/Stats';
 import { useScene } from 'components/game/Scene';
 import { useSubscribe } from 'hooks/useSubscribe';
-import { PointerPos } from 'components/PointerPos';
-import { FlashText } from 'components/FlashText';
-import { Stats } from 'components/Stats';
+import { colorIntToHex, colorInverse } from 'lib/utils/color';
 import type PlayScene from 'src/scenes/Play';
+import { PLAY_TOOL_TYPES, TOOLS } from 'src/tools';
 
 const Directions: React.FC<{ onClose: () => void }> = ({ onClose }) => (
   <div onClick={onClose} className="absolute left-0 top-0 bottom-0 right-0">

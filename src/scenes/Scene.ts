@@ -2,7 +2,8 @@ import type StatsJs from 'stats.js';
 
 import type { FlashStatus } from 'components/FlashText';
 import type Game from 'src/Game';
-import type { Part } from 'src/objects';
+import type { Terrain } from 'src/lib/terrain';
+import type { ObjectInstance, Part } from 'src/objects';
 import type ToolManager from 'src/tools/ToolManager';
 
 export type DebugShapeType =
@@ -11,12 +12,23 @@ export type DebugShapeType =
   | Phaser.GameObjects.Polygon
   | Phaser.GameObjects.Line;
 
+type CursorObj = Phaser.GameObjects.Arc & {
+  getData(name: 'connectAnchorJoint'): FC.AnchorJoint;
+};
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export interface ObjectsGroup<T extends Phaser.GameObjects.GameObject | Part>
+  extends Omit<Phaser.GameObjects.Group, 'getChildren' | 'add'> {
+  getChildren(): T[];
+  add(obj: T): this;
+}
+
 export abstract class BaseScene extends Phaser.Scene {
   game!: Game;
 
-  cursor?: Phaser.GameObjects.Sprite;
+  cursor?: CursorObj;
 
-  parts!: Phaser.GameObjects.Group;
+  parts!: ObjectsGroup<Part>;
 
   debugShapes?: Record<string, DebugShapeType>;
 
@@ -28,6 +40,24 @@ export abstract class BaseScene extends Phaser.Scene {
   modifierKey!: Phaser.Input.Keyboard.Key;
 
   stats?: StatsJs;
+
+  worldBounds?: Phaser.Geom.Rectangle;
+  terrainGroup?: ObjectsGroup<Terrain>;
+
+  activeDrag?: {
+    afterPlace?: (x: number, y: number) => void;
+    moved?: boolean;
+    x: number;
+    y: number;
+    dragging: {
+      obj: Part;
+      dx: number;
+      dy: number;
+      customUpdate?: (obj: Part | ObjectInstance, x: number, y: number) => void;
+    }[];
+  } | null;
+
+  precheckMaxItems?(count: number): boolean;
 
   get snappingEnabled() {
     return false;

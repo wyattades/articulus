@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { db } from 'server/db';
 import type { GameBuildData } from 'lib/saver';
+import { db } from 'server/db';
 
-import { router, protectedProcedure } from './utils';
+import { protectedProcedure, router } from './utils';
 
 export default router({
   allMetas: protectedProcedure.query(async ({ ctx: { user } }) => {

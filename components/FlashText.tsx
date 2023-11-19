@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import clsx from 'clsx';
+import { useEffect, useState } from 'react';
 
 import { useScene } from 'components/game/Scene';
 
@@ -40,8 +40,8 @@ export const FlashText: React.FC = () => {
           flash.status === 'win'
             ? 'ui-flash--win'
             : flash.status === 'error'
-            ? 'ui-flash--danger'
-            : null,
+              ? 'ui-flash--danger'
+              : null,
         )}
       >
         {flash.message}

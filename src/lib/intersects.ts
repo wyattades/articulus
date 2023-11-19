@@ -1,9 +1,10 @@
 // CREDIT: https://github.com/davidfig/intersects
 
-import Phaser from 'phaser';
 import Flatten from '@flatten-js/core';
+import Phaser from 'phaser';
 
-import { Geom, GEOM_NAMES } from './geom';
+import type { Geom } from './geom';
+import { GEOM_NAMES } from './geom';
 // eslint-disable-next-line import/no-cycle
 import { getEllipsePoints, validPoint } from './utils';
 
@@ -118,6 +119,7 @@ const polygonPoints = (polygon: PointsInput): [number, number][] => {
       out.push([(polygon as number[])[i], (polygon as number[])[i + 1]]);
     return out;
   } else {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new Error(`Unknown polygonPoints element: ${first}`);
   }
 };

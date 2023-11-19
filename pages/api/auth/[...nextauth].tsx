@@ -1,6 +1,8 @@
-import NextAuth, { DefaultSession, NextAuthOptions } from 'next-auth';
-import DiscordProvider, { DiscordProfile } from 'next-auth/providers/discord';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import type { DefaultSession, NextAuthOptions } from 'next-auth';
+import NextAuth from 'next-auth';
+import type { DiscordProfile } from 'next-auth/providers/discord';
+import DiscordProvider from 'next-auth/providers/discord';
 
 import { db } from 'server/db';
 

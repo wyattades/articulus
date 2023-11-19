@@ -143,8 +143,7 @@ export class Polygon extends Shape {
     gfx.strokePath();
   }
 
-  // @ts-expect-error override method returntype
-  toJSON() {
+  toSaveJSON() {
     return {
       type: this.klass.type,
       x: this.x,
@@ -162,7 +161,7 @@ export class Polygon extends Shape {
       y,
       points,
       ...rest
-    }: ReturnType<typeof this.prototype.toJSON>,
+    }: ReturnType<typeof this.prototype.toSaveJSON>,
   ) {
     const obj = new this(scene, x, y);
 

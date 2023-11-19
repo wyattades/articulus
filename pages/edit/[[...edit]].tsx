@@ -1,5 +1,5 @@
-import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/router';
 
 import { Scene } from 'components/game/Scene';
 

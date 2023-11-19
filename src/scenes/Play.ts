@@ -1,23 +1,27 @@
-import Phaser from 'phaser';
 import * as _ from 'lodash-es';
+import Phaser from 'phaser';
 
-import { PLAY_TOOL_TYPES } from 'src/tools';
-import { Terrain } from 'lib/terrain';
+import { Matter, clonePhysics } from 'lib/physics';
 import { BuildSaver, MapSaver, settingsSaver } from 'lib/saver';
-import { COLORS } from 'src/styles/theme';
-import ToolManager from 'src/tools/ToolManager';
-import { MAX_PARTS, CONNECTOR_RADIUS } from 'src/const';
+import { Terrain } from 'lib/terrain';
 import { validPoint } from 'lib/utils';
 import { fitCameraToObjs, getObjectsBounds } from 'lib/utils/phaser';
 import { TEMP_RECT, TEMP_RECT2 } from 'lib/utils/temp';
-import { clonePhysics, Matter } from 'lib/physics';
+import { CONNECTOR_RADIUS, MAX_PARTS } from 'src/const';
+import type { Part } from 'src/objects';
 import { GoalObject, GoalZone } from 'src/objects';
+import { COLORS } from 'src/styles/theme';
+import { PLAY_TOOL_TYPES } from 'src/tools';
+import ToolManager from 'src/tools/ToolManager';
 
-import { BaseScene } from './Scene';
+import { BaseScene, type ObjectsGroup } from './Scene';
 
 export default class Play extends BaseScene {
-  /** @type {MapSaver} */
-  mapSaver;
+  mapSaver!: MapSaver | null;
+  mapKey?: string;
+  terrainGroup!: ObjectsGroup<Terrain>;
+  buildSaver!: BuildSaver;
+  selected!: Part[];
 
   constructor() {
     super({
@@ -25,7 +29,7 @@ export default class Play extends BaseScene {
     });
   }
 
-  init(data) {
+  init(data: { mapKey?: string }) {
     this.mapKey = data.mapKey;
     this.mapSaver = this.mapKey ? new MapSaver({ slug: this.mapKey }) : null;
     this.buildSaver = new BuildSaver();
@@ -38,11 +42,11 @@ export default class Play extends BaseScene {
     return !!this.matter.world?.enabled;
   }
 
-  setRunning(running) {
+  setRunning(running: boolean) {
     if (this.cameras.main.panEffect.isRunning) return;
 
     if (running) {
-      this.saveBuild('flush');
+      void this.saveBuild('flush');
 
       this.refreshCameraFollower(() => {
         this.matter.resume();
@@ -67,14 +71,16 @@ export default class Play extends BaseScene {
     this.events.emit('setSelected', []);
   }
 
-  refreshCameraFollower(cb) {
+  refreshCameraFollower(cb?: () => void) {
     const camera = this.cameras.main;
     if (!camera) return;
 
     camera.panEffect.reset();
     camera.stopFollow();
 
-    const follow = _.findLast(this.parts.getChildren(), validPoint);
+    const follow = _.findLast(this.parts.getChildren(), validPoint) as
+      | Part
+      | undefined;
 
     if (follow) {
       const dist = Phaser.Math.Distance.Between(
@@ -121,12 +127,11 @@ export default class Play extends BaseScene {
     // this.load.image('cookie', 'assets/cookie.png');
 
     if (this.load.inflight.size > 0) {
-      const loadingMsg = (value = 0) =>
-        `Loading Assets: ${Number.parseInt(value * 100, 10)}%`;
+      const loadingMsg = (value = 0) => `Loading Assets: ${value * 100}%`;
       const loadingText = this.add.text(100, 300, loadingMsg(), {
         fontSize: '40px',
       });
-      this.load.on('progress', (value) => {
+      this.load.on('progress', (value: number) => {
         loadingText.setText(loadingMsg(value));
       });
       this.load.on('complete', () => {
@@ -140,11 +145,11 @@ export default class Play extends BaseScene {
       Phaser.Input.Keyboard.KeyCodes.SHIFT,
     );
 
-    this.input.keyboard.on('keydown-SPACE', (evt) => {
+    this.input.keyboard.on('keydown-SPACE', (evt: KeyboardEvent) => {
       evt.preventDefault();
 
       if (document.activeElement !== this.game.canvas) {
-        document.activeElement?.blur?.();
+        (document.activeElement as HTMLElement)?.blur?.();
         this.game.canvas.focus(); // NOOP
       }
 
@@ -152,14 +157,14 @@ export default class Play extends BaseScene {
     });
 
     this.input.on('pointerup', () => {
-      this.saveBuild('queue');
+      void this.saveBuild('queue');
     });
 
     this.input.keyboard.on('keydown-R', () => this.restart());
 
     this.input.keyboard.on('keydown-K', () => {
       this.parts.clear(true, true);
-      this.saveBuild();
+      void this.saveBuild();
     });
 
     this.input.keyboard.on('keydown-T', () => {
@@ -202,7 +207,7 @@ export default class Play extends BaseScene {
     });
   }
 
-  precheckMaxItems(additionalCount) {
+  precheckMaxItems(additionalCount: number) {
     if (this.parts.getLength() + additionalCount > MAX_PARTS) {
       this.showFlash('MAX ITEM LIMIT EXCEEDED');
       return true;
@@ -284,7 +289,7 @@ export default class Play extends BaseScene {
     }
   }
 
-  async saveBuild(type) {
+  async saveBuild(type?: 'queue' | 'flush') {
     if (type === 'queue') await this.buildSaver.queueSave(this.parts);
     else if (type === 'flush') await this.buildSaver.queueSave.flush();
     else await this.buildSaver.save(this.parts);
@@ -292,6 +297,7 @@ export default class Play extends BaseScene {
     this.setCachedBuildId();
   }
 
+  cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   create() {
     // CAMERA
 
@@ -309,8 +315,8 @@ export default class Play extends BaseScene {
 
     // GROUPS
 
-    this.parts = this.add.group();
-    this.terrainGroup = this.add.group();
+    this.parts = this.add.group() as unknown as typeof this.parts;
+    this.terrainGroup = this.add.group() as unknown as typeof this.terrainGroup;
 
     // WORLD
 
@@ -372,7 +378,7 @@ export default class Play extends BaseScene {
     this.setRunning(false);
   }
 
-  update(_t, delta) {
+  update(_t: number, delta: number) {
     this.stats?.update();
 
     const camera = this.cameras.main;
@@ -392,6 +398,7 @@ export default class Play extends BaseScene {
 
   shutdown() {
     this.tm?.destroy();
+    // @ts-expect-error shutdown type
     this.tm = null;
   }
 }

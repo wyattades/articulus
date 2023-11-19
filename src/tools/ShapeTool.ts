@@ -12,7 +12,6 @@ export default class ShapeTool extends BoxTool {
 
   shape?: Part;
 
-  // @ts-expect-error override method
   createShape(): ObjectInstance {
     return new this.ShapeClass!(this.scene, 0, 0);
   }

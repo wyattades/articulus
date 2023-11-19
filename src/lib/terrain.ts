@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 
 import { Matter } from 'lib/physics';
-import { config } from 'src/const';
 import { midpoint } from 'lib/utils';
+import { config } from 'src/const';
+import type { AnyScene } from 'src/scenes';
 
 // const retry = (fn, maxAttempts = 16) => {
 //   let err;
@@ -18,7 +19,7 @@ import { midpoint } from 'lib/utils';
 //   throw err;
 // };
 
-const minMax = (items) => {
+const minMax = (items: number[]) => {
   let min = Infinity;
   let max = -Infinity;
   for (const v of items) {
@@ -28,7 +29,12 @@ const minMax = (items) => {
   return { min, max };
 };
 
-const terrain = (width, height, displace, roughness = 0.6) => {
+const terrain = (
+  width: number,
+  height: number,
+  displace: number,
+  roughness = 0.6,
+) => {
   const points = [],
     // Gives us a power of 2 based on our width
     power = 2 ** Math.ceil(Math.log(width) / Math.log(2));
@@ -52,7 +58,7 @@ const terrain = (width, height, displace, roughness = 0.6) => {
   return points;
 };
 
-const randMap = (width, height, size = 10) => {
+const randMap = (width: number, height: number, size = 10) => {
   const hMap = terrain(width, height, height / 2);
 
   const { min: minH, max: maxH } = minMax(hMap);
@@ -87,10 +93,14 @@ const randMap = (width, height, size = 10) => {
 };
 
 export class Terrain extends Phaser.GameObjects.Graphics {
-  /**
-   * @param {Phaser.Scene} scene
-   */
-  constructor(scene, x = 0, y = 0) {
+  ix: number;
+  iy: number;
+  midY: number;
+  width: number;
+  height: number;
+  iPoints: Point[];
+
+  constructor(scene: AnyScene, x = 0, y = 0) {
     super(scene, { x, y });
     scene.add.existing(this);
 
@@ -122,6 +132,7 @@ export class Terrain extends Phaser.GameObjects.Graphics {
     this.updateGeomCache();
   }
 
+  _geom?: Phaser.Geom.Polygon;
   updateGeomCache() {
     if (!this.iPoints) return;
     const { x, y } = this;
@@ -134,7 +145,11 @@ export class Terrain extends Phaser.GameObjects.Graphics {
     return this._geom;
   }
 
-  enablePhysics(points) {
+  getBounds(): never {
+    throw new Error('Not implemented');
+  }
+
+  enablePhysics(points: Point[]) {
     const ix = this.x,
       iy = this.y;
 
@@ -147,7 +162,7 @@ export class Terrain extends Phaser.GameObjects.Graphics {
       },
     });
 
-    const body = this.body;
+    const body = this.body as unknown as FC.Body;
 
     // Get offset of center of mass and set the body to its correct position
     // https://github.com/liabru/matter-js/issues/211#issuecomment-184804576

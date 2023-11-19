@@ -1,4 +1,5 @@
-import { RefObject, useEffect, useRef } from 'react';
+import type { RefObject } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function useOnClickOutside(
   ref: RefObject<any>,
@@ -24,5 +25,5 @@ export function useOnClickOutside(
       document.removeEventListener('mousedown', listener);
       document.removeEventListener('touchstart', listener);
     };
-  }, []);
+  }, [ref]);
 }

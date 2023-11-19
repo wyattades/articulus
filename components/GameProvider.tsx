@@ -33,7 +33,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   useEffect(() => {
-    initGame();
+    void initGame();
   }, []);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       import.meta.webpackHot.accept('src/Game', async () => {
         if (!mounted) return;
         console.log('Accepting the updated "src/Game" module');
-        initGame();
+        void initGame();
       });
       return () => {
         mounted = false;
@@ -57,7 +57,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       const endGame = latestGame.current;
       if (endGame) {
         console.log('Unmount game:', endGame.id);
-        if (!endGame.destroyed) endGame.destroy();
+        if (!endGame.destroyed) void endGame.destroy();
       }
     };
   }, []);

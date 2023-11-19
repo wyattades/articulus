@@ -1,11 +1,11 @@
-import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
+import * as _ from 'lodash-es';
 
+import { minDistance } from 'lib/minDistance';
+import { EventManager } from 'lib/utils/eventManager';
+import { addHoverCursor } from 'lib/utils/phaser';
 import { Polygon } from 'src/objects/Polygon';
 import type { BaseScene } from 'src/scenes/Scene';
-import { minDistance } from 'lib/minDistance';
-import { addHoverCursor } from 'lib/utils/phaser';
-import { EventManager } from 'lib/utils/eventManager';
 
 import Tool from './Tool';
 
@@ -42,7 +42,11 @@ export default class EditPointsTool extends Tool {
 
   unloaded = false;
 
-  constructor(scene: BaseScene, toolKey: string, readonly original: Polygon) {
+  constructor(
+    scene: BaseScene,
+    toolKey: string,
+    readonly original: Polygon,
+  ) {
     super(scene, toolKey);
 
     this.vertices = [];

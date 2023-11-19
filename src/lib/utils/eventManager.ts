@@ -13,8 +13,8 @@ export class EventManager {
       'on' in eventEmitter
         ? ['on', 'off']
         : 'addListener' in eventEmitter
-        ? ['addListener', 'removeListener']
-        : ['addEventListener', 'removeEventListener'];
+          ? ['addListener', 'removeListener']
+          : ['addEventListener', 'removeEventListener'];
 
     eventEmitter[on](eventName, cb);
     this.events.push({ off, eventName, eventEmitter, cb });

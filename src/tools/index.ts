@@ -1,4 +1,3 @@
-import { COLORS } from 'src/styles/theme';
 import {
   BackWheel,
   Ellipse,
@@ -12,18 +11,19 @@ import {
   Water,
   Wood,
 } from 'src/objects';
+import { COLORS } from 'src/styles/theme';
 
-import DeleteTool from './DeleteTool';
-import LineTool from './LineTool';
-import PlaceTool from './PlaceTool';
-import ShapeTool, { EllipseTool } from './ShapeTool';
-import SelectTool from './SelectTool';
-import NavTool from './NavTool';
-import DragTool from './DragTool';
 import ControlsTool from './ControlsTool';
-import PenTool from './PenTool';
+import DeleteTool from './DeleteTool';
+import DragTool from './DragTool';
 import EditPointsTool from './EditPointsTool';
+import LineTool from './LineTool';
+import NavTool from './NavTool';
+import PenTool from './PenTool';
+import PlaceTool from './PlaceTool';
 import SelectPointsTool from './SelectPointsTool';
+import SelectTool from './SelectTool';
+import ShapeTool, { EllipseTool } from './ShapeTool';
 
 export { default as Tool } from './Tool';
 

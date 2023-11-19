@@ -41,7 +41,7 @@ export const AuthMenu: React.FC<{
       type="button"
       className="ui-tool-button ui-tool-button--light"
       onClick={() => {
-        signIn('discord', {
+        void signIn('discord', {
           callbackUrl: window.location.href,
         });
       }}

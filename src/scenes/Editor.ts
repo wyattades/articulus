@@ -1,8 +1,6 @@
 import Phaser from 'phaser';
 
-import ToolManager from 'src/tools/ToolManager';
 import { MapSaver, settingsSaver } from 'lib/saver';
-import { EDITOR_TOOL_TYPES } from 'src/tools';
 import {
   fitCameraToObjs,
   groupByIntersection,
@@ -10,15 +8,19 @@ import {
 } from 'lib/utils/phaser';
 import { config } from 'src/const';
 import { Polygon } from 'src/objects/Polygon';
+import { EDITOR_TOOL_TYPES } from 'src/tools';
+import ToolManager from 'src/tools/ToolManager';
 
+import type { Part } from 'src/objects';
+
+import type { ObjectsGroup } from './Scene';
 import { BaseScene } from './Scene';
 
 export default class Editor extends BaseScene {
-  /** @type {MapSaver} */
-  mapSaver;
+  mapSaver!: MapSaver;
+  mapKey?: string;
 
-  /** @type {ToolManager} */
-  tm;
+  tm!: ToolManager;
 
   constructor() {
     super({
@@ -33,7 +35,7 @@ export default class Editor extends BaseScene {
     });
   }
 
-  init(data) {
+  init(data: { mapKey?: string }) {
     this.mapKey = data.mapKey;
 
     this.mapSaver = new MapSaver({ slug: this.mapKey });
@@ -41,6 +43,7 @@ export default class Editor extends BaseScene {
     this.selected = [];
   }
 
+  cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   createListeners() {
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -56,9 +59,11 @@ export default class Editor extends BaseScene {
   }
 
   iGridSize = 10 * config.gameScale;
-  gridSize;
+  gridSize: number | null = null;
 
   duplicateSelected() {
+    if (!this.selected) return;
+
     const offset = 10;
     const newObjs = this.selected.map((obj) => {
       const newObj = obj.clone();
@@ -72,6 +77,8 @@ export default class Editor extends BaseScene {
   }
 
   mergeSelected() {
+    if (!this.selected) return;
+
     const groups = groupByIntersection(this.selected);
 
     let someMerged = false;
@@ -98,7 +105,9 @@ export default class Editor extends BaseScene {
     this.events.emit('setSelected', resultObjs);
   }
 
-  enableSnapping(enabled) {
+  gridObj!: Phaser.GameObjects.Grid;
+
+  enableSnapping(enabled: boolean) {
     settingsSaver.set('snapping', enabled);
 
     this.events.emit('setGridSnapping', enabled);
@@ -111,7 +120,7 @@ export default class Editor extends BaseScene {
   get snappingEnabled() {
     return !!this.gridSize !== this.modifierKey.isDown;
   }
-  snapToGrid(obj) {
+  snapToGrid(obj: Part) {
     if (this.snappingEnabled) {
       const gridSize = this.iGridSize;
       const offsetX = obj.originX != null ? obj.originX * obj.width : 0;
@@ -128,7 +137,7 @@ export default class Editor extends BaseScene {
     if (force) {
       await this.mapSaver.save(this.parts);
     } else {
-      this.mapSaver.queueSave(this.parts);
+      void this.mapSaver.queueSave(this.parts);
     }
   }
 
@@ -164,20 +173,25 @@ export default class Editor extends BaseScene {
     );
     this.enableSnapping(!!settingsSaver.get('snapping'));
 
-    this.parts = this.add.group();
+    this.parts = this.add.group() as unknown as ObjectsGroup<Part>;
 
     if (this.mapKey)
-      this.mapSaver.load().then((mapData) => {
-        if (!this.scene.isActive()) return;
+      this.mapSaver
+        .load()
+        .then((mapData) => {
+          if (!this.scene.isActive()) return;
 
-        if (mapData) {
-          MapSaver.loadEditorParts(mapData, this.parts);
+          if (mapData) {
+            MapSaver.loadEditorParts(mapData, this.parts);
 
-          fitCameraToObjs(this.cameras.main, this.parts.getChildren());
-        }
+            fitCameraToObjs(this.cameras.main, this.parts.getChildren());
+          }
 
-        this.events.emit('mapLoaded');
-      });
+          this.events.emit('mapLoaded');
+        })
+        .catch((err) => {
+          console.error('map load error:', err);
+        });
 
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 
@@ -185,7 +199,7 @@ export default class Editor extends BaseScene {
     this.input.keyboard.on('keyup', () => this.saveLevel());
   }
 
-  update(_t, delta) {
+  update(_t: number, delta: number) {
     this.stats?.update();
 
     const CAMERA_SPEED = (0.4 * delta) / this.cameras.main.zoom;
@@ -204,6 +218,7 @@ export default class Editor extends BaseScene {
 
   shutdown() {
     this.tm?.destroy();
+    // @ts-expect-error shutdown type
     this.tm = null;
   }
 }

@@ -1,17 +1,17 @@
 import { useEffect, useRef } from 'react';
 
-import { useGame } from 'components/GameProvider';
-import { colorInverse, colorIntToHex } from 'lib/utils/color';
-import { EDITOR_TOOL_TYPES, TOOLS } from 'src/tools';
-import { useScene } from 'components/game/Scene';
-import { useSubscribe } from 'hooks/useSubscribe';
-import { PointerPos } from 'components/PointerPos';
-import { settingsSaver } from 'lib/saver';
-import EditorScene from 'src/scenes/Editor';
-import { FlashText } from 'components/FlashText';
-import { Polygon } from 'src/objects/Polygon';
 import { AuthMenu } from 'components/Auth';
+import { FlashText } from 'components/FlashText';
+import { useGame } from 'components/GameProvider';
+import { PointerPos } from 'components/PointerPos';
+import { useScene } from 'components/game/Scene';
 import { useOnClickOutside } from 'hooks/useOnClickOutside';
+import { useSubscribe } from 'hooks/useSubscribe';
+import { settingsSaver } from 'lib/saver';
+import { colorIntToHex, colorInverse } from 'lib/utils/color';
+import { Polygon } from 'src/objects/Polygon';
+import type EditorScene from 'src/scenes/Editor';
+import { EDITOR_TOOL_TYPES, TOOLS } from 'src/tools';
 
 const NameInput: React.FC<{
   value: string;

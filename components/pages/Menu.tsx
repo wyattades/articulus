@@ -1,22 +1,27 @@
-import { useState } from 'react';
 import * as _ from 'lodash-es';
-import { useAsync } from 'react-use';
 import { useSession } from 'next-auth/react';
+import { useState } from 'react';
+import { useAsync } from 'react-use';
 
-import { useGame } from 'components/GameProvider';
-import { MapSaver } from 'lib/saver';
-import { InlineInput } from 'components/form/InlineInput';
 import { AuthMenu } from 'components/Auth';
+import { useGame } from 'components/GameProvider';
+import { InlineInput } from 'components/form/InlineInput';
+import { MapSaver } from 'lib/saver';
 
 const useMapMetas = () => {
   const [i, setI] = useState(0);
-  const data = useAsync(() => MapSaver.loadMapsMeta(), [i]).value || null;
+  const { value: allLevels, error } = useAsync(
+    () => MapSaver.loadMapsMeta(),
+    [i],
+  );
 
-  return [data, async () => setI((prev) => prev + 1)] as const;
+  const refreshLevels = async () => setI((prev) => prev + 1);
+
+  return { allLevels, error, refreshLevels };
 };
 
 const MenuUI: React.FC = () => {
-  const [allLevels, revalidateLevels] = useMapMetas();
+  const { allLevels, error, refreshLevels } = useMapMetas();
 
   const groups = _.groupBy(allLevels, (l) => (l.mine ? 'mine' : 'public'));
 
@@ -24,11 +29,13 @@ const MenuUI: React.FC = () => {
 
   const session = useSession();
 
+  if (error) throw error;
+
   return (
     <div className="ui-wrap container py-8 px-6">
       <div className="flex justify-between items-start mb-8">
         <div className="flex-1">
-          <AuthMenu onLogout={revalidateLevels} />
+          <AuthMenu onLogout={refreshLevels} />
         </div>
 
         <h1 className="ui-markup text-5xl text-center">Articulus</h1>
@@ -80,8 +87,8 @@ const MenuUI: React.FC = () => {
                               value={level.name || '???'}
                               className="ui-markup -mx-2 text-xl mb-4"
                               disabled={!level.mine}
-                              onUpdate={async (newName) => {
-                                await new MapSaver(level).setName(newName);
+                              onUpdate={(newName) => {
+                                void new MapSaver(level).setName(newName);
                               }}
                             />
                             {!level.mine ? (
@@ -119,13 +126,15 @@ const MenuUI: React.FC = () => {
                                     if (
                                       // eslint-disable-next-line no-alert
                                       !window.confirm(
-                                        `Are you sure you want to delete "${level.name}"?`,
+                                        `Are you sure you want to delete "${
+                                          level.name || '<new map>'
+                                        }"?`,
                                       )
                                     )
                                       return;
 
                                     await new MapSaver(level).delete();
-                                    await revalidateLevels();
+                                    await refreshLevels();
                                   }}
                                 >
                                   Delete
@@ -142,7 +151,7 @@ const MenuUI: React.FC = () => {
                                       await new MapSaver(level).setPublic(
                                         e.target.checked,
                                       );
-                                      await revalidateLevels();
+                                      await refreshLevels();
                                     }}
                                   />{' '}
                                   Is Public?

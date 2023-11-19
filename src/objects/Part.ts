@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
 
-import { midpoint, nextId, setNextId, valuesIterator } from 'lib/utils';
-import { getBoundPoints } from 'lib/utils/phaser';
-import { adjustBrightness } from 'lib/utils/color';
-import { deleteConnections, Matter } from 'lib/physics';
-import { config, CONNECTOR_RADIUS } from 'src/const';
-import type { BaseScene } from 'src/scenes/Scene';
 import type { Geom } from 'lib/geom';
+import { Matter, deleteConnections } from 'lib/physics';
+import { midpoint, nextId, setNextId, valuesIterator } from 'lib/utils';
+import { adjustBrightness } from 'lib/utils/color';
+import { getBoundPoints } from 'lib/utils/phaser';
+import { CONNECTOR_RADIUS, config } from 'src/const';
+import type { BaseScene } from 'src/scenes/Scene';
 
 const texturePadding = 20 * config.gameScale;
 
@@ -250,11 +250,12 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
   }
 
   clone() {
-    return this.klass.fromJSON(this.scene, this.toJSON());
+    return this.klass.fromJSON(this.scene, this.toSaveJSON());
   }
 
-  // @ts-expect-error override method returntype
-  toJSON() {
+  toSaveJSON(): { type: string } & Record<string, unknown>;
+
+  toSaveJSON() {
     return {
       type: this.klass.type,
       x: this.x,
@@ -267,7 +268,7 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
 
   static fromJSON(
     scene: BaseScene,
-    { type: _t, x, y, ...rest }: ReturnType<typeof this.prototype.toJSON>,
+    { type: _t, x, y, ...rest }: ReturnType<typeof this.prototype.toSaveJSON>,
   ) {
     const Klass = this as any;
 

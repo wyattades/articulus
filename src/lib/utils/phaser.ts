@@ -1,18 +1,21 @@
-import Phaser from 'phaser';
-import * as _ from 'lodash-es';
 import Flatten from '@flatten-js/core';
+import * as _ from 'lodash-es';
+import Phaser from 'phaser';
 
-import type { Part } from 'src/objects';
-import type { BaseScene, DebugShapeType } from 'src/scenes/Scene';
-import { Geom, GEOM_NAMES } from 'lib/geom';
+import type { Geom } from 'lib/geom';
+import { GEOM_NAMES } from 'lib/geom';
 import { intersectsGeoms } from 'lib/intersects';
-import { TEMP_RECT2 } from 'lib/utils/temp';
 import {
   factoryRotateAround,
   firstIterableValue,
   getEllipsePoints,
   validPoint,
 } from 'lib/utils';
+import { TEMP_RECT2 } from 'lib/utils/temp';
+import type { Part } from 'src/objects';
+import type { BaseScene, DebugShapeType } from 'src/scenes/Scene';
+
+import type { Terrain } from '../terrain';
 
 function* iterateBoundPoints(rect: Phaser.Geom.Rectangle, angle: number) {
   const rotateAround = factoryRotateAround(
@@ -32,7 +35,7 @@ export const getBoundPoints = (
 ): Point[] => Array.from(iterateBoundPoints(rect, angle));
 
 export const getObjectsBounds = (
-  objs: Part[],
+  objs: (Phaser.GameObjects.Sprite | Terrain | Part)[],
   bounds = new Phaser.Geom.Rectangle(),
 ): Phaser.Geom.Rectangle | null => {
   const o = objs[0];
@@ -57,7 +60,7 @@ export const getObjectsBounds = (
 
 export const fitCameraToObjs = (
   camera: Phaser.Cameras.Scene2D.Camera,
-  objs: Part[],
+  objs: (Part | Terrain | Phaser.GameObjects.Sprite)[],
   { padding = 50, minWidth = 800 } = {},
 ) => {
   if (objs.length === 0) return;
@@ -186,7 +189,12 @@ export const getTopObject = (scene: BaseScene, x: number, y: number) => {
 };
 
 export const mergeGeoms = (
-  geoms: (Phaser.Geom.Polygon | Phaser.Geom.Rectangle | Phaser.Geom.Ellipse)[],
+  geoms: (
+    | Phaser.Geom.Polygon
+    | Phaser.Geom.Rectangle
+    | Phaser.Geom.Ellipse
+    | Geom
+  )[],
 ): Phaser.Geom.Polygon => {
   if (geoms.length < 2) throw new Error(`mergeGeoms size must be >= 2`);
 
@@ -275,10 +283,10 @@ export const groupByIntersection = (objs: Part[]): Part[][] => {
 
 export const intersectsOtherSolid = (
   objects: Part[],
-  terrains: Part[] | undefined | null,
+  terrains: Terrain[] | undefined | null,
   obj: Part,
   ignoreObjects?: Part[],
-): Part | null => {
+): Part | Terrain | null => {
   let objGeom;
 
   if (!obj.noCollide) {
@@ -296,7 +304,7 @@ export const intersectsOtherSolid = (
 
   if (terrains?.length) {
     for (const part of terrains) {
-      if (intersectsGeoms((objGeom ||= obj.geom), part.geom)) {
+      if (part.geom && intersectsGeoms((objGeom ||= obj.geom), part.geom)) {
         return part;
       }
     }
