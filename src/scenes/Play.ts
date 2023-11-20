@@ -182,29 +182,33 @@ export default class Play extends BaseScene {
       this.restart();
     });
 
-    Matter.Events.on(this.matter.world.engine, 'collisionActive', (event) => {
-      for (const pair of event.pairs) {
-        const a = pair.bodyA.gameObject;
-        const b = pair.bodyB.gameObject;
-        if (!a || !b) continue;
-        if (
-          (a instanceof GoalObject && b instanceof GoalZone) ||
-          (b instanceof GoalObject && a instanceof GoalZone)
-        ) {
-          const [go, gz] = a instanceof GoalObject ? [a, b] : [b, a];
+    Matter.Events.on(
+      this.matter.world.engine,
+      'collisionActive',
+      (event: { pairs: Matter.Pair[] }) => {
+        for (const pair of event.pairs) {
+          const a = (pair.bodyA as FC.Body).gameObject;
+          const b = (pair.bodyB as FC.Body).gameObject;
+          if (!a || !b) continue;
           if (
-            Phaser.Geom.Rectangle.ContainsRect(
-              gz.getBounds(TEMP_RECT),
-              go.getBounds(TEMP_RECT2),
-            )
+            (a instanceof GoalObject && b instanceof GoalZone) ||
+            (b instanceof GoalObject && a instanceof GoalZone)
           ) {
-            // TODO: better win state
-            this.showFlash('YOU WIN!', 'win');
-            this.setRunning(false);
+            const [go, gz] = a instanceof GoalObject ? [a, b] : [b, a];
+            if (
+              Phaser.Geom.Rectangle.ContainsRect(
+                gz.getBounds(TEMP_RECT),
+                go.getBounds(TEMP_RECT2),
+              )
+            ) {
+              // TODO: better win state
+              this.showFlash('YOU WIN!', 'win');
+              this.setRunning(false);
+            }
           }
         }
-      }
-    });
+      },
+    );
   }
 
   precheckMaxItems(additionalCount: number) {
@@ -247,7 +251,8 @@ export default class Play extends BaseScene {
   cachedBuildIds() {
     try {
       const raw = localStorage.getItem('articulus:map_latest_builds');
-      const obj = raw && JSON.parse(raw);
+      const obj =
+        raw && (JSON.parse(raw) as Record<string, string | undefined> | null);
       if (obj && typeof obj === 'object') return obj;
     } catch {}
     return {};

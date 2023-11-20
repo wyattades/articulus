@@ -23,6 +23,24 @@ dependencies:
   '@trpc/server':
     specifier: ^10.9.0
     version: 10.43.6
+  '@types/lodash-es':
+    specifier: ^4.17.11
+    version: 4.17.11
+  '@types/matter-js':
+    specifier: ~0.18
+    version: 0.18.5
+  '@types/node':
+    specifier: ^18.11.18
+    version: 18.18.10
+  '@types/react':
+    specifier: ^18.2.37
+    version: 18.2.37
+  '@types/stats.js':
+    specifier: ^0.17.3
+    version: 0.17.3
+  '@types/webpack-env':
+    specifier: ^1.18.4
+    version: 1.18.4
   autoprefixer:
     specifier: ^10.4.13
     version: 10.4.16(postcss@8.4.31)
@@ -73,21 +91,6 @@ dependencies:
     version: 3.22.4
 
 devDependencies:
-  '@types/lodash-es':
-    specifier: ^4.17.11
-    version: 4.17.11
-  '@types/matter-js':
-    specifier: 0.19.4
-    version: 0.19.4
-  '@types/node':
-    specifier: ^18.11.18
-    version: 18.18.10
-  '@types/react':
-    specifier: ^18.2.37
-    version: 18.2.37
-  '@types/stats.js':
-    specifier: ^0.17.3
-    version: 0.17.3
   '@wyattades/eslint-config':
     specifier: ^0.15.0
     version: 0.15.0(eslint@8.54.0)(prettier@3.1.0)(react@18.2.0)(typescript@5.2.2)
@@ -471,25 +474,25 @@ packages:
     resolution: {integrity: sha512-eCw8FYAWHt2DDl77s+AMLLzPn310LKohruumpucZI4oOFJkIgnlaJcy23OKMJxx4r9PeTF13Gv6w+jqjWQaYUg==}
     dependencies:
       '@types/lodash': 4.14.201
-    dev: true
+    dev: false
 
   /@types/lodash@4.14.201:
     resolution: {integrity: sha512-y9euML0cim1JrykNxADLfaG0FgD1g/yTHwUs/Jg9ZIU7WKj2/4IW9Lbb1WZbvck78W/lfGXFfe+u2EGfIJXdLQ==}
-    dev: true
+    dev: false
 
-  /@types/matter-js@0.19.4:
-    resolution: {integrity: sha512-CHKobJ2Kr9GJqr1uvoL4v3DCCgf44b0qJcOctbHtkmPBDMMN0ORnIwNS0WNFxiD0YqtySZH7IgaefGFZ0NUcMA==}
-    dev: true
+  /@types/matter-js@0.18.5:
+    resolution: {integrity: sha512-CV8m/FUmjmFNFcI7fUnsKcCLeqbf0kzWdKOTLGrpfKwWwrF6ggLaQlHNsg8267TkkiUAPoXY/7q6H9qwmR5TZg==}
+    dev: false
 
   /@types/node@18.18.10:
     resolution: {integrity: sha512-luANqZxPmjTll8bduz4ACs/lNTCLuWssCyjqTY9yLdsv1xnViQp3ISKwsEWOIecO13JWUqjVdig/Vjjc09o8uA==}
     dependencies:
       undici-types: 5.26.5
-    dev: true
+    dev: false
 
   /@types/prop-types@15.7.10:
     resolution: {integrity: sha512-mxSnDQxPqsZxmeShFH+uwQ4kO4gcJcGahjjMFeLbKE95IAZiiZyiEepGZjtXJ7hN/yfu0bu9xN2ajcU0JcxX6A==}
-    dev: true
+    dev: false
 
   /@types/react@18.2.37:
     resolution: {integrity: sha512-RGAYMi2bhRgEXT3f4B92WTohopH6bIXw05FuGlmJEnv/omEn190+QYEIYxIAuIBdKgboYYdVved2p1AxZVQnaw==}
@@ -497,11 +500,11 @@ packages:
       '@types/prop-types': 15.7.10
       '@types/scheduler': 0.16.6
       csstype: 3.1.2
-    dev: true
+    dev: false
 
   /@types/scheduler@0.16.6:
     resolution: {integrity: sha512-Vlktnchmkylvc9SnwwwozTv04L/e1NykF5vgoQ0XTmI8DD+wxfjQuHuvHS3p0r2jz2x2ghPs2h1FVeDirIteWA==}
-    dev: true
+    dev: false
 
   /@types/semver@7.5.5:
     resolution: {integrity: sha512-+d+WYC1BxJ6yVOgUgzK8gWvp5qF8ssV5r4nsDcZWKRWcDQLQ619tvWAxJQYGgBrO1MnLJC7a5GtiYsAoQ47dJg==}
@@ -509,7 +512,11 @@ packages:
 
   /@types/stats.js@0.17.3:
     resolution: {integrity: sha512-pXNfAD3KHOdif9EQXZ9deK82HVNaXP5ZIF5RP2QG6OQFNTaY2YIetfrE9t528vEreGQvEPRDDc8muaoYeK0SxQ==}
-    dev: true
+    dev: false
+
+  /@types/webpack-env@1.18.4:
+    resolution: {integrity: sha512-I6e+9+HtWADAWeeJWDFQtdk4EVSAbj6Rtz4q8fJ7mSr1M0jzlFcs8/HZ+Xb5SHzVm1dxH7aUiI+A8kA8Gcrm0A==}
+    dev: false
 
   /@typescript-eslint/eslint-plugin@6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.54.0)(typescript@5.2.2):
     resolution: {integrity: sha512-uXnpZDc4VRjY4iuypDBKzW1rz9T5YBBK0snMn8MaTSNd2kMlj50LnLBABELjJiOL5YHk7ZD8hbSpI9ubzqYI0w==}
@@ -1104,6 +1111,7 @@ packages:
 
   /csstype@3.1.2:
     resolution: {integrity: sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==}
+    dev: false
 
   /damerau-levenshtein@1.0.8:
     resolution: {integrity: sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==}
@@ -3553,7 +3561,7 @@ packages:
 
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
-    dev: true
+    dev: false
 
   /untildify@4.0.0:
     resolution: {integrity: sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==}

@@ -6,6 +6,7 @@ import { midpoint, nextId, setNextId, valuesIterator } from 'lib/utils';
 import { adjustBrightness } from 'lib/utils/color';
 import { getBoundPoints } from 'lib/utils/phaser';
 import { CONNECTOR_RADIUS, config } from 'src/const';
+import type { Rectangle } from 'src/objects/Shape';
 import type { BaseScene } from 'src/scenes/Scene';
 
 const texturePadding = 20 * config.gameScale;
@@ -220,10 +221,13 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
     const iRotation = this.rotation;
 
     // NOTE: this changes this.origin (I think)
-    this.scene.matter.add.gameObject(this as any, {
-      shape: physicsShape,
-      ...(this.physicsOptions || {}),
-    });
+    this.scene.matter.add.gameObject(
+      this as unknown as Phaser.GameObjects.GameObject,
+      {
+        shape: physicsShape,
+        ...(this.physicsOptions || {}),
+      },
+    );
 
     const body = this.body!;
 
@@ -270,13 +274,13 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
     scene: BaseScene,
     { type: _t, x, y, ...rest }: ReturnType<typeof this.prototype.toSaveJSON>,
   ) {
-    const Klass = this as any;
+    const Klass = this as typeof Rectangle;
 
-    const obj = new Klass(scene, x, y);
+    const obj = new Klass(scene, x as number, y as number);
 
     Object.assign(obj, rest);
 
-    return obj;
+    return obj as typeof this.prototype;
   }
 
   getConnectedObjects<AnchorId extends number | null | undefined = undefined>(
@@ -297,7 +301,7 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
       const objs = Object.values(joint.bodies).map((r) => r[1].gameObject);
 
       if (!includeSelf) {
-        const i = objs.indexOf(this as any);
+        const i = objs.indexOf(this);
         if (i >= 0) objs.splice(i, 1);
       }
 

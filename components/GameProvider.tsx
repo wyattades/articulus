@@ -37,10 +37,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
-    // @ts-expect-error bad ImportMeta
     if (process.env.NODE_ENV === 'development' && import.meta.webpackHot) {
       let mounted = true;
-      // @ts-expect-error bad ImportMeta
       import.meta.webpackHot.accept('src/Game', async () => {
         if (!mounted) return;
         console.log('Accepting the updated "src/Game" module');
