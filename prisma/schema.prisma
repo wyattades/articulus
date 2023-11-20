@@ -1,12 +1,11 @@
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider  = "postgres"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["extendedWhereUnique"]
+  provider = "prisma-client-js"
 }
 
 // next-auth boilerplate:
@@ -75,7 +74,7 @@ model GameMap {
   id       String  @id @default(cuid())
   slug     String  @unique
   userId   String  @map("user_id")
-  data     Json
+  data     Json    @db.JsonB
   name     String?
   isPublic Boolean @default(false) @map("is_public")
 
@@ -90,7 +89,7 @@ model GameMap {
 model GameBuild {
   id     String  @id @default(cuid())
   userId String  @map("user_id")
-  data   Json
+  data   Json    @db.JsonB
   name   String?
 
   createdAt DateTime @default(now()) @map("created_at")
