@@ -34,4 +34,13 @@ export class LocalDataSaver<T extends { [k in string]?: unknown }> {
     this.data[key] = value;
     this.save();
   }
+
+  clear() {
+    try {
+      localStorage.removeItem(this.storageKey);
+    } catch (err) {
+      console.error('LocalDataSaver.clear', err);
+    }
+    this._data = {};
+  }
 }

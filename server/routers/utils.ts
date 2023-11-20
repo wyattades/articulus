@@ -27,9 +27,10 @@ export const publicProcedure = t.procedure;
 
 export const protectedProcedure = t.procedure.use(
   t.middleware(async ({ next, ctx }) => {
-    if (!ctx.user) {
+    if (!ctx.user?.id) {
       throw new TRPCError({ code: 'UNAUTHORIZED' });
     }
+
     return next({
       ctx: {
         ...ctx,

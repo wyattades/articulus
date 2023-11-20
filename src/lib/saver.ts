@@ -13,7 +13,7 @@ import { deserializePhysics, serializePhysics } from 'lib/physics';
 import type { Terrain } from 'lib/terrain';
 import { trpc } from 'lib/trpc';
 import { LocalDataSaver } from 'lib/utils/localDataSaver';
-import type { AuthSession } from 'server/authConfig';
+import type { AuthSession } from 'server/auth';
 import type { ObjectInstance, Part } from 'src/objects';
 import { OBJECT_TYPE_MAP } from 'src/objects';
 import type { AnyScene } from 'src/scenes';
@@ -81,7 +81,6 @@ export const fromJSON = <T extends Part | Terrain>(
 
 const getUserId = async () => {
   const session = (await getSession()) as AuthSession | null;
-
   return session?.user?.id || null;
 };
 
@@ -339,6 +338,7 @@ export class MapSaver {
 
     const userId = await getUserId();
     if (!userId) {
+      console.log('saving map locally');
       unsavedMapStorage.set('objects', objects);
       return;
     }
@@ -360,7 +360,10 @@ export class MapSaver {
     });
 
     this.id = map.id;
+    this.slug = map.slug;
     this.meta = map;
+
+    unsavedMapStorage.clear();
 
     // TODO: put this somewhere else?
     const currentSlug = Router.pathname.match(/\/edit\/([^/]+)/)?.[1];
