@@ -48,8 +48,8 @@ export default class NavTool extends Tool {
   }
 
   handlePointerDown(
-    x: number,
-    y: number,
+    _x: number,
+    _y: number,
     { button, position }: Phaser.Input.Pointer,
   ) {
     // if (topObject) return;
@@ -68,7 +68,11 @@ export default class NavTool extends Tool {
     }
   }
 
-  handlePointerMove(x: number, y: number, { position }: Phaser.Input.Pointer) {
+  handlePointerMove(
+    _x: number,
+    _y: number,
+    { position }: Phaser.Input.Pointer,
+  ) {
     if (this.dragView) {
       const camera = this.scene.cameras.main;
 
@@ -82,7 +86,7 @@ export default class NavTool extends Tool {
     }
   }
 
-  handlePointerUp(x: number, y: number, { button }: Phaser.Input.Pointer) {
+  handlePointerUp(_x: number, _y: number, { button }: Phaser.Input.Pointer) {
     if (button === 2 || button === 1) {
       this.dragView = null;
       return false;
