@@ -10,7 +10,9 @@ import { validPoint } from 'lib/utils';
 // import { EventManager } from 'lib/utils/eventManager';
 import type { SerialPhysics } from 'lib/physics';
 import { deserializePhysics, serializePhysics } from 'lib/physics';
+import type { Terrain } from 'lib/terrain';
 import { trpc } from 'lib/trpc';
+import { LocalDataSaver } from 'lib/utils/localDataSaver';
 import type { AuthSession } from 'server/authConfig';
 import type { ObjectInstance, Part } from 'src/objects';
 import { OBJECT_TYPE_MAP } from 'src/objects';
@@ -18,8 +20,6 @@ import type { AnyScene } from 'src/scenes';
 import type EditorScene from 'src/scenes/Editor';
 import type PlayScene from 'src/scenes/Play';
 import type { BaseScene, ObjectsGroup } from 'src/scenes/Scene';
-
-import type { Terrain } from './terrain';
 
 type GameObjJson = {
   id: number;
@@ -42,6 +42,17 @@ type GameMapMeta = inferAsyncReturnType<
 type GameBuildMeta = inferAsyncReturnType<
   typeof trpc.gameBuilds.allMetas.query
 >[number];
+
+export const settingsSaver = new LocalDataSaver<{
+  snapping?: boolean;
+  debug?: boolean;
+}>('articulus:settings');
+
+const unsavedMapStorage = new LocalDataSaver<GameMapData>(
+  'articulus:unauthed-map',
+);
+
+export const UNSAVED_MAP_SLUG = '__unsaved__';
 
 export const fromJSON = <T extends Part | Terrain>(
   scene: BaseScene,
@@ -73,41 +84,6 @@ const getUserId = async () => {
 
   return session?.user?.id || null;
 };
-
-// TODO: use next-auth
-// let userIdPromise;
-// const getUserId = async (): Promise<User['id']> => {
-//   const uid = localStorage.getItem('articulus:user_id');
-//   if (typeof uid === 'string' && uid.length >= 6) return uid;
-
-//   let user = null;
-//   while (!user) {
-//     await new Promise((r) => setTimeout(r, 100));
-
-//     const username = window.prompt('Enter a username to continue');
-
-//     if (username) {
-//       // user = await findOrCreateBy('users', { username });
-
-//       user = await prisma.user.findFirst({
-//         where: {
-//           username,
-//         },
-//       });
-//       if (!user) {
-//         user = await prisma.user.create({
-//           data: {
-//             username,
-//           },
-//         });
-//       }
-//     }
-//   }
-
-//   localStorage.setItem('articulus:user_id', user.id);
-
-//   return user.id;
-// };
 
 /**
  * Objects within the scene's `worldBounds` and some reasonable padding
@@ -310,13 +286,23 @@ export class MapSaver {
   }
 
   async load(): Promise<GameMapData> {
-    if (!this.id && !this.slug) throw new Error('No gameMap id');
+    if ((!this.id && !this.slug) || this.slug === UNSAVED_MAP_SLUG) {
+      const objects = unsavedMapStorage.get('objects');
+      return {
+        objects: objects ?? [],
+      } as GameMapData;
+    }
 
     try {
-      const map = await trpc.gameMaps.get.query({
-        id: this.id ?? undefined,
-        slug: this.slug ?? undefined,
-      });
+      const map = await trpc.gameMaps.get.query(
+        this.id
+          ? { id: this.id }
+          : this.slug
+            ? { slug: this.slug }
+            : (() => {
+                throw new Error('No gameMap id');
+              })(),
+      );
 
       this.id = map.id;
       this.meta = _.omit(map, 'data');
@@ -352,12 +338,8 @@ export class MapSaver {
     });
 
     const userId = await getUserId();
-
     if (!userId) {
-      localStorage.setItem(
-        'articulus:unauthed-map',
-        JSON.stringify({ objects }),
-      );
+      unsavedMapStorage.set('objects', objects);
       return;
     }
 
@@ -389,36 +371,3 @@ export class MapSaver {
 
   queueSave = _.debounce(this.save.bind(this), 3000);
 }
-
-export const settingsSaver = new (class SettingsSaver {
-  static STORAGE_KEY = 'articulus:settings';
-
-  settings = this.load();
-
-  load() {
-    try {
-      const str = localStorage.getItem(SettingsSaver.STORAGE_KEY);
-      const obj = str && (JSON.parse(str) as Record<string, unknown> | null);
-      if (obj && typeof obj === 'object') return obj;
-    } catch {}
-    return {};
-  }
-
-  save() {
-    try {
-      localStorage.setItem(
-        SettingsSaver.STORAGE_KEY,
-        JSON.stringify(this.settings),
-      );
-    } catch {}
-  }
-
-  get(key: string) {
-    return this.settings[key];
-  }
-
-  set(key: string, value: unknown) {
-    this.settings[key] = value;
-    this.save();
-  }
-})();

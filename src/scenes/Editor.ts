@@ -175,23 +175,22 @@ export default class Editor extends BaseScene {
 
     this.parts = this.add.group() as unknown as ObjectsGroup<Part>;
 
-    if (this.mapKey)
-      this.mapSaver
-        .load()
-        .then((mapData) => {
-          if (!this.scene.isActive()) return;
+    this.mapSaver
+      .load()
+      .then((mapData) => {
+        if (!this.scene.isActive()) return;
 
-          if (mapData) {
-            MapSaver.loadEditorParts(mapData, this.parts);
+        if (mapData) {
+          MapSaver.loadEditorParts(mapData, this.parts);
 
-            fitCameraToObjs(this.cameras.main, this.parts.getChildren());
-          }
+          fitCameraToObjs(this.cameras.main, this.parts.getChildren());
+        }
 
-          this.events.emit('mapLoaded');
-        })
-        .catch((err) => {
-          console.error('map load error:', err);
-        });
+        this.events.emit('mapLoaded');
+      })
+      .catch((err) => {
+        console.error('map load error:', err);
+      });
 
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 

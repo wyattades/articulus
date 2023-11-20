@@ -1,3 +1,4 @@
+import { useSession } from 'next-auth/react';
 import { useEffect, useRef } from 'react';
 
 import { AuthMenu } from 'components/Auth';
@@ -7,7 +8,7 @@ import { PointerPos } from 'components/PointerPos';
 import { useScene } from 'components/game/Scene';
 import { useOnClickOutside } from 'hooks/useOnClickOutside';
 import { useSubscribe } from 'hooks/useSubscribe';
-import { settingsSaver } from 'lib/saver';
+import { UNSAVED_MAP_SLUG, settingsSaver } from 'lib/saver';
 import { colorIntToHex, colorInverse } from 'lib/utils/color';
 import { Polygon } from 'src/objects/Polygon';
 import type EditorScene from 'src/scenes/Editor';
@@ -44,6 +45,8 @@ const NameInput: React.FC<{
 const EditUI: React.FC<{ mapKey?: string }> = () => {
   const game = useGame();
   const editScene = useScene<EditorScene>();
+
+  const authenticated = !!useSession().data?.user;
 
   const gridSnapping = useSubscribe(
     editScene.events,
@@ -85,7 +88,9 @@ const EditUI: React.FC<{ mapKey?: string }> = () => {
     // }
     // TODO: prompt for map name
     await editScene.saveLevel(true);
-    return editScene.mapSaver.slug;
+
+    if (authenticated) return editScene.mapSaver.slug;
+    else return UNSAVED_MAP_SLUG;
   };
 
   return (

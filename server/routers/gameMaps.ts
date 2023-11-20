@@ -1,4 +1,3 @@
-import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import type { GameMapData } from 'lib/saver';
@@ -157,19 +156,19 @@ export default router({
 
   get: publicProcedure
     .input(
-      z.object({
-        id: z.string().optional(),
-        slug: z.string().optional(),
-      }),
+      z
+        .object({
+          id: z.string().min(1),
+          slug: z.never().optional(),
+        })
+        .or(
+          z.object({
+            id: z.never().optional(),
+            slug: z.string().min(1),
+          }),
+        ),
     )
     .query(async ({ ctx: { user }, input: { id, slug } }) => {
-      if (!id && !slug) {
-        throw new TRPCError({
-          message: 'Either id or slug must be specified',
-          code: 'BAD_REQUEST',
-        });
-      }
-
       const map = await db.gameMap.findFirstOrThrow({
         where: {
           ...(id
