@@ -1,4 +1,4 @@
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { Prisma } from '@prisma/client';
 import { createNextApiHandler } from '@trpc/server/adapters/next';
 
 import { appRouter } from 'server/routers';
@@ -14,7 +14,7 @@ export default createNextApiHandler({
 
     // convert Prisma error codes to equivalent TRPC error
     const cause = error?.cause;
-    if (cause instanceof PrismaClientKnownRequestError) {
+    if (cause && cause instanceof Prisma.PrismaClientKnownRequestError) {
       if (cause.name === 'NotFoundError') {
         // @ts-expect-error change the error code
         error.code = 'NOT_FOUND';
