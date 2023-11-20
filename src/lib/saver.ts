@@ -11,7 +11,7 @@ import { validPoint } from 'lib/utils';
 import type { SerialPhysics } from 'lib/physics';
 import { deserializePhysics, serializePhysics } from 'lib/physics';
 import { trpc } from 'lib/trpc';
-import type { AuthSession } from 'pages/api/auth/[...nextauth]';
+import type { AuthSession } from 'server/authConfig';
 import type { ObjectInstance, Part } from 'src/objects';
 import { OBJECT_TYPE_MAP } from 'src/objects';
 import type { AnyScene } from 'src/scenes';
