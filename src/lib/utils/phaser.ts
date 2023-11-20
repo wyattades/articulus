@@ -90,10 +90,10 @@ export const addHoverCursor = (
 ) => {
   const canvas = obj.scene.game.canvas;
   obj
-    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
+    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER as string, () => {
       canvas.style.cursor = cursor;
     })
-    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => {
+    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT as string, () => {
       canvas.style.cursor = 'auto';
     });
 };
@@ -216,14 +216,14 @@ export const mergeGeoms = (
           p.y,
         ]),
       );
-    throw new Error(
-      `Unsupported type in mergeGeoms: ${GEOM_NAMES[(geom as any).type]}`,
-    );
+    throw new Error(`Unsupported type in mergeGeoms: ${GEOM_NAMES[geom.type]}`);
   });
 
   shapes = shapes.map((s) => {
     // make sure all polygons orient the same way (the orientation we choose is arbitrary)
-    const orient = firstIterableValue(s.faces).orientation();
+    const orient = firstIterableValue(
+      s.faces as Set<Flatten.Face>,
+    )!.orientation();
     if (orient === Flatten.ORIENTATION.CW) {
       return s.reverse();
     }
@@ -247,7 +247,7 @@ export const mergeGeoms = (
 
 export const groupByIntersection = (objs: Part[]): Part[][] => {
   const intersects = _.memoize(
-    (a, b) => intersectsGeoms(a.geom, b.geom),
+    (a: Part, b: Part) => intersectsGeoms(a.geom, b.geom),
     (a, b) => [a.id, b.id].sort().join(':'),
   );
 
@@ -287,7 +287,7 @@ export const intersectsOtherSolid = (
   obj: Part,
   ignoreObjects?: Part[],
 ): Part | Terrain | null => {
-  let objGeom;
+  let objGeom: Geom | null = null;
 
   if (!obj.noCollide) {
     for (const part of objects) {

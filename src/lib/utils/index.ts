@@ -1,11 +1,16 @@
 import * as _ from 'lodash-es';
 
-export const isNum = (x: number): boolean =>
+export const isNum = (x: unknown): x is number =>
   typeof x === 'number' && !Number.isNaN(x);
 
-export const validPoint = (p: any): p is Point => {
+export const validPoint = (p: unknown): p is Point => {
   try {
-    return p != null && isNum(p.x) && isNum(p.y);
+    return (
+      p != null &&
+      typeof p === 'object' &&
+      isNum((p as Record<string, unknown>).x) &&
+      isNum((p as Record<string, unknown>).y)
+    );
   } catch {
     return false;
   }
@@ -64,8 +69,8 @@ export const midpoint = (a: Point, b: Point): Point => {
 };
 
 export const anySame = (
-  objA: Record<string, any>,
-  objB: Record<string, any>,
+  objA: Record<string, unknown>,
+  objB: Record<string, unknown>,
 ) => {
   for (const key in objA) if (key in objB) return true;
   return false;

@@ -74,7 +74,7 @@ export default class Thruster extends Part {
         end: 0.0,
       },
       // quantity: 2,
-      tint: { onEmit: () => Phaser.Utils.Array.GetRandom(colors) },
+      tint: { onEmit: () => Phaser.Utils.Array.GetRandom(colors) as number },
       alpha: { min: 0.5, max: 0.8 },
       // blendMode: 'ADD',
 

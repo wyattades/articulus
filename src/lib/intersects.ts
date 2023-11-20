@@ -253,9 +253,8 @@ const POINT_THICKNESS = 6;
 
 const { PointToLine } = Phaser.Geom.Intersects;
 
-const fromEntries = <Pair extends readonly [any, any]>(
-  pairs: Pair[],
-): { [key in Pair[0]]: Pair[1] } => Object.fromEntries(pairs);
+const fromEntries = <Pair extends readonly [string, unknown]>(pairs: Pair[]) =>
+  Object.fromEntries(pairs) as { [key in Pair[0]]: Pair[1] };
 
 const containsPointNames = [
   'Circle',

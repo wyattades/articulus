@@ -126,7 +126,7 @@ export default class EditPointsTool extends Tool {
 
       part.localizePoints();
 
-      this.scene.parts.add(part as any);
+      this.scene.parts.add(part);
 
       part.rerender();
 

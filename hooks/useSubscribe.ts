@@ -1,8 +1,13 @@
 import * as _ from 'lodash-es';
 import { useEffect, useRef, useState } from 'react';
 
+type Emitter = {
+  on: (eventName: string, cb: (...args: any[]) => any) => void;
+  off: (eventName: string, cb: (...args: any[]) => any) => void;
+};
+
 export const useSubscribe = <V>(
-  emitter: any,
+  emitter: Emitter,
   eventName: string | string[],
   mapValue: (arg?: any) => V = _.identity,
   runMapValueOnUpdate = false,

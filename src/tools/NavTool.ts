@@ -10,7 +10,7 @@ export default class NavTool extends Tool {
   } | null = null;
 
   eventManager = new EventManager()
-    .on(this.scene.game.canvas, 'contextmenu', (e) => {
+    .on(this.scene.game.canvas, 'contextmenu', (e: Event) => {
       // disable right-click menu
       e.preventDefault();
     })

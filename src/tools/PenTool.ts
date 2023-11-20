@@ -37,7 +37,7 @@ export default class PenTool extends Tool {
 
       shape.localizePoints();
 
-      this.scene.parts.add(shape as any);
+      this.scene.parts.add(shape);
 
       shape.rerender();
     }

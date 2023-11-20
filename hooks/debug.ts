@@ -6,7 +6,7 @@ export const useIsDebug = () => {
   const scene = useScene();
   return useSubscribe(
     scene.events,
-    Phaser.Scenes.Events.START, // called on `scene.restart()`
+    Phaser.Scenes.Events.START as string, // called on `scene.restart()`
     () => !!settingsSaver.get('debug'),
     true,
   );

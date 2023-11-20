@@ -14,8 +14,10 @@ import type { Part } from 'src/objects';
 import type { AnyScene } from 'src/scenes';
 import type { BaseScene } from 'src/scenes/Scene';
 
-export const Matter = (Phaser.Physics.Matter as any)
-  .Matter as typeof MatterType;
+// the real `Matter` object:
+export const Matter = (
+  Phaser.Physics.Matter as unknown as { Matter: typeof MatterType }
+).Matter;
 
 export const getJointPos = (joint: FC.Joint): Point | null => {
   const a = getFirstValue(joint.bodies);

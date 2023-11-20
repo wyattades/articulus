@@ -54,6 +54,7 @@ export const fromJSON = <T extends Part | Terrain>(
   if (!Klass) return null;
 
   // TODO: fix types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const obj = Klass.fromJSON(scene, json as any) as ObjectInstance;
 
   // NOTE: this ignores `Line`
@@ -324,7 +325,10 @@ export class MapSaver {
         objects: map.data.objects,
       } as GameMapData;
     } catch (err) {
-      if (err instanceof TRPCClientError && err.data?.code === 'NOT_FOUND') {
+      if (
+        err instanceof TRPCClientError &&
+        (err.data as { code?: string } | undefined)?.code === 'NOT_FOUND'
+      ) {
         // eslint-disable-next-line no-alert
         window.alert('Oops! Map not found!');
         void Router.push('/');
@@ -394,7 +398,7 @@ export const settingsSaver = new (class SettingsSaver {
   load() {
     try {
       const str = localStorage.getItem(SettingsSaver.STORAGE_KEY);
-      const obj = str && JSON.parse(str);
+      const obj = str && (JSON.parse(str) as Record<string, unknown> | null);
       if (obj && typeof obj === 'object') return obj;
     } catch {}
     return {};
@@ -413,7 +417,7 @@ export const settingsSaver = new (class SettingsSaver {
     return this.settings[key];
   }
 
-  set(key: string, value: any) {
+  set(key: string, value: unknown) {
     this.settings[key] = value;
     this.save();
   }

@@ -21,7 +21,7 @@ export default class ShapeTool extends BoxTool {
     if (shape) {
       if (shape.width >= MIN_SHAPE_SIZE && shape.height >= MIN_SHAPE_SIZE) {
         shape.saveRender();
-        this.scene.parts.add(shape as any);
+        this.scene.parts.add(shape);
       } else shape.destroy();
 
       // remove reference so BoxTool doesn't destroy our shape

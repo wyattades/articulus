@@ -1,3 +1,4 @@
+import type { Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
 import { DefaultSeo } from 'next-seo';
 import type { AppProps } from 'next/app';
@@ -11,10 +12,11 @@ import 'src/styles/index.scss';
 
 const HOST_URL = process.env.HOST_URL;
 
-const App: React.FC<AppProps> = ({
-  Component,
-  pageProps: { session, ...pageProps },
-}) => {
+const App: React.FC<
+  Omit<AppProps, 'pageProps'> & {
+    pageProps: { session?: Session | null };
+  } & Record<string, unknown>
+> = ({ Component, pageProps: { session, ...pageProps } }) => {
   return (
     <>
       <Head>

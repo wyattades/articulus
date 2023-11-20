@@ -52,7 +52,9 @@ export default class Game extends Phaser.Game {
     let scene = this.scene.getScene(sceneKey) as BaseScene;
     if (scene) return scene;
 
-    await new Promise((r) => this.events.once(Phaser.Core.Events.POST_STEP, r));
+    await new Promise((r) =>
+      this.events.once(Phaser.Core.Events.POST_STEP as string, r),
+    );
 
     scene = this.scene.getScene(sceneKey) as BaseScene;
 
@@ -71,7 +73,7 @@ export default class Game extends Phaser.Game {
     }
 
     const promise = new Promise((resolve) => {
-      this.events.once(Phaser.Core.Events.DESTROY, resolve);
+      this.events.once(Phaser.Core.Events.DESTROY as string, resolve);
     });
 
     super.destroy(false);
