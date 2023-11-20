@@ -21,15 +21,13 @@ const useMapMetas = () => {
 };
 
 const MenuUI: React.FC = () => {
-  const { allLevels, error, refreshLevels } = useMapMetas();
+  const { allLevels, error: levelsError, refreshLevels } = useMapMetas();
 
   const groups = _.groupBy(allLevels, (l) => (l.mine ? 'mine' : 'public'));
 
   const game = useGame();
 
   const session = useSession();
-
-  if (error) throw error;
 
   return (
     <div className="ui-wrap container py-8 px-6">
@@ -59,7 +57,11 @@ const MenuUI: React.FC = () => {
         </button>
       </div>
 
-      {!allLevels ? (
+      {levelsError ? (
+        <p className="ui-markup text-center text-md ui--danger pt-24">
+          Error loading levels: {levelsError.message}
+        </p>
+      ) : !allLevels ? (
         <p className="ui-markup text-center text-lg pt-24">Loading...</p>
       ) : (
         [

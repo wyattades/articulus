@@ -18,6 +18,9 @@
   @extend .ui-markup;
   pointer-events: none !important;
 }
+.ui--danger {
+  color: #990b0b;
+}
 
 .ui-tool-button {
   @include button-base;
