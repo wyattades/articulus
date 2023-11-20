@@ -1,10 +1,7 @@
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import type { DefaultSession, NextAuthOptions } from 'next-auth';
-import NextAuth from 'next-auth';
-import type { DiscordProfile } from 'next-auth/providers/discord';
-import DiscordProvider from 'next-auth/providers/discord';
-
-import { db } from 'server/db';
+import DiscordProvider, {
+  type DiscordProfile,
+} from '@auth/core/providers/discord';
+import type { DefaultSession, NextAuthConfig } from 'next-auth';
 
 export type AuthSession = DefaultSession & {
   user: {
@@ -12,7 +9,7 @@ export type AuthSession = DefaultSession & {
   };
 };
 
-export const authOptions = {
+export const authConfig: NextAuthConfig = {
   providers: [
     DiscordProvider({
       clientId: process.env.DISCORD_CLIENT_ID!,
@@ -36,7 +33,6 @@ export const authOptions = {
       },
     }),
   ],
-  adapter: PrismaAdapter(db),
   callbacks: {
     jwt: async ({ token, account }) => {
       // Persist the OAuth access_token right after signin
@@ -55,6 +51,4 @@ export const authOptions = {
       return session as AuthSession;
     },
   },
-} satisfies NextAuthOptions;
-
-export default NextAuth(authOptions);
+};

@@ -4,7 +4,7 @@ import { resolve } from 'path';
 const nextConfig = {
   env: {
     HOST_URL: process.env.VERCEL_URL
-      ? 'https://articulus.vercel.app'
+      ? `https://${process.env.VERCEL_URL}`
       : 'http://localhost:3000',
   },
 
