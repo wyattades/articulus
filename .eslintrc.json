@@ -1,11 +1,6 @@
 {
   "extends": "@wyattades/eslint-config",
   "rules": {
-    "@typescript-eslint/prefer-nullish-coalescing": "off",
-    "@typescript-eslint/class-literal-property-style": "off",
-    "@typescript-eslint/no-misused-promises": "off",
-    "@typescript-eslint/consistent-type-imports": "warn",
-    "react/no-unknown-property": [2, { "ignore": ["jsx"] }],
     "no-console": "off"
   }
 }
