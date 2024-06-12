@@ -30,7 +30,7 @@ export default class Game extends Phaser.Game {
         matter: {
           // TODO: cross-platform consistent physics speed
           runner: {
-            fps: 60,
+            fps: 100,
           },
           enableSleeping: true,
           debug: !!settingsSaver.get('debug'),
