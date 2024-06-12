@@ -24,8 +24,7 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
   strokeWidth = 0;
   iStrokeColor?: number;
 
-  particles: Phaser.GameObjects.Particles.ParticleEmitterManager[] | null =
-    null;
+  particles: Phaser.GameObjects.Particles.ParticleEmitter[] | null = null;
 
   polygon?: Phaser.Geom.Polygon;
 
@@ -346,10 +345,9 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
 
   addParticles(
     texture: string,
-    frame: number,
-    emitters: MaybeArray<Phaser.Types.GameObjects.Particles.ParticleEmitterConfig>,
+    emitter: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig,
   ) {
-    const p = this.scene.add.particles(texture, frame, emitters);
+    const p = this.scene.add.particles(0, 0, texture, emitter);
     if (!this.scene.running) p.pause();
     (this.particles ||= []).push(p);
     return p;

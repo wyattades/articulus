@@ -75,6 +75,10 @@ export abstract class BaseScene extends Phaser.Scene {
     return false;
   }
 
+  get keyboard() {
+    return this.input.keyboard!;
+  }
+
   getParts() {
     return this.parts.getChildren() as unknown as Part[];
   }

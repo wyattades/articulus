@@ -53,8 +53,9 @@ export default class Thruster extends Part {
 
     const colors = [0xffffff, 0xeeeeee, 0xdddddd];
 
-    this.emitter = this.addParticles(particleTextureKey, 0, {
-      follow: this as unknown as Phaser.GameObjects.GameObject,
+    this.emitter = this.addParticles(particleTextureKey, {
+      follow: this,
+      frame: 0,
       x: {
         onEmit: () => Math.cos(this.rotation + Math.PI / 2) * 30,
       },
@@ -74,12 +75,12 @@ export default class Thruster extends Part {
         end: 0.0,
       },
       // quantity: 2,
-      tint: { onEmit: () => Phaser.Utils.Array.GetRandom(colors) as number },
+      tint: { onEmit: () => Phaser.Utils.Array.GetRandom(colors) },
       alpha: { min: 0.5, max: 0.8 },
       // blendMode: 'ADD',
 
-      on: false,
-    }).setDepth(-1).emitters.first;
+      active: false,
+    }).setDepth(-1);
   }
 
   render() {

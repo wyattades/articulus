@@ -90,10 +90,10 @@ export const addHoverCursor = (
 ) => {
   const canvas = obj.scene.game.canvas;
   obj
-    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER as string, () => {
+    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OVER, () => {
       canvas.style.cursor = cursor;
     })
-    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT as string, () => {
+    .on(Phaser.Input.Events.GAMEOBJECT_POINTER_OUT, () => {
       canvas.style.cursor = 'auto';
     });
 };
@@ -222,7 +222,7 @@ export const mergeGeoms = (
   shapes = shapes.map((s) => {
     // make sure all polygons orient the same way (the orientation we choose is arbitrary)
     const orient = firstIterableValue(
-      s.faces as Set<Flatten.Face>,
+      s.faces as unknown as Set<Flatten.Face>,
     )!.orientation();
     if (orient === Flatten.ORIENTATION.CW) {
       return s.reverse();

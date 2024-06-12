@@ -141,11 +141,11 @@ export default class Play extends BaseScene {
   }
 
   createListeners() {
-    this.modifierKey = this.input.keyboard.addKey(
+    this.modifierKey = this.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SHIFT,
     );
 
-    this.input.keyboard.on('keydown-SPACE', (evt: KeyboardEvent) => {
+    this.keyboard.on('keydown-SPACE', (evt: KeyboardEvent) => {
       evt.preventDefault();
 
       if (document.activeElement !== this.game.canvas) {
@@ -160,20 +160,20 @@ export default class Play extends BaseScene {
       void this.saveBuild('queue');
     });
 
-    this.input.keyboard.on('keydown-R', () => this.restart());
+    this.keyboard.on('keydown-R', () => this.restart());
 
-    this.input.keyboard.on('keydown-K', () => {
+    this.keyboard.on('keydown-K', () => {
       this.parts.clear(true, true);
       void this.saveBuild();
     });
 
-    this.input.keyboard.on('keydown-T', () => {
+    this.keyboard.on('keydown-T', () => {
       this.game.setScene('Editor', {
         mapKey: this.mapKey,
       });
     });
 
-    this.input.keyboard.on('keydown-P', () => {
+    this.keyboard.on('keydown-P', () => {
       const debug = !settingsSaver.get('debug');
       settingsSaver.set('debug', debug);
 
@@ -182,33 +182,32 @@ export default class Play extends BaseScene {
       this.restart();
     });
 
-    Matter.Events.on(
-      this.matter.world.engine,
-      'collisionActive',
-      (event: { pairs: Matter.Pair[] }) => {
-        for (const pair of event.pairs) {
-          const a = (pair.bodyA as FC.Body).gameObject;
-          const b = (pair.bodyB as FC.Body).gameObject;
-          if (!a || !b) continue;
+    Matter.Events.on(this.matter.world.engine, 'collisionActive', (event) => {
+      const evt = event as Matter.IEvent<MatterJS.Engine> & {
+        pairs: Matter.Pair[];
+      };
+      for (const pair of evt.pairs) {
+        const a = (pair.bodyA as FC.Body).gameObject;
+        const b = (pair.bodyB as FC.Body).gameObject;
+        if (!a || !b) continue;
+        if (
+          (a instanceof GoalObject && b instanceof GoalZone) ||
+          (b instanceof GoalObject && a instanceof GoalZone)
+        ) {
+          const [go, gz] = a instanceof GoalObject ? [a, b] : [b, a];
           if (
-            (a instanceof GoalObject && b instanceof GoalZone) ||
-            (b instanceof GoalObject && a instanceof GoalZone)
+            Phaser.Geom.Rectangle.ContainsRect(
+              gz.getBounds(TEMP_RECT),
+              go.getBounds(TEMP_RECT2),
+            )
           ) {
-            const [go, gz] = a instanceof GoalObject ? [a, b] : [b, a];
-            if (
-              Phaser.Geom.Rectangle.ContainsRect(
-                gz.getBounds(TEMP_RECT),
-                go.getBounds(TEMP_RECT2),
-              )
-            ) {
-              // TODO: better win state
-              this.showFlash('YOU WIN!', 'win');
-              this.setRunning(false);
-            }
+            // TODO: better win state
+            this.showFlash('YOU WIN!', 'win');
+            this.setRunning(false);
           }
         }
-      },
-    );
+      }
+    });
   }
 
   precheckMaxItems(additionalCount: number) {
@@ -366,7 +365,7 @@ export default class Play extends BaseScene {
 
     // INPUTS
 
-    this.cursors = this.input.keyboard.createCursorKeys();
+    this.cursors = this.keyboard.createCursorKeys();
 
     this.createListeners();
 

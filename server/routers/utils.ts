@@ -27,7 +27,8 @@ export const publicProcedure = t.procedure;
 
 export const protectedProcedure = t.procedure.use(
   t.middleware(async ({ next, ctx }) => {
-    if (!ctx.user?.id) {
+    const { id } = ctx.user || {};
+    if (!id) {
       throw new TRPCError({ code: 'UNAUTHORIZED' });
     }
 
@@ -35,7 +36,7 @@ export const protectedProcedure = t.procedure.use(
       ctx: {
         ...ctx,
         // separate user from ctx so typescript knows it's not null
-        user: ctx.user,
+        user: { ...ctx.user, id },
       },
     });
   }),

@@ -45,13 +45,13 @@ export default class Editor extends BaseScene {
 
   cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   createListeners() {
-    this.cursors = this.input.keyboard.createCursorKeys();
+    this.cursors = this.keyboard.createCursorKeys();
 
-    this.modifierKey = this.input.keyboard.addKey(
+    this.modifierKey = this.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.SHIFT,
     );
 
-    this.input.keyboard.on('keydown-T', () => {
+    this.keyboard.on('keydown-T', () => {
       this.game.setScene('Play', {
         mapKey: this.mapKey,
       });
@@ -195,7 +195,7 @@ export default class Editor extends BaseScene {
     this.tm = new ToolManager(this, EDITOR_TOOL_TYPES[0], ['nav']);
 
     this.input.on('pointerup', () => this.saveLevel());
-    this.input.keyboard.on('keyup', () => this.saveLevel());
+    this.keyboard.on('keyup', () => this.saveLevel());
   }
 
   update(_t: number, delta: number) {
