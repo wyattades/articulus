@@ -15,10 +15,7 @@ export const GEOM_NAMES = {
   [G.ROTATED_RECT]: 'RotatedRect',
 } as const;
 
-export const GEOM_TYPES = _.mapValues(
-  GEOM_NAMES,
-  (name) => G[name as (typeof GEOM_NAMES)[keyof typeof GEOM_NAMES]],
-);
+export const GEOM_TYPES = _.mapValues(GEOM_NAMES, (name) => G[name]);
 
 export type GeomType = (typeof GEOM_TYPES)[keyof typeof GEOM_TYPES];
 export type Geom = InstanceType<GeomType>;

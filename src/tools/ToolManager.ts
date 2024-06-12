@@ -24,9 +24,9 @@ export default class ToolManager {
     this.setTool(initial);
 
     this.scene.input
-      .on(Phaser.Input.Events.POINTER_DOWN as string, this.pointerDown)
-      .on(Phaser.Input.Events.POINTER_MOVE as string, this.pointerMove)
-      .on(Phaser.Input.Events.POINTER_UP as string, this.pointerUp);
+      .on(Phaser.Input.Events.POINTER_DOWN, this.pointerDown)
+      .on(Phaser.Input.Events.POINTER_MOVE, this.pointerMove)
+      .on(Phaser.Input.Events.POINTER_UP, this.pointerUp);
 
     this.eventManager = new EventManager()
       .on(this.scene.game.canvas, 'mouseleave', () => {
