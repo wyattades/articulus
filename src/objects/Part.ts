@@ -37,7 +37,7 @@ export default abstract class Part extends Phaser.GameObjects.Sprite {
   constructor(scene: BaseScene, x: number, y: number) {
     super(scene, x, y, DEFAULT_TEXTURE);
 
-    scene.add.existing(this as any);
+    scene.add.existing(this as unknown as Phaser.GameObjects.GameObject);
 
     if (this.klass.zIndex !== 0) this.setDepth(this.klass.zIndex);
   }

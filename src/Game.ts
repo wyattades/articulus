@@ -57,15 +57,23 @@ export default class Game extends Phaser.Game {
     console.log('Init game:', this.id);
   }
 
-  async waitForSceneReady(sceneKey: string): Promise<BaseScene> {
-    let scene = this.scene.getScene(sceneKey) as BaseScene;
-    if (scene) return scene;
+  async startSceneAndReady(sceneKey: string, data?: Record<string, unknown>) {
+    return new Promise<BaseScene>((resolve, reject) => {
+      this.events.once(Phaser.Core.Events.POST_STEP, () => {
+        const scene = this.scene.getScene(sceneKey) as BaseScene | undefined;
+        if (scene && scene.scene.key === sceneKey) resolve(scene);
+        else if (scene)
+          reject(
+            new Error(`Scene key mismatch: ${scene.scene.key} !== ${sceneKey}`),
+          );
+        else reject(new Error(`Scene not started: ${sceneKey}`));
+      });
 
-    await new Promise((r) => this.events.once(Phaser.Core.Events.POST_STEP, r));
+      this.scene.start(sceneKey, data);
 
-    scene = this.scene.getScene(sceneKey) as BaseScene;
-
-    return scene;
+      const scene = this.scene.getScene(sceneKey) as BaseScene;
+      if (scene) resolve(scene);
+    });
   }
 
   destroyed = false;

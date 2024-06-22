@@ -14,7 +14,7 @@ export const useScene = <V extends BaseScene>() => {
 export const Scene: React.FC<{
   children?: React.ReactNode;
   sceneKey: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }> = ({ children, sceneKey, data }) => {
   const game = useGame();
 
@@ -23,14 +23,7 @@ export const Scene: React.FC<{
   useEffect(() => {
     setScene(null);
 
-    game.scene.start(sceneKey, data);
-
-    game
-      .waitForSceneReady(sceneKey)
-      .then(setScene)
-      .catch((err) => {
-        console.error('Failed to load scene', err);
-      });
+    game.startSceneAndReady(sceneKey, data).then(setScene).catch(console.error);
 
     return () => {
       if (game.destroyed) return;
