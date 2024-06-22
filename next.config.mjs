@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import path from 'node:path';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -8,15 +8,14 @@ const nextConfig = {
       : 'http://localhost:3000',
   },
 
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
   /** @param {import('webpack').Configuration} config */
   webpack(config) {
     // TODO: this doesn't work :(
-    config.resolve.alias.ph = resolve(process.cwd(), 'node_modules/phaser/src');
-    config.resolve.alias.phaser = resolve(process.cwd(), 'src/phaser.js');
+    config.resolve.alias.ph = path.resolve(
+      process.cwd(),
+      'node_modules/phaser/src',
+    );
+    config.resolve.alias.phaser = path.resolve(process.cwd(), 'src/phaser.js');
 
     return config;
   },

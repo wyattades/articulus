@@ -1,4 +1,4 @@
-/* eslint-disable import/no-unresolved, global-require, @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-require-imports, global-require */
 /**
  * This custom Phaser build reduces the bundle size from
  * ~1.2MB to ~800kb

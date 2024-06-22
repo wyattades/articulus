@@ -5,7 +5,6 @@ import Phaser from 'phaser';
 
 import type { Geom } from './geom';
 import { GEOM_NAMES } from './geom';
-// eslint-disable-next-line import/no-cycle
 import { getEllipsePoints, validPoint } from './utils';
 
 const ELLIPSE_POINTS = 16;

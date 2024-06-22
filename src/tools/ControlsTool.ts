@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import Phaser from 'phaser';
 
 import { constrain, factoryRotateAround, midpoint } from 'lib/utils';

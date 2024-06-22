@@ -188,14 +188,7 @@ export const getTopObject = (scene: BaseScene, x: number, y: number) => {
   return null;
 };
 
-export const mergeGeoms = (
-  geoms: (
-    | Phaser.Geom.Polygon
-    | Phaser.Geom.Rectangle
-    | Phaser.Geom.Ellipse
-    | Geom
-  )[],
-): Phaser.Geom.Polygon => {
+export const mergeGeoms = (geoms: Geom[]): Phaser.Geom.Polygon => {
   if (geoms.length < 2) throw new Error(`mergeGeoms size must be >= 2`);
 
   let shapes = geoms.map((geom) => {
@@ -210,7 +203,6 @@ export const mergeGeoms = (
       ]);
     if (geom instanceof Phaser.Geom.Ellipse)
       return new Flatten.Polygon(
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         getEllipsePoints(geom.x, geom.y, geom.width, geom.height).map((p) => [
           p.x,
           p.y,
