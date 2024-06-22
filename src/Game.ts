@@ -1,6 +1,5 @@
-import Phaser from 'phaser';
-// eslint-disable-next-line import/no-named-as-default
 import Router from 'next/router';
+import Phaser from 'phaser';
 
 import { settingsSaver } from 'lib/saver';
 import EditorScene from 'src/scenes/Editor';
@@ -16,15 +15,25 @@ declare global {
 
 export default class Game extends Phaser.Game {
   constructor(canvas: HTMLCanvasElement, parent: HTMLElement) {
+    // const { clientWidth: parentW, clientHeight: parentH } = parent;
+
     super({
-      parent,
       canvas,
       type: Phaser.WEBGL,
-      width: parent.clientWidth,
-      height: parent.clientHeight,
       scale: {
+        parent,
         mode: Phaser.Scale.ScaleModes.RESIZE,
+        autoRound: true,
+        // setting any `zoom != 1` causes a pixelated effect, which I kinda like
+        zoom: 2,
+        // zoom: Phaser.Scale.Zoom.ZOOM_4X,
+        // zoom: window.devicePixelRatio,
+        expandParent: false,
       },
+      // https://developer.chrome.com/blog/desynchronized#avoiding_flicker
+      // idk if these are needed
+      preserveDrawingBuffer: true,
+      desynchronized: true,
       physics: {
         default: 'matter',
         matter: {
