@@ -53,7 +53,7 @@ export const getConnectedObjects = (
   objs: Part | Part[],
   includeSelf = true,
 ): Part[] => {
-  objs = _.flatten([objs]);
+  objs = Array.isArray(objs) ? objs : [objs];
 
   const bodies: FC.Body[] = [],
     hitIds = {};
@@ -81,9 +81,8 @@ export const createAnchorJoint = (
   anchor: FC.Anchor,
   objOrJoint: Part | FC.Joint,
 ): FC.AnchorJoint => {
-  if ('bodies' in objOrJoint && objOrJoint.bodies)
-    return { ...anchor, joint: objOrJoint };
-  else return { ...anchor, obj: objOrJoint as Part };
+  if ('bodies' in objOrJoint) return { ...anchor, joint: objOrJoint };
+  else return { ...anchor, obj: objOrJoint };
 };
 
 /**
@@ -118,7 +117,7 @@ export const getHoveredJoint = (
 /**
  * Resets the MatterJS connections for a joint's bodies
  */
-export const reconnect = (
+export const reconnectJoint = (
   scene: BaseScene,
   joint: FC.Joint,
   point: Point | null = null,
@@ -219,7 +218,7 @@ export const stiffConnect = (
     joint.bodies[body.id] = [aId, body];
   }
 
-  reconnect(scene, joint);
+  reconnectJoint(scene, joint);
 };
 
 /**
@@ -233,7 +232,7 @@ export const deleteConnections = (
     const joint = body.collisionFilter.joints[jId];
     delete joint.bodies[body.id];
 
-    reconnect(scene, joint);
+    reconnectJoint(scene, joint);
 
     const bodies = Object.values(joint.bodies);
 
@@ -245,7 +244,7 @@ export const deleteConnections = (
     }
   }
 
-  body.collisionFilter.joints = {}; // should this be `= null`
+  body.collisionFilter.joints = {}; // should this be `= null`?
 };
 
 /**
@@ -288,7 +287,7 @@ export const clonePhysics = (
       joint.bodies[body.id] = [anchorId, body];
     }
 
-    reconnect(scene, joint);
+    reconnectJoint(scene, joint);
   }
 };
 
@@ -359,6 +358,6 @@ export const deserializePhysics = (scene: BaseScene, data: SerialPhysics) => {
       joint.bodies[body.id] = [anchorId, body];
     }
 
-    reconnect(scene, joint);
+    reconnectJoint(scene, joint);
   }
 };
