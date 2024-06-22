@@ -1,5 +1,3 @@
-import path from 'node:path';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
@@ -10,12 +8,12 @@ const nextConfig = {
 
   /** @param {import('webpack').Configuration} config */
   webpack(config) {
-    // TODO: this doesn't work :(
-    config.resolve.alias.ph = path.resolve(
-      process.cwd(),
-      'node_modules/phaser/src',
-    );
-    config.resolve.alias.phaser = path.resolve(process.cwd(), 'src/phaser.js');
+    // TODO: fix phaser imports in `src/phaser.ts`
+    // config.resolve.alias.ph = path.resolve(
+    //   process.cwd(),
+    //   'node_modules/phaser/src',
+    // );
+    // config.resolve.alias.phaser = path.resolve(process.cwd(), 'src/phaser.ts');
 
     return config;
   },

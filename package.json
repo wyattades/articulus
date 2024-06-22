@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.0",
-    "@wyattades/eslint-config": "file:../eslint-config",
+    "@wyattades/eslint-config": "^0.18.0",
     "dotenv": "^16.4.5",
     "eslint": "^9.5.0",
     "prettier": "^3.3.2",

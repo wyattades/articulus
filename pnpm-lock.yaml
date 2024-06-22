@@ -100,8 +100,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       '@wyattades/eslint-config':
-        specifier: file:../eslint-config
-        version: file:../eslint-config(eslint@9.5.0)(prettier@3.3.2)(react@18.3.1)(typescript@5.5.2)
+        specifier: ^0.18.0
+        version: 0.18.0(eslint@9.5.0)(prettier@3.3.2)(react@18.3.1)(typescript@5.5.2)
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
@@ -497,8 +497,8 @@ packages:
     resolution: {integrity: sha512-XZuNurZxBqmr6ZIRIwWFq7j5RZd6ZlkId/HZEWyfciK+CWoyOxSF9Pv2VXH9Rlu2ZG2PfbhLz2Veszl4Pfn7yA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@wyattades/eslint-config@file:../eslint-config':
-    resolution: {directory: ../eslint-config, type: directory}
+  '@wyattades/eslint-config@0.18.0':
+    resolution: {integrity: sha512-SQHdpafZh4BCwhcyn7ngKlASFlGqXyiNgJwGduKIw/ErqqqF6gMFonLhFkrVaN2UxKBoo4mjLUertzrUBRpXjA==}
     peerDependencies:
       eslint: '>=9'
       jest: '>=26'
@@ -2441,7 +2441,7 @@ snapshots:
       '@typescript-eslint/types': 8.0.0-alpha.30
       eslint-visitor-keys: 3.4.3
 
-  '@wyattades/eslint-config@file:../eslint-config(eslint@9.5.0)(prettier@3.3.2)(react@18.3.1)(typescript@5.5.2)':
+  '@wyattades/eslint-config@0.18.0(eslint@9.5.0)(prettier@3.3.2)(react@18.3.1)(typescript@5.5.2)':
     dependencies:
       '@eslint/compat': 1.1.0
       '@eslint/eslintrc': 3.1.0
