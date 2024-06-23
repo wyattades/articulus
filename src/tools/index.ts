@@ -1,5 +1,6 @@
 import {
   BackWheel,
+  BuildZone,
   Ellipse,
   ForwardWheel,
   GoalObject,
@@ -87,6 +88,12 @@ export const TOOLS = {
     ToolClass: ShapeTool,
     ShapeClass: GoalZone,
   },
+  build_zone: {
+    label: 'Build Zone',
+    color: COLORS.buildZoneLight,
+    ToolClass: ShapeTool,
+    ShapeClass: BuildZone,
+  },
   rectangle_shape: {
     label: 'Rectangle',
     color: COLORS.toolGreen,
@@ -146,14 +153,15 @@ export const PLAY_TOOL_TYPES = [
   'thruster',
   'select',
   'delete',
-] as const;
+] as const satisfies ToolKey[];
 
 export const EDITOR_TOOL_TYPES = [
   'rectangle_shape',
   'ellipse_shape',
   'polygon_shape',
+  'build_zone',
   'goal_zone',
   'goal_object',
   'select',
   'delete',
-] as const;
+] as const satisfies ToolKey[];

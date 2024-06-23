@@ -19,7 +19,7 @@ import { BaseScene, type ObjectsGroup } from './Scene';
 export default class Play extends BaseScene {
   mapSaver!: MapSaver | null;
   mapKey?: string;
-  terrainGroup!: ObjectsGroup<Terrain>;
+  terrainGroup!: ObjectsGroup<Part | Terrain>;
   buildSaver!: BuildSaver;
   selected!: Part[];
 

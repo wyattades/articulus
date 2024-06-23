@@ -3,9 +3,9 @@ import type MatterType from 'matter-js';
 import Phaser from 'phaser';
 
 import {
-  anySame,
   constrain,
   getFirstValue,
+  haveAnySameKey,
   nextId,
   valuesIterator,
 } from 'lib/utils';
@@ -178,7 +178,7 @@ Matter.Detector.canCollide = (
   if (
     filterA.joints &&
     filterB.joints &&
-    anySame(filterA.joints, filterB.joints)
+    haveAnySameKey(filterA.joints, filterB.joints)
   )
     return false; // FIXME: slow!
 

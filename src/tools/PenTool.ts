@@ -1,6 +1,5 @@
 import Flatten from '@flatten-js/core';
 
-import { EventManager } from 'lib/utils/eventManager';
 import { Polygon } from 'src/objects/Polygon';
 
 import Tool from './Tool';
@@ -9,7 +8,7 @@ import Tool from './Tool';
 // example of convex: 0 143 0 92 110 140 244 4 330 0 458 12 574 18 600 79 594 153 332 152 107 157
 
 export default class PenTool extends Tool {
-  eventManager = new EventManager()
+  _em = this.eventManager
     .on(this.scene.input.keyboard, 'keydown-ESC', () =>
       this.cancelPendingPath(),
     )
@@ -121,9 +120,5 @@ export default class PenTool extends Tool {
     this.pending = null;
 
     this.scene.events.emit('polygon:end');
-  }
-
-  destroy() {
-    this.eventManager.off();
   }
 }

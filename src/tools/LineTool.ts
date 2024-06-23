@@ -1,5 +1,5 @@
-import { anySame } from 'lib/utils';
-import { intersectsOtherSolid } from 'lib/utils/phaser';
+import { placedPartBlocker } from 'lib/partPlacement';
+import { haveAnySameKey } from 'lib/utils';
 import Line from 'src/objects/Line';
 
 import PlaceTool from './PlaceTool';
@@ -38,7 +38,7 @@ export default class LineTool extends PlaceTool {
     if (
       start &&
       end &&
-      anySame(
+      haveAnySameKey(
         start.obj ? { [start.obj.body!.id]: true } : start.joint.bodies,
         end.obj ? { [end.obj.body!.id]: true } : end.joint.bodies,
       )
@@ -46,12 +46,11 @@ export default class LineTool extends PlaceTool {
       return false;
 
     if (
-      intersectsOtherSolid(
-        this.scene.parts.getChildren(),
-        this.scene.terrainGroup?.getChildren(),
-        drawObj.obj,
-        ignore,
-      )
+      placedPartBlocker(drawObj.obj, {
+        objects: this.scene.parts.getChildren(),
+        terrains: this.scene.terrainGroup?.getChildren(),
+        ignoreObjects: ignore,
+      })
     )
       return false;
 

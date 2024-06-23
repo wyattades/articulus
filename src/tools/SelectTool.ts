@@ -1,6 +1,5 @@
 import * as _ from 'lodash-es';
 
-import { EventManager } from 'lib/utils/eventManager';
 import type { Part } from 'src/objects';
 
 import BoxTool from './BoxTool';
@@ -8,7 +7,7 @@ import BoxTool from './BoxTool';
 export default class SelectTool extends BoxTool {
   allowStartOverlapping = false;
 
-  eventManager = new EventManager()
+  _em = this.eventManager
     .on(this.scene.events, this.setSelectedEvent, this.setSelected.bind(this))
     .on(
       this.scene.input.keyboard,
@@ -78,9 +77,10 @@ export default class SelectTool extends BoxTool {
   }
 
   destroy() {
+    super.destroy();
+
     if (this.currentSelected?.length)
       this.scene.events.emit(this.setSelectedEvent, []);
-    this.eventManager.off();
 
     this.currentSelected = [];
   }

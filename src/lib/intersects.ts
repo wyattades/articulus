@@ -13,22 +13,22 @@ const sq = (x: number) => x * x;
 
 /**
  * box-point collision
- * @param x1 top-left corner of box
- * @param y1 top-left corner of box
- * @param w1 width of box
- * @param h1 height of box
- * @param x2 of point
- * @param y2 of point
+ * @param rx top-left corner of box
+ * @param ry top-left corner of box
+ * @param rw width of box
+ * @param rh height of box
+ * @param px of point
+ * @param py of point
  */
 const boxPoint = (
-  x1: number,
-  y1: number,
-  w1: number,
-  h1: number,
-  x2: number,
-  y2: number,
+  rx: number,
+  ry: number,
+  rw: number,
+  rh: number,
+  px: number,
+  py: number,
 ): boolean => {
-  return x2 >= x1 && x2 <= x1 + w1 && y2 >= y1 && y2 <= y1 + h1;
+  return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
 };
 
 /**
@@ -111,7 +111,7 @@ const polygonPoints = (polygon: PointsInput): [number, number][] => {
   if (Array.isArray(first) && first.length === 2) {
     return polygon as [number, number][];
   } else if (validPoint(first)) {
-    return (polygon as Point[]).map((p) => [p.x, p.y] as [number, number]);
+    return (polygon as Point[]).map((p) => [p.x, p.y]);
   } else if (typeof first === 'number') {
     const out: [number, number][] = [];
     for (let i = 0, len = polygon.length; i < len; i += 2)
@@ -250,7 +250,15 @@ const EllipseToLine = (ellipse: Phaser.Geom.Ellipse, line: LineSegment) => {
 
 const POINT_THICKNESS = 6;
 
-const { PointToLine } = Phaser.Geom.Intersects;
+const {
+  PointToLine,
+  RectangleToRectangle,
+  CircleToCircle,
+  CircleToRectangle,
+  LineToCircle,
+  LineToLine,
+  LineToRectangle,
+} = Phaser.Geom.Intersects;
 
 const fromEntries = <Pair extends readonly [string, unknown]>(pairs: Pair[]) =>
   Object.fromEntries(pairs) as { [key in Pair[0]]: Pair[1] };
@@ -273,7 +281,12 @@ type GeomName = (typeof GEOM_NAMES)[keyof typeof GEOM_NAMES];
 const Intersects: {
   [key in `${GeomName}To${GeomName}`]?: (a: any, b: any) => boolean;
 } = {
-  ...Phaser.Geom.Intersects,
+  RectangleToRectangle,
+  CircleToCircle,
+  CircleToRectangle,
+  LineToCircle,
+  LineToLine,
+  LineToRectangle,
 
   PointToLine: (point: Point, line: Phaser.Geom.Line) =>
     PointToLine(point, line, POINT_THICKNESS),
@@ -317,10 +330,45 @@ export const intersectsGeoms = (g1: Geom, g2: Geom) => {
   if ((fn = INTERSECT_MATRIX[g2.type][g1.type])) return fn(g2, g1);
 
   console.error(
-    'Missing intersect fn for:',
+    'Missing "intersects" fn for:',
     GEOM_NAMES[g1.type],
     GEOM_NAMES[g2.type],
     INTERSECT_MATRIX,
+  );
+
+  return false;
+};
+
+// for now, we only need to handle: rectangle > line, rectangle > circle
+export const containsGeom = (haystack: Geom, needle: Geom) => {
+  if (haystack instanceof Phaser.Geom.Rectangle) {
+    if (needle instanceof Phaser.Geom.Line) {
+      return (
+        haystack.contains(needle.x1, needle.y1) &&
+        haystack.contains(needle.x2, needle.y2)
+      );
+    }
+    if (needle instanceof Phaser.Geom.Circle) {
+      return Phaser.Geom.Rectangle.ContainsRect(
+        haystack,
+        // TODO: not accurate!!! (circle is not a rect)
+        new Phaser.Geom.Rectangle(
+          needle.x - needle.radius,
+          needle.y - needle.radius,
+          needle.radius * 2,
+          needle.radius * 2,
+        ),
+      );
+    }
+    if (needle instanceof Phaser.Geom.Rectangle) {
+      return Phaser.Geom.Rectangle.ContainsRect(haystack, needle);
+    }
+  }
+
+  console.error(
+    'Missing "contains" fn for:',
+    GEOM_NAMES[haystack.type],
+    GEOM_NAMES[needle.type],
   );
 
   return false;

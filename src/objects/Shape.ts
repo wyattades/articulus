@@ -41,24 +41,6 @@ export class Rectangle extends Shape {
   }
 }
 
-export class GoalZone extends Rectangle {
-  static type = 'goal_zone';
-
-  static zIndex = 1;
-
-  fillColor = COLORS.goalLight;
-  strokeColor = COLORS.goalBorder;
-  fillOpacity = 0.5;
-
-  get physicsOptions(): Phaser.Types.Physics.Matter.MatterBodyConfig | null {
-    return {
-      isStatic: true,
-      // sensors trigger collision events, but doesn't react with colliding body physically
-      isSensor: true,
-    };
-  }
-}
-
 export class Ellipse extends Rectangle {
   static type = 'ellipse';
 

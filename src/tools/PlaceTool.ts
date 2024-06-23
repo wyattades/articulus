@@ -1,5 +1,5 @@
+import { placedPartBlocker } from 'lib/partPlacement';
 import { stiffConnect } from 'lib/physics';
-import { intersectsOtherSolid } from 'lib/utils/phaser';
 import type { Part } from 'src/objects';
 import { Wheel } from 'src/objects';
 
@@ -30,11 +30,10 @@ export default class PlaceTool extends Tool {
       )
         return false;
     } else if (
-      intersectsOtherSolid(
-        this.scene.parts.getChildren(),
-        this.scene.terrainGroup?.getChildren(),
-        drawObj.obj,
-      )
+      placedPartBlocker(drawObj.obj, {
+        objects: this.scene.parts.getChildren(),
+        terrains: this.scene.terrainGroup?.getChildren(),
+      })
     )
       return false;
 

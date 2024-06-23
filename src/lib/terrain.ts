@@ -100,6 +100,8 @@ export class Terrain extends Phaser.GameObjects.Graphics {
   height: number;
   iPoints: Point[];
 
+  noCollide?: boolean;
+
   constructor(scene: AnyScene, x = 0, y = 0) {
     super(scene, { x, y });
     scene.add.existing(this);

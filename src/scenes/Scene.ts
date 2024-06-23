@@ -42,7 +42,7 @@ export abstract class BaseScene extends Phaser.Scene {
   stats?: StatsJs;
 
   worldBounds?: Phaser.Geom.Rectangle;
-  terrainGroup?: ObjectsGroup<Terrain>;
+  terrainGroup?: ObjectsGroup<Terrain | Part>;
 
   activeDrag?: {
     afterPlace?: (x: number, y: number) => void;

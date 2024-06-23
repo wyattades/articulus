@@ -4,11 +4,11 @@ import { COLORS } from 'src/styles/theme';
 import Line from './Line';
 import Part from './Part';
 import { Polygon } from './Polygon';
-import { Ellipse, GoalZone, Rectangle } from './Shape';
+import { Ellipse, Rectangle } from './Shape';
 import Thruster from './Thruster';
 import Wheel from './Wheel';
 
-export { Ellipse, GoalZone, Line, Part, Polygon, Rectangle, Thruster, Wheel };
+export { Ellipse, Line, Part, Polygon, Rectangle, Thruster, Wheel };
 
 export class Water extends Line {
   static type = 'water';
@@ -82,6 +82,59 @@ export class GoalObject extends Ellipse {
   }
 }
 
+export class GoalZone extends Rectangle {
+  static type = 'goal_zone' as const;
+
+  static zIndex = 1;
+
+  fillColor = COLORS.goalLight;
+  strokeColor = COLORS.goalBorder;
+  fillOpacity = 0.5;
+
+  get physicsOptions(): Phaser.Types.Physics.Matter.MatterBodyConfig | null {
+    return {
+      isStatic: true,
+      // sensors trigger collision events, but doesn't react with colliding body physically
+      isSensor: true,
+    };
+  }
+}
+
+export class BuildZone extends Rectangle {
+  static type = 'build_zone' as const;
+
+  static zIndex = 1;
+
+  fillColor = COLORS.buildZoneLight;
+  strokeColor = COLORS.buildZoneBorder;
+  fillOpacity = 0.5;
+
+  noCollide = true;
+  isGoal = true;
+
+  get physicsOptions(): Phaser.Types.Physics.Matter.MatterBodyConfig | null {
+    return {
+      isStatic: true,
+      // sensors trigger collision events, but doesn't react with colliding body physically
+      isSensor: true,
+    };
+  }
+}
+
+export type ObjectType =
+  | 'forward_wheel'
+  | 'back_wheel'
+  | 'neutral_wheel'
+  | 'wood'
+  | 'water'
+  | 'thruster'
+  | 'rect'
+  | 'ellipse'
+  | 'polygon'
+  | 'build_zone'
+  | 'goal_zone'
+  | 'goal_object';
+
 const OBJECTS = [
   ForwardWheel,
   BackWheel,
@@ -92,18 +145,19 @@ const OBJECTS = [
   Rectangle,
   Ellipse,
   Polygon,
+  BuildZone,
   GoalZone,
   GoalObject,
 ] as const;
 
-export type ObjectType = (typeof OBJECTS)[number];
+export type ObjectClass = (typeof OBJECTS)[number];
 
-export type ObjectInstance = InstanceType<ObjectType>;
+export type ObjectInstance = InstanceType<ObjectClass>;
 
 export const OBJECT_TYPE_MAP = OBJECTS.reduce(
   (m, el) => {
-    m[el.type] = el;
+    m[el.type as ObjectType] = el;
     return m;
   },
-  {} as Record<string, ObjectType>,
+  {} as Record<ObjectType, ObjectClass>,
 );

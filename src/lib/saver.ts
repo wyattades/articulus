@@ -11,8 +11,7 @@ import type { Terrain } from 'lib/terrain';
 import { trpc } from 'lib/trpc';
 import { validPoint } from 'lib/utils';
 import { LocalDataSaver } from 'lib/utils/localDataSaver';
-import type { AuthSession } from 'server/auth';
-import type { ObjectInstance, Part } from 'src/objects';
+import type { ObjectInstance, ObjectType, Part } from 'src/objects';
 import { OBJECT_TYPE_MAP } from 'src/objects';
 import type { AnyScene } from 'src/scenes';
 import type EditorScene from 'src/scenes/Editor';
@@ -59,7 +58,7 @@ export const fromJSON = <T extends Part | Terrain>(
 ): T | null => {
   if (json?.id == null) return null;
 
-  const Klass = OBJECT_TYPE_MAP[json.type];
+  const Klass = OBJECT_TYPE_MAP[json.type as ObjectType];
   if (!Klass) return null;
 
   // TODO: fix types

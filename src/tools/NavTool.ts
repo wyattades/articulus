@@ -1,5 +1,4 @@
 import { constrain } from 'lib/utils';
-import { EventManager } from 'lib/utils/eventManager';
 
 import Tool from './Tool';
 
@@ -9,7 +8,7 @@ export default class NavTool extends Tool {
     y: number;
   } | null = null;
 
-  eventManager = new EventManager()
+  _em = this.eventManager
     .on(this.scene.game.canvas, 'contextmenu', (e: Event) => {
       // disable right-click menu
       e.preventDefault();
@@ -91,9 +90,5 @@ export default class NavTool extends Tool {
       this.dragView = null;
       return false;
     }
-  }
-
-  destroy() {
-    this.eventManager.off();
   }
 }

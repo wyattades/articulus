@@ -12,7 +12,7 @@ import {
   validPoint,
 } from 'lib/utils';
 import { TEMP_RECT2 } from 'lib/utils/temp';
-import type { Part } from 'src/objects';
+import { type Part } from 'src/objects';
 import type { BaseScene, DebugShapeType } from 'src/scenes/Scene';
 
 import type { Terrain } from '../terrain';
@@ -271,36 +271,4 @@ export const groupByIntersection = (objs: Part[]): Part[][] => {
   }
 
   return groups;
-};
-
-export const intersectsOtherSolid = (
-  objects: Part[],
-  terrains: Terrain[] | undefined | null,
-  obj: Part,
-  ignoreObjects?: Part[],
-): Part | Terrain | null => {
-  let objGeom: Geom | null = null;
-
-  if (!obj.noCollide) {
-    for (const part of objects) {
-      if (
-        !part.noCollide &&
-        part !== obj &&
-        !ignoreObjects?.includes(part) &&
-        intersectsGeoms((objGeom ||= obj.geom), part.geom)
-      ) {
-        return part;
-      }
-    }
-  }
-
-  if (terrains?.length) {
-    for (const part of terrains) {
-      if (part.geom && intersectsGeoms((objGeom ||= obj.geom), part.geom)) {
-        return part;
-      }
-    }
-  }
-
-  return null;
 };

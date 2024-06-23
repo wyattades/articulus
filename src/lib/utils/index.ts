@@ -68,7 +68,7 @@ export const midpoint = (a: Point, b: Point): Point => {
   };
 };
 
-export const anySame = (
+export const haveAnySameKey = (
   objA: Record<string, unknown>,
   objB: Record<string, unknown>,
 ) => {

@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 
 import { constrain, factoryRotateAround, midpoint } from 'lib/utils';
-import { EventManager } from 'lib/utils/eventManager';
 import { TEMP_RECT } from 'lib/utils/temp';
 import type { Part } from 'src/objects';
 import Controls from 'src/objects/Controls';
@@ -50,7 +49,7 @@ export default class ControlsTool extends Tool {
     }[];
   } | null = null;
 
-  eventManager = new EventManager()
+  _em = this.eventManager
     .on(this.scene.events, 'setSelected', this.setSelected.bind(this))
     .on(this.scene.events, 'setDragging', this.setDragging.bind(this));
 
@@ -314,7 +313,7 @@ export default class ControlsTool extends Tool {
   }
 
   destroy() {
-    this.eventManager.off();
+    super.destroy();
     this.controls.destroy(true, true); // destroy it's children too
   }
 }

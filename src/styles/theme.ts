@@ -16,4 +16,6 @@ export const COLORS = {
   goalBorder: 0xa83e81,
   goal: 0xf25cbb,
   shapeFill: 0x26f241,
+  buildZoneLight: 0xf5f0d1,
+  buildZoneBorder: 0xe0d9b5,
 };

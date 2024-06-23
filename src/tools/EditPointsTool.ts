@@ -2,7 +2,6 @@ import Flatten from '@flatten-js/core';
 import * as _ from 'lodash-es';
 
 import { minDistance } from 'lib/minDistance';
-import { EventManager } from 'lib/utils/eventManager';
 import { addHoverCursor } from 'lib/utils/phaser';
 import { Polygon } from 'src/objects/Polygon';
 import type { BaseScene } from 'src/scenes/Scene';
@@ -26,7 +25,7 @@ export class Vert extends Phaser.GameObjects.Arc {
 }
 
 export default class EditPointsTool extends Tool {
-  eventManager = new EventManager()
+  _em = this.eventManager
     .on(this.scene.input.keyboard, 'keydown-ESC', () => {
       this.createShape(true, true);
       this.unload();
@@ -272,9 +271,9 @@ export default class EditPointsTool extends Tool {
   }
 
   destroy() {
+    super.destroy();
+
     this.createShape(false, true);
     this.unload();
-
-    this.eventManager.off();
   }
 }

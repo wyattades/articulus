@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { getHoveredJoint } from 'lib/physics';
-import type { ObjectType, Part } from 'src/objects';
+import { EventManager } from 'src/lib/utils/eventManager';
+import type { ObjectClass, Part } from 'src/objects';
 import type { BaseScene } from 'src/scenes/Scene';
 
 export default abstract class Tool {
@@ -12,7 +13,12 @@ export default abstract class Tool {
   // drawObj is in PlaceTool
   drawObj: { obj: Part } | null = null;
 
-  ShapeClass?: ObjectType;
+  ShapeClass?: ObjectClass;
+
+  private _eventManager?: EventManager;
+  get eventManager() {
+    return (this._eventManager ??= new EventManager());
+  }
 
   refreshCursor(x: number, y: number) {
     const cursor = this.scene.cursor;
@@ -50,5 +56,8 @@ export default abstract class Tool {
     pointer: Phaser.Input.Pointer,
   ): boolean | void {}
 
-  destroy() {}
+  destroy() {
+    this._eventManager?.off();
+    this._eventManager = undefined;
+  }
 }
