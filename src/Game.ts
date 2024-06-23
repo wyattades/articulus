@@ -1,3 +1,4 @@
+import type { User as AuthUser } from 'next-auth';
 import Router from 'next/router';
 import Phaser from 'phaser';
 
@@ -14,7 +15,11 @@ declare global {
 }
 
 export default class Game extends Phaser.Game {
-  constructor(canvas: HTMLCanvasElement, parent: HTMLElement) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    parent: HTMLElement,
+    readonly authUser: AuthUser | undefined,
+  ) {
     // const { clientWidth: parentW, clientHeight: parentH } = parent;
 
     super({

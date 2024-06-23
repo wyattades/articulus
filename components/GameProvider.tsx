@@ -1,3 +1,4 @@
+import { useSession } from 'next-auth/react';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useLatest } from 'react-use';
 
@@ -13,6 +14,10 @@ const GameCtx = createContext<Game | null>(null);
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const authSession = useSession();
+  const loadingAuth = authSession.status === 'loading';
+  const authUser = authSession.data?.user;
+
   const container = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
 
@@ -29,12 +34,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     console.log('Loaded Game class');
     if (!canvas.current || !container.current)
       throw new Error('Missing game DOM container');
-    setGame(new Game(canvas.current, container.current));
+    setGame(new Game(canvas.current, container.current, authUser));
   };
 
   useEffect(() => {
+    if (loadingAuth) return;
     void initGame();
-  }, []);
+  }, [loadingAuth]);
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development' && import.meta.webpackHot) {
@@ -48,7 +54,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         mounted = false;
       };
     }
-  }, [latestGame]);
+  }, []);
 
   useEffect(() => {
     return () => {

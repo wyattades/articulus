@@ -25,6 +25,7 @@
     "@auth/core": "^0.34.1",
     "@auth/prisma-adapter": "^2.4.1",
     "@flatten-js/core": "^1.5.4",
+    "@liveblocks/client": "^2.0.5",
     "@prisma/client": "^5.15.1",
     "@trpc/client": "^10.45.2",
     "@trpc/next": "^10.45.2",
@@ -50,6 +51,7 @@
     "sass": "^1.77.6",
     "stats.js": "^0.17.0",
     "tailwindcss": "^3.4.4",
+    "yjs": "^13.6.18",
     "zod": "^3.23.8"
   },
   "devDependencies": {

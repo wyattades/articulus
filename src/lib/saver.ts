@@ -2,16 +2,14 @@ import type { GameBuild, GameMap } from '@prisma/client';
 import { TRPCClientError } from '@trpc/client';
 import type { inferAsyncReturnType } from '@trpc/server';
 import * as _ from 'lodash-es';
-import { getSession } from 'next-auth/react';
 import Router from 'next/router';
 import Phaser from 'phaser';
 
-import { validPoint } from 'lib/utils';
-// import { EventManager } from 'lib/utils/eventManager';
 import type { SerialPhysics } from 'lib/physics';
 import { deserializePhysics, serializePhysics } from 'lib/physics';
 import type { Terrain } from 'lib/terrain';
 import { trpc } from 'lib/trpc';
+import { validPoint } from 'lib/utils';
 import { LocalDataSaver } from 'lib/utils/localDataSaver';
 import type { AuthSession } from 'server/auth';
 import type { ObjectInstance, Part } from 'src/objects';
@@ -65,7 +63,6 @@ export const fromJSON = <T extends Part | Terrain>(
   if (!Klass) return null;
 
   // TODO: fix types
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const obj = Klass.fromJSON(scene, json as any) as ObjectInstance;
 
   // NOTE: this ignores `Line`
@@ -77,11 +74,6 @@ export const fromJSON = <T extends Part | Terrain>(
   obj.saveRender(); // must be after enablePhysics
 
   return obj as unknown as T;
-};
-
-const getUserId = async () => {
-  const session = (await getSession()) as AuthSession | null;
-  return session?.user?.id || null;
 };
 
 /**
@@ -120,7 +112,6 @@ export class BuildSaver {
     const gameBuilds = await trpc.gameBuilds.allMetas.query();
 
     for (const build of gameBuilds) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       BuildSaver.buildsMetaCache[build.id] = build;
     }
 
@@ -163,6 +154,9 @@ export class BuildSaver {
     const scene = group.scene as PlayScene | EditorScene;
     if (!scene || scene.running) return;
 
+    const authUser = scene.game.authUser;
+    if (!authUser) return; // TODO: show error message?
+
     const objects = withinBounds(
       group.getChildren() as unknown as ObjectInstance[],
       scene.worldBounds,
@@ -173,9 +167,6 @@ export class BuildSaver {
     });
 
     const physics = serializePhysics(scene);
-
-    // TODO: save locally?
-    if (!(await getUserId())) return;
 
     await trpc.gameBuilds.update.mutate({
       id: this.id,
@@ -327,6 +318,8 @@ export class MapSaver {
     const scene = group.scene as AnyScene;
     if (!scene) return;
 
+    const authUser = scene.game.authUser;
+
     const objects = withinBounds(
       group.getChildren() as unknown as ObjectInstance[],
       scene.worldBounds,
@@ -336,14 +329,14 @@ export class MapSaver {
       return json;
     });
 
-    const userId = await getUserId();
-    if (!userId) {
+    if (!authUser) {
       console.log('saving map locally');
       unsavedMapStorage.set('objects', objects);
       return;
     }
 
-    const isFork = this.id && this.meta?.user && this.meta.user.id !== userId;
+    const isFork =
+      this.id && this.meta?.user && this.meta.user.id !== authUser.id;
 
     let name = this.saveName || this.meta?.name || 'Untitled';
     this.saveName = undefined;

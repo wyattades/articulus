@@ -81,7 +81,7 @@ const MenuUI: React.FC = () => {
                       Nothing here yet!
                     </p>
                   ) : (
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
                       {levels.map((level) => {
                         return (
                           <div key={level.id} className="ui-box">

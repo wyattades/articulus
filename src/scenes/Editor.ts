@@ -7,12 +7,11 @@ import {
   mergeGeoms,
 } from 'lib/utils/phaser';
 import { config } from 'src/const';
+import { LiveCursorPlugin } from 'src/lib/live';
+import type { Part } from 'src/objects';
 import { Polygon } from 'src/objects/Polygon';
 import { EDITOR_TOOL_TYPES } from 'src/tools';
 import ToolManager from 'src/tools/ToolManager';
-
-import type { Part } from 'src/objects';
-
 import type { ObjectsGroup } from './Scene';
 import { BaseScene } from './Scene';
 
@@ -196,6 +195,13 @@ export default class Editor extends BaseScene {
 
     this.input.on('pointerup', () => this.saveLevel());
     this.keyboard.on('keyup', () => this.saveLevel());
+
+    this.plugins.installScenePlugin(
+      'LiveCursorPlugin',
+      LiveCursorPlugin,
+      'liveCursor',
+      this,
+    );
   }
 
   update(_t: number, delta: number) {
